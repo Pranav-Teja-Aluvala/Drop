@@ -50,7 +50,7 @@ test('beta: exact file cap, oversize rejection, disconnect and new-room recovery
     await host.getByLabel('Choose file to send').setInputFiles({name:'interrupted.txt',mimeType:'text/plain',buffer:Buffer.from('not accepted')});
     await expect(guest.getByRole('button',{name:'Accept file',exact:true})).toBeVisible();
     await guest.close();
-    await expect(host.getByRole('button',{name:'Create a room',exact:true})).toBeVisible();
+    await expect(host.getByRole('button',{name:'Create a room',exact:true})).toBeVisible({timeout:45_000});
     await expect(host.locator('.transfer-row').filter({hasText:'interrupted.txt'})).toContainText('Interrupted');
     await host.getByRole('button',{name:'Create a room',exact:true}).click();
     await expect(invite).toBeVisible();

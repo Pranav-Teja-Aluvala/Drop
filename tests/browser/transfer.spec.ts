@@ -10,9 +10,12 @@ test('two isolated browsers pair, transfer verified bytes both ways, share text,
   await expect(host.locator('.send-panel .drop-zone .button')).toBeDisabled();
   const roomResponse = host.waitForResponse(response => response.url().endsWith('/api/rooms') && response.request().method() === 'POST');
   await host.getByRole('button', { name: 'Create a room' }).click();
-  const createdRoom = await (await roomResponse).json();
-  expect(createdRoom.expires - Date.now()).toBeGreaterThan(7_190_000);
-  expect(createdRoom.expires - Date.now()).toBeLessThanOrEqual(7_200_000);
+  const creationResponse = await roomResponse;
+  const createdRoom = await creationResponse.json();
+  // Compare with the server's clock; remote hosting and this machine may differ.
+  const serverNow = Date.parse(creationResponse.headers()['date']);
+  expect(createdRoom.expires - serverNow).toBeGreaterThan(7_190_000);
+  expect(createdRoom.expires - serverNow).toBeLessThanOrEqual(7_202_000);
   const invite = host.getByRole('textbox', { name: 'Room invite' });
   await expect(invite).toBeVisible();
   await guest.goto(await invite.inputValue());

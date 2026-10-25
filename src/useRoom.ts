@@ -134,7 +134,13 @@ export function useRoom() {
     cleanup(true); setItems([]); setFileCounts({ sent: 0, received: 0 }); setError(''); setStatus('creating'); busy.current = true;
     const [id, token] = url.hash.slice(1).split('.'); connect(id, token, ++generation.current);
   }
-  useEffect(() => () => { ++generation.current; cleanup(true); }, []);
+  useEffect(() => {
+    // Tell the peer before navigating away instead of relying only on a hosting
+    // proxy noticing the closed WebSocket. This is best-effort, not offline detection.
+    const pageExit = () => { signal({ type: 'leave' }); end('This page left the room. Create a new room to reconnect.'); };
+    window.addEventListener('pagehide', pageExit);
+    return () => { window.removeEventListener('pagehide', pageExit); ++generation.current; cleanup(true); };
+  }, []);
   return { status, invite, request, nickname, error, expires, items, fileCounts, offer, create, join, setError, code, confirmed,
     confirm: () => { if (gate.current) { setConfirmed(true); gate.current.confirm(); } },
     mismatch: () => { signal({ type: 'leave' }); end('Codes did not match. Nothing was transferred.'); },
