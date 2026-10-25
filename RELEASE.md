@@ -89,3 +89,10 @@ The beta runner starts a temporary loopback server and closes it afterward. It n
 5. End room, show clear disconnected state.
 
 Keep the launch film concise and let the successful transfer carry the story. Broader batch transfers, clipboard monitoring, permanent accounts, offline transfer, device discovery and mobile apps are outside the two-day scope.
+# Scan-to-join and message notifications — 25 October 2026
+
+- Opening a valid QR/invite now starts a join request automatically. The receiving device gets a dedicated joining screen instead of the create-room/paste-link form, with the same room name visible on both devices.
+- Reduced the visible connection timeline from six stages to three. Host approval and both-device certificate-code comparison remain required; no extra room-name confirmation dialog was added.
+- Incoming notes show a bottom-right message button with an unread count. Opening it shows plain-text messages and clears the count; new notes while closed become unread. Escape closes the panel. There is no automatic clipboard access or message persistence.
+- Added regression coverage for automatic joining, matching room labels, absence of a redundant Join button, three progress stages and unread-message behavior. No backend or relay configuration changes.
+

@@ -1,7 +1,7 @@
 import { Brand } from './Brand';
 
 import { useEffect, useRef, useState } from 'react';
-import { ArrowUpRight, FileUp, Send, X } from 'lucide-react';
+import { ArrowUpRight, FileUp, MessageSquare, Send, X } from 'lucide-react';
 import { useRoom } from './useRoom';
 import { Connection, InfoDialog, TransferList, bytes } from './components';
 import { MAX_TEXT } from './transfer';
@@ -11,15 +11,24 @@ export function App() {
   const [dialog, setDialog] = useState<'help' | 'privacy' | null>(null);
   const [text, setText] = useState('');
   const [dragging, setDragging] = useState(false);
+  const [messagesOpen, setMessagesOpen] = useState(false);
+  const [readNotes, setReadNotes] = useState<string[]>([]);
+  const notes = room.items.filter(item => item.text !== undefined && item.direction === 'in');
+  const unread = notes.filter(item => !readNotes.includes(item.id)).length;
+  const notesKey = notes.map(item => item.id).join(',');
+  useEffect(() => {
+    if (messagesOpen) setReadNotes(notesKey ? notesKey.split(',') : []);
+  }, [messagesOpen, notesKey]);
+  useEffect(() => { if (room.status === 'creating' || room.status === 'closed') { setMessagesOpen(false); setReadNotes([]); } }, [room.status]);
   const fileInput = useRef<HTMLInputElement>(null);
   const mediaInput = useRef<HTMLInputElement>(null);
   useEffect(() => { if (/^#[\w-]{43}\.[\w-]{43}$/.test(location.hash)) document.getElementById('transfer')?.scrollIntoView(); }, []);
   const connected = room.status === 'connected';
   const intro = {
-    idle: ['A little closer.', 'Your next screen is one connection away.'],
-    creating: ['Opening your room.', 'Stay here while the pairing service responds.'],
+    idle: room.joining ? ['Joining your room.', 'Your scanned invitation is ready.'] : ['A little closer.', 'Your next screen is one connection away.'],
+    creating: room.joining ? ['Joining your room.', 'Your invite was read. Connecting to your other device…'] : ['Opening your room.', 'Stay here while the pairing service responds.'],
     waiting: room.request ? ['Your device has arrived.', 'Check the request on this screen before allowing it.'] : ['Your room is ready.', 'Scan its QR from your other device to continue.'],
-    approval: ['Waiting for approval.', 'On your other screen, choose Allow device.'],
+    approval: ['Waiting for approval.', 'Check the room name on both screens, then allow this device on your other screen.'],
     connecting: ['Finding your connection.', 'Both devices are looking for a route to each other.'],
     verifying: ['Check both screens.', 'Match every security-code group before sharing.'],
     connected: ['Your devices. Connected.', 'Send files and notes in either direction.'],
@@ -35,7 +44,7 @@ export function App() {
   return <><div className="app-shell app-page">
     {room.offer ? <section className="incoming-offer" aria-label="Incoming file" role="status"><div><strong>Your other device sent a file.</strong><p>{room.offer.name} · {bytes(room.offer.size)}</p><p className="small">Accept only files you expect. Files and archives are not scanned for malware.</p></div><div className="offer-actions"><button className="button secondary" onClick={room.decline}>Decline file</button><button className="button accent" onClick={room.accept}>Accept file</button></div></section> : null}
     <div className="workspace-bar"><a className="brand" href="/" aria-label="DROP home"><Brand/></a><button className="text-button" onClick={() => setDialog('help')}>Connection help <ArrowUpRight size={17}/></button></div>
-    <main className={connected ? 'connected-layout' : 'onboarding-layout'}><div id="transfer" className="intro"><h1>{intro[0]}</h1><p>{intro[1]}</p>{['idle','closed'].includes(room.status) && <><ol className="connection-steps"><li><span>01</span><div><strong>Create a room</strong><p>A temporary space for your two devices.</p></div></li><li><span>02</span><div><strong>Scan on your other device</strong><p>Open the invite with your phone’s camera, or paste the link.</p></div></li><li><span>03</span><div><strong>Compare codes. Start sharing.</strong><p>Approve your device and check every code group.</p></div></li></ol><p className="onboarding-note">Two devices. No signup.<span>Keep both screens open while you send.</span></p></>}</div>
+    <main className={connected ? 'connected-layout' : room.joining && room.status !== 'closed' ? 'onboarding-layout joining-layout' : 'onboarding-layout'}><div id="transfer" className="intro"><h1>{intro[0]}</h1><p>{intro[1]}</p>{['idle','closed'].includes(room.status) && <><ol className="connection-steps"><li><span>01</span><div><strong>Create a room</strong><p>A temporary space for your two devices.</p></div></li><li><span>02</span><div><strong>Scan on your other device</strong><p>Open the invite with your phone’s camera, or paste the link.</p></div></li><li><span>03</span><div><strong>Compare codes. Start sharing.</strong><p>Approve your device and check every code group.</p></div></li></ol><p className="onboarding-note">Two devices. No signup.<span>Keep both screens open while you send.</span></p></>}</div>
     {room.error ? <div className="notice" role="alert"><p>{room.error}</p><button className="icon-button" aria-label="Dismiss message" onClick={() => room.setError('')}><X size={18}/></button></div> : null}
     {connected && <div className="file-counts" aria-label="Files in this room"><span>This room</span><span><strong aria-label="Files sent">{room.fileCounts.sent}</strong> sent</span><span><strong aria-label="Files received">{room.fileCounts.received}</strong> received</span></div>}
     <div className="workspace"><Connection room={room}/><section className={`send-panel ${dragging ? 'dragging' : ''}`} aria-label="Send files and notes" onDragOver={e => { e.preventDefault(); if (connected && !activeOutgoing) setDragging(true); }} onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false); }} onDrop={e => { e.preventDefault(); setDragging(false); selectFiles(e.dataTransfer.files); }}>
@@ -50,5 +59,10 @@ export function App() {
     </main>
     <footer><p>© 2026 Drop</p><div className="app-footer-links"><button className="text-button" onClick={() => setDialog('privacy')}>Privacy</button><a href="/terms.html">Terms</a></div></footer>
     {dialog ? <InfoDialog kind={dialog} close={() => setDialog(null)}/> : null}
+    {notes.length > 0 && <aside className="message-dock" aria-label="Room messages" onKeyDown={event => { if (event.key === 'Escape') { setMessagesOpen(false); document.querySelector<HTMLButtonElement>('.message-launcher')?.focus(); } }}>
+      {messagesOpen && <section className="message-popover" id="room-messages" aria-label="Received messages"><div className="message-popover-head"><h2>From your other device</h2><button className="icon-button" aria-label="Close messages" onClick={() => setMessagesOpen(false)}><X size={18}/></button></div><div className="message-scroll">{notes.map(note => <article key={note.id}><p>{note.text}</p><span>Received note</span></article>)}</div><p className="small muted">Messages stay in this room. Copy them from the activity list.</p></section>}
+      <span className="sr-only" role="status">{unread ? `${unread} unread message${unread === 1 ? '' : 's'} from your other device` : ''}</span>
+      <button className="message-launcher" aria-label={unread ? `Messages, ${unread} unread` : 'Open messages'} aria-expanded={messagesOpen} aria-controls={messagesOpen ? 'room-messages' : undefined} onClick={() => setMessagesOpen(open => !open)}><MessageSquare size={23}/>{unread > 0 && <span className="message-badge">{unread}</span>}</button>
+    </aside>}
   </div></>;
 }

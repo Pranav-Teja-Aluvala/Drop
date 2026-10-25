@@ -7,8 +7,17 @@ async function requestPair(host: Page, guest: Page) {
   await expect(host.getByRole('heading',{level:1})).toHaveText('Your room is ready.');
   await expect(host.locator('[aria-current="step"]')).toContainText('Find device');
   await guest.goto(await invite.inputValue());
-  await guest.getByRole('button',{name:'Join',exact:true}).click();
+  await expect(guest.getByRole('textbox',{name:'Invite link',exact:true})).toHaveCount(0);
+  await expect(guest.getByRole('button',{name:'Join',exact:true})).toHaveCount(0);
+  await expect(guest.getByRole('heading',{level:2})).toHaveText('Joining your other device');
   await expect(guest.getByRole('heading',{level:1})).toHaveText('Waiting for approval.');
+  await expect(guest.getByLabel('Room name',{exact:true})).toHaveText(await host.getByLabel('Room name',{exact:true}).innerText());
+  await expect(guest.locator('.connection-progress li')).toHaveCount(3);
+  if (guest.viewportSize()?.width === 390) {
+    expect(await guest.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+    await expect(guest.getByLabel('Room name',{exact:true})).toBeInViewport();
+    await guest.screenshot({path:'C:/Users/prana/AppData/Local/Temp/drop-scanned-join.png',fullPage:true});
+  }
   await expect(host.getByRole('heading',{level:1})).toHaveText('Your device has arrived.');
   await host.getByRole('button',{name:'Allow device',exact:true}).click();
 }

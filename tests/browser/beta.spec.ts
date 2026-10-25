@@ -21,7 +21,7 @@ test('beta: exact file cap, oversize rejection, disconnect and new-room recovery
     await expect(invite).toBeVisible({timeout:80_000});
     const oldInvite = await invite.inputValue();
     await guest.goto(oldInvite);
-    await guest.getByRole('button', {name:'Join',exact:true}).click();
+
     await host.getByRole('button', {name:'Allow device',exact:true}).click();
     await expect(guest.getByLabel('Device verification code')).toHaveText(await host.getByLabel('Device verification code').innerText());
     await host.getByRole('button', {name:'Codes match',exact:true}).click();

@@ -19,7 +19,7 @@ test('two isolated browsers pair, transfer verified bytes both ways, share text,
   const invite = host.getByRole('textbox', { name: 'Room invite' });
   await expect(invite).toBeVisible({timeout:80_000});
   await guest.goto(await invite.inputValue());
-  await guest.getByRole('button', { name: 'Join', exact: true }).click();
+
   await expect(guest.getByText('One last hello.')).toBeVisible();
   await expect(host.getByLabel('Room name', {exact:true})).toHaveText(/^[A-HJ-NP-Z2-9]{4}$/);
   await expect(guest.getByLabel('Room name', {exact:true})).toHaveText(await host.getByLabel('Room name', {exact:true}).textContent() || '');
@@ -61,11 +61,18 @@ test('two isolated browsers pair, transfer verified bytes both ways, share text,
   await guest.getByLabel('Text & links', { exact: true }).fill('<script>alert(1)</script> https://example.com');
   await guest.getByRole('button', { name: 'Send note' }).click();
   await expect(host.locator('pre')).toHaveText('<script>alert(1)</script> https://example.com');
+  await expect(host.getByRole('button',{name:'Messages, 1 unread',exact:true})).toBeInViewport();
+  await host.getByRole('button',{name:'Messages, 1 unread',exact:true}).click();
+  await expect(host.getByRole('region',{name:'Received messages'})).toContainText('<script>alert(1)</script> https://example.com');
+  await expect(host.getByRole('button',{name:'Open messages',exact:true})).toHaveAttribute('aria-expanded','true');
+  await host.screenshot({path:'C:/Users/prana/AppData/Local/Temp/drop-message-dock.png'});
+  await host.getByRole('button',{name:'Close messages',exact:true}).click();
   const longNote = ('Hello 🌏 తెలుగు\n\u0001').repeat(4000).slice(0, 50_000);
   await expect(guest.getByLabel('Text & links', { exact: true })).toHaveAttribute('maxlength', '50000');
   await guest.getByLabel('Text & links', { exact: true }).fill(longNote);
   await guest.getByRole('button', { name: 'Send note' }).click();
   await expect.poll(() => host.locator('pre').first().textContent()).toBe(longNote);
+  await expect(host.getByRole('button',{name:'Messages, 1 unread',exact:true})).toBeVisible();
   await expect(guest.locator('.transfer-row').first()).toContainText('Delivered');
   await guest.getByLabel('Choose file to send').setInputFiles({ name: 'empty.txt', mimeType: 'text/plain', buffer: Buffer.alloc(0) });
   await host.getByRole('button', { name: 'Accept file', exact: true }).click();
@@ -109,7 +116,7 @@ test('rejecting mismatched device codes closes the room without enabling transfe
   const host = await a.newPage(); const guest = await b.newPage();
   await host.goto('/app'); await host.getByRole('button', { name: 'Create a room' }).click();
   const invite = host.getByRole('textbox', { name: 'Room invite' }); await expect(invite).toBeVisible({timeout:80_000});
-  await guest.goto(await invite.inputValue()); await guest.getByRole('button', { name: 'Join', exact: true }).click();
+  await guest.goto(await invite.inputValue());
   await host.getByRole('button', { name: 'Allow device' }).click();
   await host.getByRole('button', { name: 'Codes do not match' }).click();
   await expect(host.getByRole('alert')).toContainText('Nothing was transferred');

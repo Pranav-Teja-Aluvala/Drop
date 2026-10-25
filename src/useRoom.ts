@@ -4,6 +4,7 @@ import { connectionCode, VerificationGate } from './security';
 export type Status = 'idle' | 'creating' | 'waiting' | 'approval' | 'connecting' | 'verifying' | 'connected' | 'recovering' | 'closed';
 export type ConnectionPhase = 'service' | 'invite' | 'approval' | 'gathering' | 'routing' | 'secure' | 'confirm' | 'ready' | 'reconnecting' | 'closed';
 export function useRoom() {
+  const [joining, setJoining] = useState(() => /^#[\w-]{43}\.[\w-]{43}$/.test(location.hash));
   const [status, setStatus] = useState<Status>('idle');
   const [invite, setInvite] = useState('');
   const [phase, setPhase] = useState<ConnectionPhase>('service');
@@ -142,6 +143,7 @@ export function useRoom() {
   }
   async function create() {
     if (busy.current || !supported()) return;
+    setJoining(false);
     cleanup(true); setItems([]); setFileCounts({ sent: 0, received: 0 }); setError(''); setRelayAvailable(null); setPhase('service'); setStatus('creating'); busy.current = true;
     const gen = ++generation.current;
     try {
@@ -158,18 +160,20 @@ export function useRoom() {
     let url: URL;
     try { url = new URL(value); } catch { setError('Paste the complete invite link from your other device.'); return; }
     if (url.origin !== location.origin || !/^#[\w-]{43}\.[\w-]{43}$/.test(url.hash)) { setError('Use a newly created invite link from this DROP website.'); return; }
+    setJoining(true);
     history.replaceState(null, '', location.pathname);
     cleanup(true); setItems([]); setFileCounts({ sent: 0, received: 0 }); setError(''); setRelayAvailable(null); setPhase('service'); setStatus('creating'); busy.current = true;
     const [id, token] = url.hash.slice(1).split('.'); connect(id, token, ++generation.current);
   }
   useEffect(() => {
+    if (/^#[\w-]{43}\.[\w-]{43}$/.test(location.hash)) join(location.href);
     // Tell the peer before navigating away instead of relying only on a hosting
     // proxy noticing the closed WebSocket. This is best-effort, not offline detection.
     const pageExit = () => { signal({ type: 'leave' }); end('This page left the room. Create a new room to reconnect.'); };
     window.addEventListener('pagehide', pageExit);
     return () => { window.removeEventListener('pagehide', pageExit); ++generation.current; cleanup(true); };
   }, []);
-  return { status, phase, relayAvailable, invite, request, nickname, error, expires, items, fileCounts, offer, create, join, setError, code, confirmed,
+  return { status, joining, phase, relayAvailable, invite, request, nickname, error, expires, items, fileCounts, offer, create, join, setError, code, confirmed,
     confirm: () => { if (gate.current) { setConfirmed(true); gate.current.confirm(); } },
     mismatch: () => { signal({ type: 'leave' }); end('Codes did not match. Nothing was transferred.'); },
     approve: () => signal({ type: 'approve', requestId: request }), reject: () => { signal({ type: 'reject', requestId: request }); },
