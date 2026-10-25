@@ -4,7 +4,7 @@ Move a file, link or note between two devices in a temporary room. No recipient 
 
 **Status:** direct-only public beta at https://drop-devs-52b0.vercel.app. Free, no signup. Some networks cannot connect without a relay. Physical-phone and cross-network certification, independent security review and capacity testing remain pending; see [RELEASE.md](RELEASE.md).
 
-Support/privacy: pranavteja.dev@gmail.com. Do not send private files, invite links or security codes.
+Support/privacy: https://drop-devs-52b0.vercel.app/contact.html. Do not send private files, invite links or security codes.
 
 ## Run
 
@@ -18,6 +18,8 @@ npm run dev
 Open http://localhost:5173. Create a room. Open its invite in a second browser/window (or scan the QR). The joining device automatically requests access; check the room name on both screens, then approve it on the first window. Compare all eight groups of the verification code on the two screens, then select Codes match on both. Only then choose a file, accept it on the receiver, wait for Received, and select Save file. Text is sent explicitly, not synchronized with the system clipboard.
 
 The QR contains the same invite. **A phone cannot reach your computer through `localhost`.** Deploy with HTTPS for actual phone pairing. HTTP LAN addresses are not secure contexts and this app intentionally refuses transfer there. Do not market localhost testing as phone/network testing.
+
+Current checklist, legal uncertainties and remaining launch gates: [launch audit](LAUNCH-CHECKLIST-2026-10-26.md).
 
 ## Verify
 

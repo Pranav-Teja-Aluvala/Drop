@@ -56,7 +56,7 @@ export function App() {
 
     {(connected || room.status === 'recovering' || room.items.length > 0) && <RoomActivity room={room} view={activityView} setView={setActivityView} text={text} setText={setText} unread={unread}/>}
     </main>
-    <footer><p>© 2026 Drop · Public beta</p><div className="app-footer-links"><button className="text-button" onClick={() => setDialog('privacy')}>Privacy</button><a href="/terms.html">Terms</a><a href="/cookies.html">Cookies</a><a href="/privacy.html#choices">Contact</a></div></footer>
+    <footer><p>© 2026 Drop · Public beta</p><div className="app-footer-links"><button className="text-button" onClick={() => setDialog('privacy')}>Privacy</button><a href="/terms.html">Terms</a><a href="/cookies.html">Cookies</a><a href="/contact.html">Contact</a></div></footer>
     {dialog ? <InfoDialog kind={dialog} close={() => setDialog(null)}/> : null}
     {(connected || room.items.length > 0) && activityView !== 'chat' && <aside className="message-dock" aria-label="Room messages">
       <span className="sr-only" role="status">{unread ? `${unread} unread message${unread === 1 ? '' : 's'} from your other device` : ''}</span>

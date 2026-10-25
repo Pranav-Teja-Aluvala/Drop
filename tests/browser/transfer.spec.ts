@@ -1,3 +1,5 @@
+import {tmpdir as qaTmpdir} from 'node:os';
+import {join as qaJoin} from 'node:path';
 import { test, expect } from '@playwright/test';
 import { createHash } from 'node:crypto';
 
@@ -43,9 +45,9 @@ test('two isolated browsers pair, transfer verified bytes both ways, share text,
   await expect(host.getByText('Delivered', { exact: true })).toBeVisible();
   await expect(host.getByLabel('Files sent', { exact: true })).toHaveText('1');
   await expect(guest.getByLabel('Files received', { exact: true })).toHaveText('1');
-  await host.locator('.send-panel').screenshot({path:'public/assets/actual-send.png'});
+  await host.locator('.send-panel').screenshot({path:qaJoin(qaTmpdir(),'drop-actual-send.png')});
   await guest.setViewportSize({width:390,height:844});
-  await guest.locator('.history').screenshot({path:'public/assets/actual-received.png'});
+  await guest.locator('.history').screenshot({path:qaJoin(qaTmpdir(),'drop-actual-received.png')});
   const downloadPromise = guest.waitForEvent('download');
   await guest.getByRole('link', { name: 'Save file' }).click();
   const download = await downloadPromise;
@@ -87,7 +89,7 @@ test('two isolated browsers pair, transfer verified bytes both ways, share text,
   await expect(guest.getByRole('button', { name: 'Accept file', exact: true })).toBeInViewport();
   await expect(guest.getByRole('button', { name: 'Decline file', exact: true })).toBeInViewport();
   expect(await guest.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
-  await guest.screenshot({path: 'C:/Users/prana/AppData/Local/Temp/drop-incoming-mobile.png'});
+  await guest.screenshot({path: qaJoin(qaTmpdir(),'drop-incoming-mobile.png')});
   await guest.getByRole('button', { name: 'Accept file', exact: true }).click();
   const htmlRow = guest.locator('.transfer-row').filter({ hasText: 'website.html' });
   const saveHTML = htmlRow.getByRole('link', { name: 'Save file' });

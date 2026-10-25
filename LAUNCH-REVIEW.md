@@ -1,3 +1,5 @@
+> Current checklist and applicability report: [LAUNCH-CHECKLIST-2026-10-26.md](LAUNCH-CHECKLIST-2026-10-26.md). Older dated results below are historical.
+
 # DROP implementation and launch review — 23 October 2026
 
 ## Outcome

@@ -1,3 +1,5 @@
+import {tmpdir as qaTmpdir} from 'node:os';
+import {join as qaJoin} from 'node:path';
 import { test, expect, type Page } from '@playwright/test';
 
 async function requestPair(host: Page, guest: Page) {
@@ -16,7 +18,7 @@ async function requestPair(host: Page, guest: Page) {
   if (guest.viewportSize()?.width === 390) {
     expect(await guest.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
     await expect(guest.getByLabel('Room name',{exact:true})).toBeInViewport();
-    await guest.screenshot({path:'C:/Users/prana/AppData/Local/Temp/drop-scanned-join.png',fullPage:true});
+    await guest.screenshot({path:qaJoin(qaTmpdir(),'drop-scanned-join.png'),fullPage:true});
   }
   await expect(host.getByRole('heading',{level:1})).toHaveText('Your device has arrived.');
   await host.getByRole('button',{name:'Allow device',exact:true}).click();
@@ -60,7 +62,7 @@ test('mobile document and media pickers are separate; approval and verification 
     await host.getByRole('button',{name:'Accept file',exact:true}).click();
     await expect(guest.locator('.transfer-row').filter({hasText:'notes.pdf'})).toContainText('Delivered');
     expect(await guest.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
-    await guest.screenshot({path:'C:/Users/prana/AppData/Local/Temp/drop-mobile-pickers.png'});
+    await guest.screenshot({path:qaJoin(qaTmpdir(),'drop-mobile-pickers.png')});
     const mediaPromise=guest.waitForEvent('filechooser');await guest.getByRole('button',{name:'Photos & videos',exact:true}).click();
     await (await mediaPromise).setFiles({name:'photo.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jSWkAAAAASUVORK5CYII=','base64')});
     await expect(host.getByLabel('Incoming file')).toContainText('photo.png');
@@ -81,7 +83,7 @@ test('blocked direct routes show network-stage detail and a fresh-room recovery 
     await requestPair(host,guest);
     await expect(host.getByRole('heading',{level:1})).toHaveText('Finding your connection.');
     await expect(host.locator('.route-capability')).toHaveText('Direct route only · relay not enabled');
-    await host.screenshot({path:'C:/Users/prana/AppData/Local/Temp/drop-network-progress.png'});
+    await host.screenshot({path:qaJoin(qaTmpdir(),'drop-network-progress.png')});
     await host.clock.fastForward(46_000);
     await expect(host.getByRole('alert')).toContainText('no TURN relay enabled');
     await expect(host.getByRole('heading',{level:1})).toHaveText('Let’s reconnect.');

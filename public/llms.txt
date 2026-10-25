@@ -1,10 +1,11 @@
 # Drop
 
-Drop is a browser tool for temporary, one-to-one file and note transfers.
+Drop is a free browser tool for temporary, one-to-one file transfers and chat.
 
-- [Home](/): Product overview and demo.
-- [Privacy](/privacy.html): Data handling and operator facts awaiting confirmation.
-- [Terms](/terms.html): Draft conditions of use.
+- [Home](/): Product overview and illustrative demo.
+- [Privacy](/privacy.html): Actual data handling, service providers and privacy contact.
+- [Terms](/terms.html): Conditions and limits of the direct-only public beta.
+- [Cookies and local data](/cookies.html): Temporary page memory and the absence of application tracking cookies.
 - [App](/app): Create or join a room. No account required.
 
-Rooms use approval and certificate-code comparison. Files use WebRTC data channels and SHA-256 receipt checks. Files are limited to 50 MiB; notes to 50,000 characters. This is not a malware scanner or an anonymity service.
+Rooms use host approval and certificate-code comparison. Files of any extension use encrypted WebRTC data channels and SHA-256 receipt checks; they are download-only, not malware-scanned. The limit is 50 MiB per file, with 50,000 characters per message. The interface keeps 40 file entries and the latest 200 messages in page memory. No TURN relay is enabled; some networks cannot connect. This is not an anonymity or permanent-storage service.

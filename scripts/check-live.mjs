@@ -14,7 +14,7 @@ try {
     const page = await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'});
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    for (const route of ['/', '/app', '/privacy.html', '/terms.html','/cookies.html', '/missing-release-check']) {
+    for (const route of ['/', '/app', '/privacy.html', '/terms.html','/cookies.html','/contact.html', '/missing-release-check']) {
       const response = await page.goto(origin + route);
       assert.equal(response.status(), route.includes('missing') ? 404 : 200);
       await page.locator('h1').waitFor();
@@ -31,14 +31,14 @@ try {
       assert.ok(state.title && !/Vite|React App/.test(state.title));
       assert.equal(state.headings, 1); assert.equal(state.overflow, false);
       assert.equal(state.missingAlt, 0); assert.equal(state.overlay, false);
-      if (['/', '/privacy.html', '/terms.html','/cookies.html'].includes(route)) assert.equal(state.canonical, origin + route);
+      if (['/', '/privacy.html', '/terms.html','/cookies.html','/contact.html'].includes(route)) assert.equal(state.canonical, origin + route);
       const headers = response.headers();
       assert.match(state.csp || headers['content-security-policy'] || '', /object-src 'none'/);
       assert.equal(headers['x-content-type-options'], 'nosniff');
       assert.equal(headers['x-frame-options'], 'DENY');
       assert.match(headers['strict-transport-security'], /max-age=/);
       if (route === '/privacy.html') {
-        assert.ok(await page.getByRole('link',{name:'pranavteja.dev@gmail.com',exact:true}).count());
+        assert.ok(await page.locator('a[href="/contact.html"]').count());
         assert.doesNotMatch(await page.locator('main').innerText(), /will be published|must be confirmed before public launch/);
       }
       if (width === 390 && route === '/app') await page.screenshot({path:join(tmpdir(),'drop-release-live-mobile.png'),fullPage:true});
@@ -48,7 +48,7 @@ try {
     await page.close();
   }
   for (const path of ['/.env','/.git/config','/src/App.tsx','/server/app.mjs']) assert.equal((await fetch(origin+path)).status,404);
-  for (const path of ['/robots.txt','/sitemap.xml','/llms.txt','/favicon.svg','/assets/social-share.jpg']) assert.equal((await fetch(origin+path)).status,200);
+  for (const path of ['/robots.txt','/sitemap.xml','/llms.txt','/favicon.svg','/favicon.ico','/favicon-32.png','/apple-touch-icon.png','/third-party-notices.txt','/assets/social-share.jpg']) assert.equal((await fetch(origin+path)).status,200);
   const denied = await fetch(backend+'/api/rooms',{method:'OPTIONS',headers:{Origin:'https://untrusted.example','Access-Control-Request-Method':'POST'}});
   assert.equal(denied.status,403); assert.notEqual(denied.headers.get('access-control-allow-origin'), '*');
   const allowed = await fetch(backend+'/api/rooms',{method:'OPTIONS',headers:{Origin:origin,'Access-Control-Request-Method':'POST'}});
