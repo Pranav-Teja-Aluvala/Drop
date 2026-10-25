@@ -4,6 +4,8 @@
 
 A limited, direct-only public beta. Frontend: https://drop-devs-52b0.vercel.app/app. Pairing: https://drop-pairing.onrender.com. Public source: https://github.com/Pranav-Teja-Aluvala/Drop.
 
+Final deployed build: `dpl_AgzuFtxGr1hAg5o2WHPu5pCwEv6Q`. Public pages were checked again after the final decorative-image change: all 20 hosted route/viewport checks and CORS/security/metadata probes passed. Hosting plans remain unchanged.
+
 No paid service or TURN subscription is enabled. This release does not promise cross-network connectivity, uninterrupted two-hour sessions, large-scale capacity or independent security certification.
 
 ## Fixes in this release
