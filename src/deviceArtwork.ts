@@ -5,7 +5,7 @@ const room='<p>Room <strong>WAVE</strong></p>';
 const code='<code>8A2F 4B19 6D30 91EC<br/>7C42 0A65 EF12 39B8</code>';
 const laptop=stages('laptop',[
 '<h3>Connect your other device</h3><p>A temporary room for your two screens.</p>'+button('Create a room'),
-'<h3>Scan with your phone camera</h3><img class="film-qr" src="/assets/walkthrough-qr.svg"/>'+room,
+'<h3>Scan with your phone camera</h3><img class="film-qr" src="/assets/walkthrough-qr.svg" alt=""/>'+room,
 '<h3>Same code. Right device.</h3>'+room+code+button('Codes match'),
 '<h3>You’re connected.</h3><p>Choose something to send.</p>'+button('Choose files'),
 '<h3>Choose a file</h3><div class="film-file selected">▧ coastline.jpg <small>2.4 MB</small></div><div class="film-file">▤ notes.pdf <small>480 KB</small></div>'+button('Open'),
@@ -14,7 +14,7 @@ const laptop=stages('laptop',[
 ]);
 const phone=stages('phone',[
 '<div class="film-clock">09:41</div><p>Your other device.</p><div class="camera-app">◉</div><b>Camera</b>',
-'<div class="camera-view"><img src="/assets/walkthrough-qr.svg"/><div class="scan-line"></div></div><h3>QR detected</h3><p>Open Drop ↗</p><span class="camera-shutter"></span>',
+'<div class="camera-view"><img src="/assets/walkthrough-qr.svg" alt=""/><div class="scan-line"></div></div><h3>QR detected</h3><p>Open Drop ↗</p><span class="camera-shutter"></span>',
 '<h3>Join this room?</h3>'+room+button('Join'),
 '<h3>Same room.<br/>Right device.</h3>'+room+code+button('Codes match'),
 '<h3>Connected.</h3><p>Ready when you are.</p><small>● Device connected</small>',

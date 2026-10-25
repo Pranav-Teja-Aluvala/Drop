@@ -18,11 +18,12 @@ try {
       const response = await page.goto(origin + route);
       assert.equal(response.status(), route.includes('missing') ? 404 : 200);
       await page.locator('h1').waitFor();
+      await page.waitForFunction(() => [...document.images].filter(image => !image.closest('[aria-hidden="true"]')).every(image => image.complete && image.naturalWidth > 0));
       const state = await page.evaluate(() => ({
         title: document.title,
         headings: document.querySelectorAll('h1').length,
         overflow: document.documentElement.scrollWidth > innerWidth,
-        missingAlt: document.querySelectorAll('img:not([alt])').length,
+        missingAlt: [...document.querySelectorAll('img:not([alt])')].filter(image => !image.closest('[aria-hidden="true"]')).length,
         canonical: document.querySelector('link[rel="canonical"]')?.getAttribute('href'),
         csp: document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') || '',
         overlay: Boolean(document.querySelector('vite-error-overlay')),

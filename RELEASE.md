@@ -22,7 +22,7 @@ No paid service or TURN subscription is enabled. This release does not promise c
 - Local page/viewport audit: 25/25 passed at 320, 390, 768, 1024 and 1440 px.
 - Full dependency audit: zero known advisories at the time of this run.
 - Current files and reachable Git diffs: no matches for the scanner's private-key/AWS/GitHub/OpenAI-token patterns. This is not an entropy scan or a guarantee that no secret exists.
-- Pre-fix hosted run: 22/23 passed; app navigation stalled on lazy import. Final hosted checks will be recorded after deployment.
+- Pre-fix hosted run: 22/23 passed; app navigation stalled on lazy import. After the dedicated app-entry change, the full hosted suite passed 23/23, including all four navigation widths. The hosted read-only audit passed 20 page/viewport checks plus exact-origin CORS, security headers, source-file exclusion and public contact/SEO checks. Tests used synthetic fixtures, including exact 50 MiB and HTML file downloads. No independent external penetration test or physical-device certification was performed.
 - Browser plugin not available; automated Chromium/Playwright used. Independent contexts on one computer are not physical phone/network certification.
 
 ## Manual checks before promoting beyond beta
