@@ -56,7 +56,7 @@ Run `npm run build`, `npm test`, `npm run test:beta`, `npm run check:release`, `
 
 Before broad promotion: one real phone/laptop QR/send/save/backgrounding test; confirm proxy/client quotas and capacity; decide whether to fund TURN; verify legal/asset decisions and choose an available domain if desired. No paid activation, independent pentest or physical-device certification was performed.
 
-Final test/deployment results and the changed-file list are appended after rollout.
+Final results and the complete changed-file list are recorded below.
 
 ## Local verification results
 
@@ -106,3 +106,13 @@ Final test/deployment results and the changed-file list are appended after rollo
 - `tests/browser/mobile-quality.spec.ts`
 - `tests/browser/transfer.spec.ts`
 - `vercel.json`
+
+## Hosted results
+
+- Vercel production deployment: `dpl_6JwRyxL5L1u3xUSLHfstNct7bxVi`; live URL remains https://drop-devs-52b0.vercel.app/. Contact is https://drop-devs-52b0.vercel.app/contact.html. Hosting plans and TURN settings are unchanged.
+- Hosted page audit: 28/28 route/viewport checks passed, including canonical metadata, icon assets, notices, headers, CORS and source-file probes.
+- Hosted complete browser suite: 23/24 passed on its first run. The mismatch test never reached approval because the pairing WebSocket disconnected. Three isolated reruns passed. This availability failure is not claimed fixed; broad production reliability remains partial. Contact-only email, all-extension transfer, chat, mobile readability and reset checks passed.
+- GitHub workflow for functional commit `8b48e25` succeeded: https://github.com/Pranav-Teja-Aluvala/Drop/actions/runs/40227333910. This includes Linux CI build, server/browser tests, release audit, dependency audit and history-pattern scan.
+- Targeted contrast calculations: tracker muted text improved from 3.26:1 to 5.99:1 on white, and legal paragraph text from 4.18:1 to 5.91:1 on the off-white surface. This is not an exhaustive WCAG contrast certification.
+- Two unthrottled homepage samples during concurrent QA: at a 390px viewport, TTFB 2,945ms / DOMContentLoaded 3,789ms / heading-ready 3,913ms; at 1440px, 173ms / 295ms / 410ms. These are one-machine browser samples, not physical-mobile, Lighthouse, Core Web Vitals or real-user results. The variance is an unresolved network/hosting-performance limitation.
+- No current or reachable-history secret-pattern matches were found in the latest scan. No secret values were printed, and the CLI-generated ignored local environment file was removed after configuration inspection.
