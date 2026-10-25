@@ -1,0 +1,36 @@
+{
+  "name": "drop-transfer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node server/index.mjs",
+    "build": "tsc --noEmit && vite build && node scripts/finalize-build.mjs",
+    "start": "node server/index.mjs --production",
+    "test": "node --test tests/server.test.mjs",
+    "test:e2e": "playwright test",
+    "test:beta": "node scripts/check-beta.mjs",
+    "check:release": "node scripts/check-release.mjs",
+    "check:secrets": "node scripts/scan-secrets.mjs"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "gsap": "^3.15.0",
+    "lucide-react": "^1.61.0",
+    "proxy-addr": "2.0.8",
+    "qrcode": "^1.5.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.5",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
+  }
+}

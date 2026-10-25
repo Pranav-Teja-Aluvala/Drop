@@ -1,0 +1,227 @@
+[
+  {
+    "width": 320,
+    "route": "/",
+    "title": "Drop — Send it to my other device.",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 320,
+    "route": "/app",
+    "title": "Your transfer room — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 320,
+    "route": "/privacy.html",
+    "title": "Privacy policy — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 320,
+    "route": "/terms.html",
+    "title": "Terms of use — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 320,
+    "route": "/missing",
+    "title": "Page not found — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 390,
+    "route": "/",
+    "title": "Drop — Send it to my other device.",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 390,
+    "route": "/app",
+    "title": "Your transfer room — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 390,
+    "route": "/privacy.html",
+    "title": "Privacy policy — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 390,
+    "route": "/terms.html",
+    "title": "Terms of use — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 390,
+    "route": "/missing",
+    "title": "Page not found — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 768,
+    "route": "/",
+    "title": "Drop — Send it to my other device.",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 768,
+    "route": "/app",
+    "title": "Your transfer room — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 768,
+    "route": "/privacy.html",
+    "title": "Privacy policy — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 768,
+    "route": "/terms.html",
+    "title": "Terms of use — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 768,
+    "route": "/missing",
+    "title": "Page not found — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 1024,
+    "route": "/",
+    "title": "Drop — Send it to my other device.",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 1024,
+    "route": "/app",
+    "title": "Your transfer room — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 1024,
+    "route": "/privacy.html",
+    "title": "Privacy policy — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 1024,
+    "route": "/terms.html",
+    "title": "Terms of use — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 1024,
+    "route": "/missing",
+    "title": "Page not found — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 1440,
+    "route": "/",
+    "title": "Drop — Send it to my other device.",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 1440,
+    "route": "/app",
+    "title": "Your transfer room — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 1440,
+    "route": "/privacy.html",
+    "title": "Privacy policy — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 1440,
+    "route": "/terms.html",
+    "title": "Terms of use — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  },
+  {
+    "width": 1440,
+    "route": "/missing",
+    "title": "Page not found — Drop",
+    "h1": 1,
+    "overflow": false,
+    "missingAlt": 0,
+    "broken": []
+  }
+]

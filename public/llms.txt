@@ -1,0 +1,10 @@
+# Drop
+
+Drop is a browser tool for temporary, one-to-one file and note transfers.
+
+- [Home](/): Product overview and demo.
+- [Privacy](/privacy.html): Data handling and operator facts awaiting confirmation.
+- [Terms](/terms.html): Draft conditions of use.
+- [App](/app): Create or join a room. No account required.
+
+Rooms use approval and certificate-code comparison. Files use WebRTC data channels and SHA-256 receipt checks. Files are limited to 50 MiB; notes to 50,000 characters. This is not a malware scanner or an anonymity service.

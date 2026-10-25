@@ -1,0 +1,41 @@
+import { Brand } from './Brand';
+
+import { useEffect, useRef, useState } from 'react';
+import { ArrowUpRight, FileUp, Send, X } from 'lucide-react';
+import { useRoom } from './useRoom';
+import { Connection, InfoDialog, TransferList, bytes } from './components';
+import { MAX_TEXT } from './transfer';
+
+export function App() {
+  const room = useRoom();
+  const [dialog, setDialog] = useState<'help' | 'privacy' | null>(null);
+  const [text, setText] = useState('');
+  const [dragging, setDragging] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (/^#[\w-]{43}\.[\w-]{43}$/.test(location.hash)) document.getElementById('transfer')?.scrollIntoView(); }, []);
+  const connected = room.status === 'connected';
+  const activeOutgoing = room.items.some(item => !item.text && item.direction === 'out' && !['Delivered', 'Cancelled', 'Failed', 'Interrupted'].includes(item.status));
+  function selectFiles(files: FileList | null) {
+    if (!connected || !files?.length) return;
+    if (files.length > 1) { room.setError('Choose one file at a time in this first version.'); return; }
+    void room.sendFile(files[0]);
+  }
+  return <><div className="app-shell app-page">
+    {room.offer ? <section className="incoming-offer" aria-label="Incoming file" role="status"><div><strong>Your other device sent a file.</strong><p>{room.offer.name} · {bytes(room.offer.size)}</p><p className="small">Accept only files you expect. Files and archives are not scanned for malware.</p></div><div className="offer-actions"><button className="button secondary" onClick={room.decline}>Decline file</button><button className="button accent" onClick={room.accept}>Accept file</button></div></section> : null}
+    <div className="workspace-bar"><a className="brand" href="/" aria-label="DROP home"><Brand/></a><button className="text-button" onClick={() => setDialog('help')}>Connection help <ArrowUpRight size={17}/></button></div>
+    <main className={connected ? 'connected-layout' : 'onboarding-layout'}><div id="transfer" className="intro"><h1>{connected ? 'Your devices. Connected.' : 'A little closer.'}</h1><p>{connected ? 'Send files and notes in either direction.' : 'Your next screen is one connection away.'}</p>{!connected && <><ol className="connection-steps"><li><span>01</span><div><strong>Create a room</strong><p>A temporary space for your two devices.</p></div></li><li><span>02</span><div><strong>Scan on your other device</strong><p>Open the invite with your phone’s camera, or paste the link.</p></div></li><li><span>03</span><div><strong>Compare codes. Start sharing.</strong><p>Approve your device and check every code group.</p></div></li></ol><p className="onboarding-note">Two devices. No signup.<span>Keep both screens open while you send.</span></p></>}</div>
+    {room.error ? <div className="notice" role="alert"><p>{room.error}</p><button className="icon-button" aria-label="Dismiss message" onClick={() => room.setError('')}><X size={18}/></button></div> : null}
+    {connected && <div className="file-counts" aria-label="Files in this room"><span>This room</span><span><strong aria-label="Files sent">{room.fileCounts.sent}</strong> sent</span><span><strong aria-label="Files received">{room.fileCounts.received}</strong> received</span></div>}
+    <div className="workspace"><Connection room={room}/><section className={`send-panel ${dragging ? 'dragging' : ''}`} aria-label="Send files and notes" onDragOver={e => { e.preventDefault(); if (connected && !activeOutgoing) setDragging(true); }} onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false); }} onDrop={e => { e.preventDefault(); setDragging(false); selectFiles(e.dataTransfer.files); }}>
+      <div className="drop-zone"><FileUp size={72} strokeWidth={1.1} className="upload-icon"/><h2>{connected ? 'Drop something good.' : 'Good things travel light.'}</h2><p>{connected ? 'A photo. A document. Whatever needs to get there.' : 'Pair two devices to start sending.'}</p>
+      <input ref={fileInput} className="sr-only" type="file" aria-label="Choose file to send" tabIndex={-1} onChange={e => { selectFiles(e.target.files); e.target.value = ''; }}/>
+      <button className={`button ${connected ? 'accent' : 'secondary'}`} disabled={!connected || activeOutgoing} onClick={() => fileInput.current?.click()}><FileUp size={19}/>{activeOutgoing ? 'File in progress' : 'Choose files'}</button><span className="small muted file-limit">One file at a time · up to 50 MB</span></div>
+      <form className="text-composer" onSubmit={e => { e.preventDefault(); if (room.sendText(text)) setText(''); }}><label htmlFor="note">Text & links</label><textarea id="note" placeholder="Type a note, link or anything to send…" maxLength={MAX_TEXT} disabled={!connected} value={text} onChange={e => setText(e.target.value)}/><div className="composer-bottom"><span className="small muted">{text.length.toLocaleString()} / 50,000</span><button className="button text-send" disabled={!connected || !text.trim()}><Send size={17}/>Send note</button></div></form>
+    </section></div>
+
+    <TransferList items={room.items} cancel={room.cancel} onError={room.setError}/>
+    </main>
+    <footer><p>© 2026 Drop</p><div className="app-footer-links"><button className="text-button" onClick={() => setDialog('privacy')}>Privacy</button><a href="/terms.html">Terms</a></div></footer>
+    {dialog ? <InfoDialog kind={dialog} close={() => setDialog(null)}/> : null}
+  </div></>;
+}

@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Drop — Send it to my other device.</title>
+<meta name="description" content="Drop moves files between your devices with a seamless, beautifully simple experience.">
+<meta name="theme-color" content="#F7F8FC">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<script>
+  document.documentElement.classList.add('js');
+  setTimeout(function () { if (!document.documentElement.classList.contains('ready')) document.documentElement.classList.add('no-gsap'); }, 4000);
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script type="module" src="script.js"></script>
+</head>
+<body data-page="home">
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="nav">
+  <div class="nav__in">
+    <a class="nav__brand" href="#meet" aria-label="Drop, back to top"><img src="assets/logo-full.svg" alt="Drop" width="104" height="42"></a>
+    <nav class="nav__menu" id="nav-menu" aria-label="Primary">
+      <a href="#pick" data-nav="pick">How it works</a>
+      <a href="#watch" data-nav="watch">Watch it move</a>
+      <a href="#anywhere" data-nav="anywhere">Any screen</a>
+      <a href="#features" data-nav="features">Features</a>
+      <a class="btn btn--primary btn--sm nav__cta" href="#pick">Start Dropping</a>
+    </nav>
+    <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu">
+      <svg class="ic ic--menu" aria-hidden="true"><use href="assets/icons.svg#i-menu"/></svg>
+      <svg class="ic ic--close" aria-hidden="true"><use href="assets/icons.svg#i-close"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============ Scene 01 · Meet Drop ============ -->
+<section class="hero" id="meet" aria-labelledby="hero-title">
+  <div class="hero__bg" aria-hidden="true">
+    <i class="blob blob--a" data-speed="70"></i>
+    <i class="blob blob--b" data-speed="-50"></i>
+    <span class="hero__floor"></span>
+  </div>
+
+  <div class="container hero__wrap">
+    <div class="hero__copy">
+      <p class="eyebrow" data-hero-in><span>01</span> Meet Drop</p>
+      <h1 id="hero-title" class="hero__title">
+        <span class="line"><span class="line__in">Your files.</span></span>
+        <span class="line"><span class="line__in">Your devices.</span></span>
+        <span class="line"><span class="line__in line__in--grad">One Drop.</span></span>
+      </h1>
+      <p class="hero__sub" data-hero-in>Move files between your devices with a seamless, beautifully simple experience.</p>
+      <div class="hero__cta" data-hero-in>
+        <a class="btn btn--primary" href="#pick">Start Dropping <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-arrow-right"/></svg></a>
+        <a class="btn btn--ghost" href="#watch">See How It Works</a>
+      </div>
+      <p class="hero__meta" data-hero-in>
+        <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-devices"/></svg>
+        Laptop, tablet and phone. One quiet place for everything you send.
+      </p>
+    </div>
+  </div>
+
+  <div class="stage hero__stage" id="hero-stage">
+    <canvas id="hero-canvas" aria-hidden="true"></canvas>
+    <img class="stage__fallback" data-src="assets/hero-fallback.svg" alt="A laptop sending a photo to a phone" width="1000" height="620">
+    <p class="sr-only">Animated 3D demonstration: a photo file lifts out of a laptop screen, travels along a curved path and arrives on a phone.</p>
+    <button class="replay" type="button" data-replay="hero">
+      <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-replay"/></svg><span>Replay</span>
+    </button>
+  </div>
+
+  <a class="scrollcue" href="#pick" aria-label="Scroll to the next scene">
+    <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-arrow-down"/></svg>
+  </a>
+</section>
+
+<!-- ============ Scene 02 · Pick your file ============ -->
+<section class="pick section" id="pick" aria-labelledby="pick-title">
+  <div class="container pick__grid">
+    <div class="pick__copy">
+      <p class="eyebrow" data-reveal><span>02</span> Pick your file</p>
+      <h2 class="h2" id="pick-title" data-reveal>Choose it. <em>That’s the whole job.</em></h2>
+      <p class="lead" data-reveal>Select anything on your computer. Drop shows exactly what you’re about to send and where it’s going, with nothing else to configure.</p>
+      <ul class="ticks" data-reveal>
+        <li><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-check"/></svg>A live preview before you send</li>
+        <li><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-check"/></svg>Pick the device it should land on</li>
+        <li><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-check"/></svg>One click, full quality, no compression</li>
+      </ul>
+      <p class="hint" data-reveal>Try it: choose a file, choose a device, press send.</p>
+    </div>
+
+    <div class="desk" data-tilt="2.5" data-reveal>
+      <div class="win" role="group" aria-label="Drop desktop app preview">
+        <div class="win__bar">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="win__title"><img src="assets/logo-symbol.svg" alt="" width="14" height="15">Drop</span>
+          <span class="win__sp"></span>
+        </div>
+        <div class="win__body">
+          <aside class="win__side" aria-label="Library filters">
+            <p class="side__h">Library</p>
+            <button class="side__i is-on" type="button" data-filter="all"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-layers"/></svg>All files</button>
+            <button class="side__i" type="button" data-filter="photos"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-image"/></svg>Photos</button>
+            <button class="side__i" type="button" data-filter="docs"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-doc"/></svg>Documents</button>
+            <button class="side__i" type="button" data-filter="media"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-video"/></svg>Media</button>
+            <p class="side__h side__h--sp">Nearby</p>
+            <p class="side__n"><i class="dot dot--on"></i>iPhone 15 Pro</p>
+            <p class="side__n"><i class="dot dot--on"></i>iPad Air</p>
+          </aside>
+
+          <div class="win__main">
+            <div class="tiles" role="group" aria-label="Files">
+              <button class="tile is-selected" type="button" aria-pressed="true" data-kind="photo" data-cat="photos" data-name="sunrise.jpg" data-size="4.2 MB" data-meta="6000 × 4000 · JPEG">
+                <span class="tile__thumb tile__thumb--photo"></span><span class="tile__name">sunrise.jpg</span><span class="tile__size">4.2 MB</span>
+                <span class="tile__check"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-check"/></svg></span>
+              </button>
+              <button class="tile" type="button" aria-pressed="false" data-kind="doc" data-cat="docs" data-name="roadmap.pdf" data-size="1.8 MB" data-meta="24 pages · PDF">
+                <span class="tile__thumb tile__thumb--doc"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-doc"/></svg></span><span class="tile__name">roadmap.pdf</span><span class="tile__size">1.8 MB</span>
+                <span class="tile__check"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-check"/></svg></span>
+              </button>
+              <button class="tile" type="button" aria-pressed="false" data-kind="video" data-cat="media" data-name="demo-reel.mov" data-size="86 MB" data-meta="00:42 · 4K · MOV">
+                <span class="tile__thumb tile__thumb--video"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-video"/></svg></span><span class="tile__name">demo-reel.mov</span><span class="tile__size">86 MB</span>
+                <span class="tile__check"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-check"/></svg></span>
+              </button>
+              <button class="tile" type="button" aria-pressed="false" data-kind="zip" data-cat="docs" data-name="brand-kit.zip" data-size="12.4 MB" data-meta="38 items · ZIP">
+                <span class="tile__thumb tile__thumb--zip"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-zip"/></svg></span><span class="tile__name">brand-kit.zip</span><span class="tile__size">12.4 MB</span>
+                <span class="tile__check"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-check"/></svg></span>
+              </button>
+              <button class="tile" type="button" aria-pressed="false" data-kind="audio" data-cat="media" data-name="voice-note.m4a" data-size="0.9 MB" data-meta="01:12 · AAC">
+                <span class="tile__thumb tile__thumb--audio"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-audio"/></svg></span><span class="tile__name">voice-note.m4a</span><span class="tile__size">0.9 MB</span>
+                <span class="tile__check"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-check"/></svg></span>
+              </button>
+              <button class="tile" type="button" aria-pressed="false" data-kind="photo2" data-cat="photos" data-name="studio-wide.png" data-size="9.6 MB" data-meta="5120 × 2880 · PNG">
+                <span class="tile__thumb tile__thumb--photo2"></span><span class="tile__name">studio-wide.png</span><span class="tile__size">9.6 MB</span>
+                <span class="tile__check"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-check"/></svg></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="win__pv">
+            <div class="pv" id="pv"></div>
+            <p class="pv__name" id="pv-name">sunrise.jpg</p>
+            <p class="pv__meta" id="pv-meta">4.2 MB · 6000 × 4000 · JPEG</p>
+            <div class="seg" role="radiogroup" aria-label="Send to">
+              <button class="seg__b is-on" type="button" role="radio" aria-checked="true" data-device="iPhone"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-phone"/></svg>iPhone</button>
+              <button class="seg__b" type="button" role="radio" aria-checked="false" data-device="iPad"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-tablet"/></svg>iPad</button>
+            </div>
+            <button class="send" type="button" id="send">
+              <span class="send__bar" aria-hidden="true"></span>
+              <span class="send__label" id="send-label">Send to iPhone</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <p class="sr-only" id="send-status" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Scenes 03 + 04 · Watch it move / Arrived ============ -->
+<section class="journey" id="watch" aria-labelledby="watch-title">
+  <span class="j-anchor" id="arrived" aria-hidden="true"></span>
+  <div class="stage journey__stage" id="journey-stage">
+    <canvas id="journey-canvas" aria-hidden="true"></canvas>
+    <img class="stage__fallback" data-src="assets/hero-fallback.svg" alt="A photo travelling from a laptop to a phone" width="1000" height="620">
+    <p class="sr-only">Scroll-driven 3D scene: the file card leaves the laptop, travels in an arc to the phone and arrives as a received file.</p>
+
+    <div class="j-copy">
+      <div class="j-step j-step--watch">
+        <p class="eyebrow eyebrow--light"><span>03</span> Watch it move</p>
+        <h2 class="h2 h2--light" id="watch-title">From one screen to the next, <em>in a single motion.</em></h2>
+        <p class="lead lead--light">Drop lifts the file out of your screen and carries it across. No cables, no inbox, no waiting around.</p>
+      </div>
+      <div class="j-step j-step--arrived">
+        <p class="eyebrow eyebrow--light"><span>04</span> Arrived</p>
+        <h2 class="h2 h2--light">It’s already <em>there.</em></h2>
+        <p class="lead lead--light">sunrise.jpg is on your phone, ready to open. Full quality, exactly as you sent it.</p>
+      </div>
+    </div>
+
+    <div class="j-toast" role="status">
+      <span class="j-toast__ic"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-check"/></svg></span>
+      <span><b>Received on iPhone</b><small>sunrise.jpg · 4.2 MB · 0.8 s</small></span>
+    </div>
+
+    <div class="j-rail" aria-hidden="true"><span class="j-rail__bar"></span><span class="j-rail__l j-rail__l--a">03</span><span class="j-rail__l j-rail__l--b">04</span></div>
+    <p class="j-hint" aria-hidden="true">Keep scrolling <svg class="ic"><use href="assets/icons.svg#i-arrow-down"/></svg></p>
+    <button class="replay replay--journey" type="button" data-replay="journey">
+      <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-replay"/></svg><span>Replay</span>
+    </button>
+  </div>
+</section>
+
+<!-- ============ Scene 05 · One experience, any screen ============ -->
+<section class="anywhere section" id="anywhere" aria-labelledby="any-title">
+  <div class="container">
+    <div class="section__head">
+      <p class="eyebrow" data-reveal><span>05</span> One experience, any screen</p>
+      <h2 class="h2" id="any-title" data-reveal>The same Drop, <em>on every screen you own.</em></h2>
+      <p class="lead" data-reveal>Laptop, tablet or phone: the interface adapts to the space it has, and your files are waiting wherever you look.</p>
+    </div>
+
+    <div class="cluster" data-tilt="4">
+      <div class="dev dev--laptop" data-parallax="2">
+        <div class="dev__in">
+          <div class="laptop__lid"><div class="screen screen--laptop" data-mini></div></div>
+          <div class="laptop__base"></div>
+        </div>
+      </div>
+      <div class="dev dev--tablet" data-parallax="6">
+        <div class="dev__in"><div class="tablet__body"><div class="screen screen--tablet" data-mini></div></div></div>
+      </div>
+      <div class="dev dev--phone" data-parallax="10">
+        <div class="dev__in"><div class="phone__body"><i class="phone__island"></i><div class="screen screen--phone" data-mini></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Features ============ -->
+<section class="features section" id="features" aria-labelledby="feat-title">
+  <div class="container">
+    <div class="section__head section__head--left">
+      <p class="eyebrow" data-reveal>Why Drop</p>
+      <h2 class="h2" id="feat-title" data-reveal>Quiet, fast and <em>entirely yours.</em></h2>
+    </div>
+    <div class="cards">
+      <article class="card" data-tilt="5" data-reveal>
+        <span class="card__ic"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-bolt"/></svg></span>
+        <h3>Instant by design</h3>
+        <p>Files start moving the moment you choose them. No accounts to juggle and no cables to find.</p>
+      </article>
+      <article class="card" data-tilt="5" data-reveal>
+        <span class="card__ic"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-shield"/></svg></span>
+        <h3>Private in transit</h3>
+        <p>Encrypted between your own devices, so what you send stays between you and where it lands.</p>
+      </article>
+      <article class="card" data-tilt="5" data-reveal>
+        <span class="card__ic"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-layers"/></svg></span>
+        <h3>Everything fits</h3>
+        <p>Photos, decks and 4K clips. Drop handles any file type at the size you actually work with.</p>
+      </article>
+      <article class="card" data-tilt="5" data-reveal>
+        <span class="card__ic"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-devices"/></svg></span>
+        <h3>Always in reach</h3>
+        <p>Laptop, tablet and phone share one calm place where everything you send simply arrives.</p>
+      </article>
+    </div>
+
+    <div class="cta" data-reveal>
+      <img class="cta__logo" src="assets/logo-white.svg" alt="Drop" width="150" height="61">
+      <p class="cta__line">Send it to my other device.</p>
+      <button class="btn btn--light" type="button" data-action="replay-hero">Start Dropping <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-replay"/></svg></button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="container footer__grid">
+    <div class="footer__brand">
+      <img src="assets/logo-white.svg" alt="Drop" width="120" height="49">
+      <p>Send it to my other device.</p>
+    </div>
+    <nav aria-label="Product">
+      <p class="footer__h">Product</p>
+      <a href="#pick">How it works</a><a href="#watch">Watch it move</a><a href="#anywhere">Any screen</a><a href="#features">Features</a>
+    </nav>
+    <nav aria-label="Brand assets">
+      <p class="footer__h">Brand assets</p>
+      <a href="assets/logo-full.svg" download>Wordmark (SVG)</a>
+      <a href="assets/logo-symbol.svg" download>Symbol (SVG)</a>
+      <a href="assets/logo-white.svg" download>White wordmark (SVG)</a>
+    </nav>
+    <div class="footer__end">
+      <a class="totop" href="#meet" aria-label="Back to top"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-arrow-up"/></svg></a>
+    </div>
+  </div>
+  <div class="container footer__legal">
+    <p>© 2026 Drop. Prototype website. The transfer shown is a demonstration.</p>
+    <p>Logo files are close vector approximations of the approved identity.</p>
+  </div>
+</footer>
+
+<template id="tpl-mini">
+  <div class="mini">
+    <div class="mini__bar"><img src="assets/logo-symbol.svg" alt="" width="14" height="15"><b>Drop</b><span class="mini__live"><i></i>3 devices</span></div>
+    <div class="mini__body">
+      <div class="mini__hero">
+        <div class="mini__photo"></div>
+        <div class="mini__meta"><b>sunrise.jpg</b><small>Received · 4.2 MB</small></div>
+        <span class="mini__check"><svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-check"/></svg></span>
+      </div>
+      <ul class="mini__list">
+        <li><i></i><span>roadmap.pdf</span><small>1.8 MB</small></li>
+        <li><i></i><span>demo-reel.mov</span><small>86 MB</small></li>
+        <li><i></i><span>brand-kit.zip</span><small>12.4 MB</small></li>
+      </ul>
+    </div>
+  </div>
+</template>
+
+</body>
+</html>
