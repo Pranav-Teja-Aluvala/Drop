@@ -16,26 +16,61 @@ export function CopyButton({ value, children = 'Copy', onError }: { value: strin
   }}>{copied ? <Check size={18}/> : <Copy size={18}/>} {copied ? 'Copied' : children}</button>;
 }
 
+function ConnectionProgress({ room }: { room: Room }) {
+  const [seconds, setSeconds] = useState(0);
+  const active = ['creating', 'connecting', 'recovering', 'approval'].includes(room.status);
+  useEffect(() => {
+    setSeconds(0);
+    if (!active) return;
+    const started = Date.now();
+    const timer = setInterval(() => setSeconds(Math.floor((Date.now() - started) / 1000)), 1000);
+    return () => clearInterval(timer);
+  }, [active, room.phase]);
+  const index = {service:0, invite:1, approval:2, gathering:3, routing:3, secure:3, confirm:4, ready:5, reconnecting:3, closed:0}[room.phase];
+  const steps = ['Open room', 'Find device', 'Approve', 'Connect', 'Verify codes', 'Share'];
+  const descriptions = {
+    service: seconds >= 12 ? 'The free pairing service may be waking up. Keep this page open; we are still waiting for its response.' : 'Contacting the pairing service and opening your temporary room.',
+    invite: 'Your room is open. Scan the QR on your other device or share its private invite link.',
+    approval: room.request ? 'A device has arrived. Allow it only if it is the device you intended.' : 'Your request arrived. Choose Allow device on the screen that created this room.',
+    gathering: 'Collecting network addresses from both browsers. No files are being sent.',
+    routing: room.relayAvailable ? 'Testing direct and encrypted relay routes between your devices.' : 'Testing a direct route between your devices. Keep both screens open.',
+    secure: 'The network route is open. Preparing the encrypted channel and device-code check.',
+    confirm: room.confirmed ? 'You confirmed the code. Waiting for the other device to confirm it too.' : 'The encrypted channel is open. Compare all code groups before unlocking transfers.',
+    ready: 'Both devices confirmed the connection. Files still need the recipient’s acceptance.',
+    reconnecting: 'The network changed or paused. Sending is paused while the existing connection tries to recover.',
+    closed: 'This connection has ended.'
+  };
+  return <div className="connection-progress">
+    <ol aria-label="Connection progress">{steps.map((step, i) => <li key={step} className={i < index ? 'done' : i === index ? 'current' : ''} aria-current={i === index ? 'step' : undefined}><span aria-hidden="true">{i < index ? <Check size={12}/> : i + 1}</span><small>{step}</small></li>)}</ol>
+    <p className="phase-description" role="status">{descriptions[room.phase]}</p>
+    {active && <span className="step-timer">{seconds}s in this step</span>}
+    {room.relayAvailable !== null && <span className="route-capability">{room.relayAvailable ? 'Relay fallback available' : 'Direct route only · relay not enabled'}</span>}
+  </div>;
+}
+
 export function Connection({ room }: { room: Room }) {
   const [link, setLink] = useState(() => (/^#[\w-]{43}\.[\w-]{43}$/.test(location.hash)) ? location.href : '');
   const [qr, setQR] = useState('');
   useEffect(() => { let active = true; setQR(''); if (room.invite) void QRCode.toDataURL(room.invite, { width: 240, margin: 2, color: { dark: '#232723', light: '#ffffff' } }).then(value => { if (active) setQR(value); }); return () => { active = false; }; }, [room.invite]);
   const initial = room.status === 'idle' || room.status === 'closed';
+  const activeFile = room.items.find(item => item.text === undefined && !['Delivered','Received','Cancelled','Failed','Interrupted'].includes(item.status));
   return <section className="connection panel" aria-labelledby="connection-title">
     {initial && <div className="connection-symbol" aria-hidden="true"><i/><i/><span/></div>}
-    <h2 id="connection-title">{room.status === 'connected' ? 'You’re connected.' : 'Connect your other device'}</h2>
+    <h2 id="connection-title">{room.status === 'connected' ? 'You’re connected.' : room.status === 'closed' ? 'Start a fresh connection' : room.status === 'recovering' ? 'Connection interrupted' : 'Connect your other device'}</h2>
+    {!initial && <ConnectionProgress room={room}/>}
+    {room.status === 'closed' && <p className="recovery-note">Create a new room and scan its new QR on your other device. Old invites cannot reconnect a paired room.</p>}
     {room.nickname ? <p className="room-name">Room <strong aria-label="Room name">{room.nickname}</strong><span>For recognition, not a security code.</span></p> : null}
     {initial ? <>
       
       <button className="button primary full" onClick={() => void room.create()}><Plus size={20}/>Create a room</button>
       <div className="divider"><span>or join with an invite</span></div>
-      <label className="join-label" htmlFor="join-invite">Invite link</label><form className="join-form" onSubmit={e => { e.preventDefault(); room.join(link); }}><label className="invite-field"><Link size={20}/><input id="join-invite" aria-label="Invite link" type="url" placeholder="Paste your invite link" value={link} onChange={e => setLink(e.target.value)} required/></label><button className="button secondary" disabled={!link.trim()}>Join</button></form><p className="pairing-note">Keep your invite private. Approve only the device you intended.</p>
+      <label className="join-label" htmlFor="join-invite">Invite link</label><form className="join-form" onSubmit={e => { e.preventDefault(); room.join(link); }}><label className="invite-field"><Link size={20}/><input id="join-invite" aria-label="Invite link" type="url" placeholder="Paste your invite link" value={link} onChange={e => setLink(e.target.value)} required/></label><button className="button secondary" disabled={!link.trim()}>Join</button></form><p className="pairing-note">Keep your invite private. Approve only the device you intended.</p><p className="browser-hint">Using a QR scanner’s preview? Open this page in Chrome or Safari before joining.</p>
     </> : <>
       {room.status === 'waiting' && !room.request ? <><div className="qr-frame">{qr ? <img src={qr} width="220" height="220" alt="Scan this invite with your other device’s camera"/> : <LoaderCircle className="spin"/>}</div><p className="center muted">Scan with your phone camera</p><CopyButton value={room.invite} onError={room.setError}>Copy invite link</CopyButton><input className="invite-visible" aria-label="Room invite" value={room.invite} readOnly onFocus={e => e.target.select()}/><p className="small muted">Invite expires in 10 minutes. Keep it private; compare the device codes before sending.</p></> : null}
       {room.request ? <div className="pair-request"><Smartphone size={44}/><h3>A device wants to join.</h3><p>Only allow it if you just opened your invite on your other device.</p><button className="button accent full" onClick={room.approve}>Allow device</button><button className="button secondary full" onClick={room.reject}>Decline</button></div> : null}
-      {room.status === 'connected' ? <div className="connected-state"><div className="connected-icon"><Check size={44}/></div><h3>Ready when you are.</h3><p>Send in either direction. Keep both screens open until delivery is confirmed.</p><span className="connection-dot">Device connected</span></div> : null}
+      {room.status === 'connected' ? <div className="connected-state"><div className="connected-icon"><Check size={44}/></div><h3>{activeFile ? activeFile.status : 'Ready when you are.'}</h3><p>{activeFile ? activeFile.name : 'Send in either direction. Keep both screens open until delivery is confirmed.'}</p>{activeFile && ['Sending','Receiving','Verifying','Verifying receipt'].includes(activeFile.status) && <progress max={100} value={activeFile.progress} aria-label="Current file progress"/>}<span className="connection-dot">Device connected</span></div> : null}
       {room.status === 'verifying' ? <div className="pair-request"><Smartphone size={40}/><h3>Same code. Right device.</h3><p>Compare all eight groups on both screens. Only confirm if they match exactly.</p><output className="verification-code" aria-label="Device verification code">{room.code || 'Checking…'}</output><button className="button accent full" disabled={!room.code || room.confirmed} onClick={room.confirm}>{room.confirmed ? 'Waiting for other device…' : 'Codes match'}</button><button className="button secondary full" onClick={room.mismatch}>Codes do not match</button><p className="small">Files and notes stay locked until both devices confirm. This check expires in 90 seconds.</p></div> : null}
-      {['creating', 'connecting', 'approval'].includes(room.status) ? <div className="pending-state"><LoaderCircle size={42} className="spin"/><h3>{room.status === 'approval' ? 'One last hello.' : room.status === 'connecting' ? 'Bringing you together…' : 'Opening your room…'}</h3><p>{room.status === 'approval' ? 'Approve this device on the screen that created the room.' : 'This usually takes a few moments.'}</p></div> : null}
+      {['creating', 'connecting', 'approval', 'recovering'].includes(room.status) ? <div className="pending-state"><LoaderCircle size={42} className="spin"/><h3>{room.status === 'approval' ? 'One last hello.' : room.status === 'connecting' ? (room.phase === 'secure' ? 'Securing the connection…' : 'Finding a route…') : room.status === 'recovering' ? 'Trying to reconnect…' : 'Opening your room…'}</h3><p>{room.status === 'approval' ? 'Approve this device on the screen that created the room.' : room.status === 'recovering' ? 'Keep both devices online. If recovery fails, start a fresh room.' : room.status === 'connecting' ? 'Your file controls unlock after both devices verify their codes.' : 'The QR appears as soon as the server opens your room.'}</p></div> : null}
       {room.expires > 0 ? <p className="expiry">Room ends at {new Date(room.expires).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · 2-hour limit</p> : null}
       <button className="text-button leave" onClick={room.leave}><X size={16}/>End room</button>
     </>}

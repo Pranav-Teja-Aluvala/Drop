@@ -11,7 +11,7 @@ Chosen setup: Vercel static frontend, one Render Free Node pairing service, opti
 - Vercel production configuration saved: `VITE_SIGNAL_ORIGIN=https://drop-pairing.onrender.com`, `SITE_ORIGIN=https://drop-devs-52b0.vercel.app`.
 - Live backend checks passed: HTTPS health 200; configured-origin room creation 201 with exact CORS; foreign-origin creation 403; `.env` and source path probes 404; WSS host/guest approval, signaling and closure. Browser transfers on the live HTTPS frontend also passed, including a 50 MiB download verified by SHA-256, HTML, notes and room recovery. Both automated browser peers ran on this same computer; this is not a physical phone or Wi-Fi-to-mobile-data certification.
 - The frontend was first deployed using browser ZIP upload, then updated through the authorized Vercel CLI after login completed. Source uploads are not automatically connected to Vercel Git deployments; a GitHub push alone does not publish a frontend update. No account access protections were bypassed.
-- TURN is not configured; no paid plan, card or relay credentials were added.
+- TURN is not configured; no paid plan, card or relay credentials were added. On 25 October, the owner created a Cloudflare account but explicitly chose direct-only after the TURN activation page required a payment method and usage-billed subscription. Some phone/mobile-data/restricted Wi-Fi connections will remain unsupported without a relay.
 
 
 ## Accounts and cost

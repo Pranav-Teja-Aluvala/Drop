@@ -7,7 +7,7 @@ test('two isolated browsers pair, transfer verified bytes both ways, share text,
   const errors: string[] = [];
   for (const page of [host, guest]) page.on('pageerror', error => errors.push(error.message));
   await host.goto('/app'); await expect(host).toHaveTitle('Your transfer room — Drop');
-  await expect(host.locator('.send-panel .drop-zone .button')).toBeDisabled();
+  await expect(host.locator('.send-panel .document-picker')).toBeDisabled();
   const roomResponse = host.waitForResponse(response => response.url().endsWith('/api/rooms') && response.request().method() === 'POST');
   await host.getByRole('button', { name: 'Create a room' }).click();
   const creationResponse = await roomResponse;
@@ -26,9 +26,9 @@ test('two isolated browsers pair, transfer verified bytes both ways, share text,
   await host.getByRole('button', { name: 'Allow device' }).click();
   await expect(host.getByLabel('Device verification code')).toHaveText(/^[A-F0-9]{4}( [A-F0-9]{4}){7}$/);
   await expect(guest.getByLabel('Device verification code')).toHaveText(await host.getByLabel('Device verification code').textContent() || '');
-  await expect(host.locator('.send-panel .drop-zone .button')).toBeDisabled();
+  await expect(host.locator('.send-panel .document-picker')).toBeDisabled();
   await host.getByRole('button', { name: 'Codes match', exact: true }).click();
-  await expect(host.locator('.send-panel .drop-zone .button')).toBeDisabled();
+  await expect(host.locator('.send-panel .document-picker')).toBeDisabled();
   await guest.getByRole('button', { name: 'Codes match', exact: true }).click();
   await expect(host.getByText('You’re connected.')).toBeVisible();
   await expect(guest.getByText('You’re connected.')).toBeVisible();
@@ -114,7 +114,7 @@ test('rejecting mismatched device codes closes the room without enabling transfe
   await host.getByRole('button', { name: 'Codes do not match' }).click();
   await expect(host.getByRole('alert')).toContainText('Nothing was transferred');
   await expect(guest.getByRole('button', { name: 'Create a room' })).toBeVisible();
-  await expect(guest.locator('.send-panel .drop-zone .button')).toBeDisabled();
+  await expect(guest.locator('.send-panel .document-picker')).toBeDisabled();
   await a.close(); await b.close();
 });
 

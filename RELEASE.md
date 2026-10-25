@@ -1,3 +1,15 @@
+# Connection and mobile-picker update — 25 October 2026
+
+- Added separate document/storage and photo/video pickers. Document selection advertises application/text formats and common document extensions; neither input requests camera capture. Native picker presentation still depends on the phone/browser. QR-scanner preview browsers may require opening Chrome or Safari before joining.
+- Connection copy and a six-step tracker now follow real room opening, invite, approval, ICE discovery, encrypted-channel setup, both-device verification and ready events. No invented percent-complete is displayed. Recovery pauses new sends; the code-confirmation gate remains required after transient pre-verification network changes.
+- Delayed callbacks from an ended room can no longer terminate or send candidates into a new room.
+- HTML error responses during a hosting cold start now produce a useful retry screen instead of a JSON parse exception.
+- Network failures distinguish a direct-only deployment from one that has a relay configured. Discovery has a bounded timeout, and new-room recovery requires a new invitation.
+- Cloudflare account signup completed. TURN activation requires payment details and an automatically renewing usage-billed subscription (1,000 GB/month included, then $0.05/GB). The owner chose to keep this beta direct-only. No payment details, subscription or TURN credentials were added. Restricted networks can still fail to connect; these UI fixes do not replace TURN.
+- Added browser regressions for mobile document/media selection, approval/verification stages, transient pre-verification recovery, blocked routes, cold-start HTML failures and stale-peer errors.
+
+---
+
 # Live private beta — 25 October 2026
 
 - Frontend: https://drop-devs-52b0.vercel.app
