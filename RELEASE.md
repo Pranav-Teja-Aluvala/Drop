@@ -1,5 +1,8 @@
 # Connection and mobile-picker update — 25 October 2026
 
+- Deployed frontend: https://drop-devs-52b0.vercel.app/app (Vercel deployment `dpl_2Rcr2dvTmRgJCrkpqdX1xqFTDWGG`). Pairing backend is unchanged.
+- Hosted browser checks allow bounded service startup time rather than treating five seconds of Render cold-start latency as an application failure. Application connection deadlines are unchanged.
+- Validation: production build, 27 server tests and 23 local browser/protocol tests passed. The latest complete hosted run passed 22 of 23 checks: the tablet-width 404-to-home navigation timed out once waiting for the hero. That unchanged route passed three immediate targeted repetitions; the intermittent navigation timeout is not claimed fixed. All hosted transfer, document-picker, verification and connection-recovery checks passed, including an exact 50 MiB file and hash comparison. Physical Android/iOS picker and cross-network testing remain pending.
 - Added separate document/storage and photo/video pickers. Document selection advertises application/text formats and common document extensions; neither input requests camera capture. Native picker presentation still depends on the phone/browser. QR-scanner preview browsers may require opening Chrome or Safari before joining.
 - Connection copy and a six-step tracker now follow real room opening, invite, approval, ICE discovery, encrypted-channel setup, both-device verification and ready events. No invented percent-complete is displayed. Recovery pauses new sends; the code-confirmation gate remains required after transient pre-verification network changes.
 - Delayed callbacks from an ended room can no longer terminate or send candidates into a new room.

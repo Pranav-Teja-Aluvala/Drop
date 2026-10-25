@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { MAX_FILE } from '../../src/transfer';
 
 test('beta: exact file cap, oversize rejection, disconnect and new-room recovery', async ({ browser }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(process.env.TEST_BASE_URL?.startsWith('https://') ? 180_000 : 90_000);
   const temp = await mkdtemp(join(tmpdir(), 'drop-beta-'));
   const oversizedPath = join(temp, 'too-large.bin');
   const limitPath = join(temp, 'at-limit.bin');
@@ -18,7 +18,7 @@ test('beta: exact file cap, oversize rejection, disconnect and new-room recovery
     await host.goto('/app');
     await host.getByRole('button', {name:'Create a room',exact:true}).click();
     const invite = host.getByRole('textbox', {name:'Room invite'});
-    await expect(invite).toBeVisible();
+    await expect(invite).toBeVisible({timeout:80_000});
     const oldInvite = await invite.inputValue();
     await guest.goto(oldInvite);
     await guest.getByRole('button', {name:'Join',exact:true}).click();
@@ -53,7 +53,7 @@ test('beta: exact file cap, oversize rejection, disconnect and new-room recovery
     await expect(host.getByRole('button',{name:'Create a room',exact:true})).toBeVisible({timeout:45_000});
     await expect(host.locator('.transfer-row').filter({hasText:'interrupted.txt'})).toContainText('Interrupted');
     await host.getByRole('button',{name:'Create a room',exact:true}).click();
-    await expect(invite).toBeVisible();
+    await expect(invite).toBeVisible({timeout:80_000});
     expect(await invite.inputValue()).not.toBe(oldInvite);
     await expect(host.locator('.history')).toHaveCount(0);
     await host.getByRole('button',{name:'End room',exact:true}).click();

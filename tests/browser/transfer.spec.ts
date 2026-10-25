@@ -17,7 +17,7 @@ test('two isolated browsers pair, transfer verified bytes both ways, share text,
   expect(createdRoom.expires - serverNow).toBeGreaterThan(7_190_000);
   expect(createdRoom.expires - serverNow).toBeLessThanOrEqual(7_202_000);
   const invite = host.getByRole('textbox', { name: 'Room invite' });
-  await expect(invite).toBeVisible();
+  await expect(invite).toBeVisible({timeout:80_000});
   await guest.goto(await invite.inputValue());
   await guest.getByRole('button', { name: 'Join', exact: true }).click();
   await expect(guest.getByText('One last hello.')).toBeVisible();
@@ -108,7 +108,7 @@ test('rejecting mismatched device codes closes the room without enabling transfe
   const a = await browser.newContext(); const b = await browser.newContext();
   const host = await a.newPage(); const guest = await b.newPage();
   await host.goto('/app'); await host.getByRole('button', { name: 'Create a room' }).click();
-  const invite = host.getByRole('textbox', { name: 'Room invite' }); await expect(invite).toBeVisible();
+  const invite = host.getByRole('textbox', { name: 'Room invite' }); await expect(invite).toBeVisible({timeout:80_000});
   await guest.goto(await invite.inputValue()); await guest.getByRole('button', { name: 'Join', exact: true }).click();
   await host.getByRole('button', { name: 'Allow device' }).click();
   await host.getByRole('button', { name: 'Codes do not match' }).click();

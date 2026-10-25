@@ -3,7 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 async function requestPair(host: Page, guest: Page) {
   await host.goto('/app');
   await host.getByRole('button', {name:'Create a room',exact:true}).click();
-  const invite=host.getByRole('textbox',{name:'Room invite'});await expect(invite).toBeVisible();
+  const invite=host.getByRole('textbox',{name:'Room invite'});await expect(invite).toBeVisible({timeout:80_000});
   await expect(host.getByRole('heading',{level:1})).toHaveText('Your room is ready.');
   await expect(host.locator('[aria-current="step"]')).toContainText('Find device');
   await guest.goto(await invite.inputValue());
