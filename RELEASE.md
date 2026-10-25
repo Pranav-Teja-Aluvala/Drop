@@ -1,5 +1,14 @@
 > Current checklist and applicability report: [LAUNCH-CHECKLIST-2026-10-26.md](LAUNCH-CHECKLIST-2026-10-26.md). Older dated results below are historical.
 
+## Invite details, supplied 404 and sharing — 26 October 2026
+
+- Grouped the private-invite lifetime and room end time/actions into separate bordered blocks. Removed the extra inner input outline; keyboard focus remains visible on the rounded invite-field boundary.
+- The supplied `design/user-404.html` is the reference for the standalone production 404. Only its logo is visually replaced with the existing Drop SVG. Its stylesheet, copy, mascot, preview switch and interaction code are preserved. The script is externalized unchanged for the existing CSP, and noindex/favicon/security metadata is added. Fidelity tests compare the body/style/script against that source.
+- The supplied 404's smaller hints and preview controls are retained at the owner's explicit request, superseding the earlier generic 16px/44px pass for that page. Overflow, status, logo, interactions, offline preview and Return home are still tested. Its offline UI does not add offline caching or offline file transfers.
+- Added native Share invite where `navigator.share` is available, with explicit user activation, cancellation handling and a Copy fallback. The selected OS/app receives the private link. Automated tests stub the share sheet; no actual external recipient or hardware was contacted.
+- Browser-to-browser Bluetooth file transfer was not added. Web Bluetooth exposes a central/client connection to BLE GATT peripherals, not a website GATT advertiser/server, and has limited browser support. A native companion/peripheral would be needed. References checked: https://developer.chrome.com/docs/capabilities/bluetooth and https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API. The native sharing sheet may offer OS-specific destinations; no Bluetooth, AirDrop or Quick Share transport is promised by Drop. File transfer remains WebRTC.
+- Local validation: build/TypeScript passed; 26 browser/protocol tests, 27 server tests and 35 page/viewport checks passed. Dependency audit reported zero known production advisories, and the configured secret-pattern scan had no matches. Live rollout results follow after deployment. No backend, paid service or TURN setting changed.
+
 # DROP release check — 25 October 2026
 
 ## Files / Chat update

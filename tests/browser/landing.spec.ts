@@ -104,7 +104,7 @@ for(const width of [320,390,768,1440]) test(`landing navigation and overflow at 
   await expect(page.getByRole('textbox',{name:'Invite link'})).toHaveValue('');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.goto('/missing-page');
-  await expect(page.getByRole('heading',{level:1})).toContainText('wrong turn');
+  await expect(page.getByRole('heading',{level:1})).toContainText("Oops, that page isn't");
   await page.getByRole('link',{name:'Return home'}).click();
   await expect(page.locator('#hero-title')).toBeVisible();
 });

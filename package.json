@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node server/index.mjs",
-    "build": "node scripts/generate-notices.mjs && tsc --noEmit && vite build && node scripts/finalize-build.mjs",
+    "build": "node scripts/generate-notices.mjs && node scripts/prepare-404.mjs && tsc --noEmit && vite build && node scripts/finalize-build.mjs",
     "start": "node server/index.mjs --production",
     "test": "node --test tests/server.test.mjs",
     "test:e2e": "playwright test",
