@@ -14,6 +14,9 @@ export function useRoom() {
   const [nickname, setNickname] = useState('');
   const [error, setError] = useState('');
   const [expires, setExpires] = useState(0);
+  const [background, setBackground] = useState({selfUntil:0, peerUntil:0});
+  const hiddenUntil = useRef(0);
+  const backgroundTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [code, setCode] = useState('');
   const [confirmed, setConfirmed] = useState(false);
   const gate = useRef<VerificationGate | null>(null);
@@ -29,6 +32,7 @@ export function useRoom() {
   const channelAttached = useRef(false);
 
   function cleanup(release = false) {
+    clearTimeout(backgroundTimer.current); hiddenUntil.current = 0; setBackground({selfUntil:0, peerUntil:0});
     clearTimeout(timer.current); verified.current = false;
     gate.current?.dispose(); gate.current = null; setCode(''); setConfirmed(false);
     transfer.current?.dispose();
@@ -39,6 +43,24 @@ export function useRoom() {
   }
   function end(message: string) { ++generation.current; cleanup(); setInvite(''); setStatus('closed'); setPhase('closed'); if (message) setError(message); }
   function signal(data: object) { if (socket.current?.readyState === WebSocket.OPEN) socket.current.send(JSON.stringify(data)); }
+  function visibility() {
+    if(socket.current?.readyState !== WebSocket.OPEN) return;
+    if(hiddenUntil.current && Date.now() >= hiddenUntil.current) {
+      signal({type:'leave'}); end('This page was in the background or locked for 5 minutes. Create a new room to reconnect.'); return;
+    }
+    const hidden = document.visibilityState === 'hidden';
+    if(hidden && !hiddenUntil.current) {
+      hiddenUntil.current = Date.now() + 5 * 60_000;
+      const gen = generation.current;
+      backgroundTimer.current = setTimeout(() => {
+        if(generation.current === gen && hiddenUntil.current) {
+          signal({type:'leave'}); end('This page was in the background or locked for 5 minutes. Create a new room to reconnect.');
+        }
+      },5 * 60_000);
+    } else if(!hidden) { clearTimeout(backgroundTimer.current); hiddenUntil.current = 0; }
+    setBackground(prev=>({...prev,selfUntil:hiddenUntil.current}));
+    signal({type:'visibility',hidden});
+  }
   function attach(channel: RTCDataChannel, roomId: string) {
     if (channelAttached.current) { channel.close(); end('Unexpected additional transfer channel.'); return; }
     channelAttached.current = true;
@@ -85,7 +107,8 @@ export function useRoom() {
       chain = chain.then(async () => {
         if (generation.current !== gen) return;
         const msg = JSON.parse(event.data);
-        if (msg.type === 'joined') { clearTimeout(timer.current); setPhase(msg.role === 'host' ? 'invite' : 'approval'); setNickname(msg.nickname); setExpires(msg.expires); setStatus(msg.role === 'host' ? 'waiting' : 'approval'); busy.current = false; }
+        if (msg.type === 'joined') { clearTimeout(timer.current); setPhase(msg.role === 'host' ? 'invite' : 'approval'); setNickname(msg.nickname); setExpires(msg.expires); setStatus(msg.role === 'host' ? 'waiting' : 'approval'); busy.current = false; if(document.visibilityState === 'hidden') visibility(); }
+        else if(msg.type === 'background') setBackground({selfUntil:msg.selfUntil,peerUntil:msg.peerUntil});
         else if (msg.type === 'request') { setRequest(msg.requestId); setPhase('approval'); }
         else if (msg.type === 'request-gone') { setRequest(''); setPhase('invite'); }
         else if (msg.type === 'request-stale') setError('The joining device changed. Review the current request again.');
@@ -182,9 +205,10 @@ export function useRoom() {
     // proxy noticing the closed WebSocket. This is best-effort, not offline detection.
     const pageExit = () => { signal({ type: 'leave' }); end('This page left the room. Create a new room to reconnect.'); };
     window.addEventListener('pagehide', pageExit);
-    return () => { window.removeEventListener('hashchange', joinFromAddress); window.removeEventListener('pagehide', pageExit); ++generation.current; cleanup(true); };
+    document.addEventListener('visibilitychange',visibility);
+    return () => { window.removeEventListener('hashchange', joinFromAddress); window.removeEventListener('pagehide', pageExit); document.removeEventListener('visibilitychange',visibility); ++generation.current; cleanup(true); };
   }, []);
-  return { status, joining, phase, relayAvailable, invite, request, nickname, error, expires, items, fileCounts, offer, create, join, setError, code, confirmed,
+  return { status, joining, phase, relayAvailable, invite, request, nickname, error, expires, background, items, fileCounts, offer, create, join, setError, code, confirmed,
     confirm: () => { if (gate.current) { setConfirmed(true); gate.current.confirm(); } },
     mismatch: () => { signal({ type: 'leave' }); end('Codes did not match. Nothing was transferred.'); },
     approve: () => signal({ type: 'approve', requestId: request }), reject: () => { signal({ type: 'reject', requestId: request }); },

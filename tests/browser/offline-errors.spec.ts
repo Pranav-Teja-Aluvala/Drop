@@ -27,7 +27,9 @@ test('real offline navigation uses the cached error artwork and reconnect restor
   });
   expect(cached.sort()).toEqual(['/assets/not-found.js','/favicon.svg','/offline.html']);
   // Retry remains a real offline screen, rather than Chrome's network error.
-  await Promise.all([page.waitForNavigation(),page.getByRole('link',{name:'Try again, no cap',exact:true}).click()]);
+  const requested=page.url();
+  const [retry]=await Promise.all([page.waitForNavigation({waitUntil:'commit'}),page.getByRole('link',{name:'Try again, no cap',exact:true}).click()]);
+  expect(retry?.status()).toBe(503);expect(page.url()).toBe(requested);
   await expect(page.locator('h1')).toContainText('left you on read');
   await context.setOffline(false);
   await expect(page.getByRole('button',{name:'Create a room',exact:true})).toBeVisible({timeout:30_000});

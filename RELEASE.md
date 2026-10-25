@@ -1,5 +1,14 @@
 > Current checklist and applicability report: [LAUNCH-CHECKLIST-2026-10-26.md](LAUNCH-CHECKLIST-2026-10-26.md). Older dated results below are historical.
 
+## Five-minute background timeout — 26 October 2026
+
+- Either device hiding its page (including a screen lock when reported by the browser) starts a five-minute deadline. Returning before expiry cancels only that device's deadline. Repeated hidden events cannot extend it. The other device sees a remaining-time notice in the room details.
+- The authenticated signaling server enforces each device's deadline and ends the whole room even if browser timers freeze. Client-side timeout and a resume-time elapsed check also close the WebRTC connection. Ending/changing rooms clears local timers; server timers are cleared when the room/device is removed.
+- Closing a tab still disconnects immediately. Browser/OS suspension, lost networking or provider restarts may end the room earlier; this feature does not guarantee five minutes of background connectivity. Transfers still work best with both pages foregrounded.
+- Added server tests for shared expiry, duplicate-hidden deadline preservation, foreground cancellation/restart and one device being unable to cancel its partner's deadline. Browser tests cover connected devices, the countdown, a four-minute return, a new full timeout, fresh-room recovery and resuming after six minutes with timers frozen. Privacy/terms/help now describe the limit and temporary visibility deadlines. No new persistent data or dependency was added.
+- The local beta runner now uses a fresh production server per spec: the expanded shared-IP suite otherwise exceeded the unchanged 30/minute room/upgrade quota. An offline Retry assertion now waits for navigation commit and asserts HTTP 503 plus the same URL, avoiding a full-load navigation race.
+- Final local validation passed: production build/TypeScript, all 29 browser/protocol tests, 30 server/security tests and 35 page/viewport checks. Time-controlled browser tests simulate backgrounding; physical phone locking/suspension remains a manual check.
+
 ## Production error states — 26 October 2026
 
 - Removed the preview switch, its styles, click handlers and query-string overrides from shipped error pages. The supplied artwork and copy remain. Online unknown routes return a genuine HTTP 404; an already loaded error page reacts to real browser online/offline events.

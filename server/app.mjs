@@ -10,7 +10,7 @@ import { allocateIdentity, allocateNickname, randomToken as token } from './iden
 const equal = (a, b) => typeof a === 'string' && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b));
 const send = (ws, data) => { if (ws?.readyState === WebSocket.OPEN) { if (ws.bufferedAmount > 256 * 1024) { ws.terminate(); return; } ws.send(JSON.stringify(data)); } };
 
-export function createDropServer({ origin, roomTTL = 2 * 60 * 60_000, inviteTTL = 10 * 60_000, maxRooms = 1000, trustedProxyCIDRs = [] } = {}) {
+export function createDropServer({ origin, roomTTL = 2 * 60 * 60_000, inviteTTL = 10 * 60_000, backgroundTTL = 5 * 60_000, maxRooms = 1000, trustedProxyCIDRs = [] } = {}) {
   const app = express();
   const relay = relayConfiguration(process.env.TURN_SECRET, process.env.TURN_URLS);
   const cloudflare = cloudflareConfiguration(process.env.CF_TURN_KEY_ID,process.env.CF_TURN_API_TOKEN);
@@ -72,7 +72,12 @@ export function createDropServer({ origin, roomTTL = 2 * 60 * 60_000, inviteTTL 
     if (!rooms.has(room.id)) return;
     rooms.delete(room.id);
     nicknames.delete(room.nickname);
-    for (const ws of [room.host, room.guest]) { send(ws, { type: 'closed', reason }); ws?.close(1000); }
+    for (const ws of [room.host, room.guest]) { clearTimeout(ws?.backgroundTimer); send(ws, { type: 'closed', reason }); ws?.close(1000); }
+  }
+  const backgroundReason = 'A device stayed in the background or locked for 5 minutes. This room has ended. Create a new room to reconnect.';
+  function backgroundExpired(room) { return [room.host, room.guest].some(ws => ws?.hiddenUntil && ws.hiddenUntil <= Date.now()); }
+  function presence(room) {
+    for (const [self, other] of [[room.host, room.guest], [room.guest, room.host]]) send(self, {type:'background', selfUntil:self?.hiddenUntil || 0, peerUntil:other?.hiddenUntil || 0});
   }
   wss.on('connection', ws => {
     let room, role;
@@ -89,19 +94,33 @@ export function createDropServer({ origin, roomTTL = 2 * 60 * 60_000, inviteTTL 
       if (!data || typeof data !== 'object' || Array.isArray(data) || typeof data.type !== 'string') return ws.close(1008);
       if (!room) {
         const candidate = typeof data.id === 'string' && /^[\w-]{43}$/.test(data.id) ? rooms.get(data.id) : undefined;
+        if (candidate && backgroundExpired(candidate)) removeRoom(candidate, backgroundReason);
         const deny = () => { send(ws, { type: 'error', message: 'This invite is unavailable. Create a new room.' }); ws.close(1008); };
-        if (data.type !== 'join' || typeof data.token !== 'string' || !/^[\w-]{43}$/.test(data.token) || !candidate || candidate.expires <= Date.now() || (!candidate.approved && candidate.inviteExpires <= Date.now())) return deny();
+        if (data.type !== 'join' || typeof data.token !== 'string' || !/^[\w-]{43}$/.test(data.token) || !candidate || !rooms.has(candidate.id) || candidate.expires <= Date.now() || (!candidate.approved && candidate.inviteExpires <= Date.now())) return deny();
         const isHost = equal(data.token, candidate.owner);
         if ((!isHost && (!equal(data.token, candidate.invite) || candidate.approved)) || (isHost ? candidate.host : candidate.guest) || (!isHost && !candidate.host)) {
           return deny();
         }
         room = candidate; role = isHost ? 'host' : 'guest'; room[role] = ws; clearTimeout(authTimer);
-        send(ws, { type: 'joined', role, nickname: room.nickname, expires: room.expires });
+        send(ws, { type: 'joined', role, nickname: room.nickname, expires: room.expires, backgroundTTL });
         if (!isHost) { room.requestId = token(); send(room.host, { type: 'request', requestId: room.requestId }); }
+        if(room.host?.hiddenUntil || room.guest?.hiddenUntil) presence(room);
         return;
       }
       if (rooms.get(room.id) !== room) return ws.close(1008);
+      if (backgroundExpired(room)) { removeRoom(room, backgroundReason); return; }
       if (room.expires <= Date.now() || (!room.approved && room.inviteExpires <= Date.now())) { removeRoom(room, 'This room or invite has expired.'); return; }
+      if (data.type === 'visibility') {
+        if (typeof data.hidden !== 'boolean') return ws.close(1008, 'Invalid visibility');
+        if (data.hidden && !ws.hiddenUntil) {
+          ws.hiddenUntil = Date.now() + backgroundTTL;
+          ws.backgroundTimer = setTimeout(() => removeRoom(room, backgroundReason), backgroundTTL);
+          ws.backgroundTimer.unref();
+        } else if (!data.hidden) {
+          clearTimeout(ws.backgroundTimer); ws.hiddenUntil = 0;
+        }
+        presence(room); return;
+      }
       if (['approve', 'reject'].includes(data.type) && role === 'host' && !room.approved && data.requestId !== room.requestId) { send(ws, { type: 'request-stale' }); return; }
       if (data.type === 'approve' && role === 'host' && room.guest && !room.approved) {
         room.approved = true;
@@ -136,8 +155,9 @@ export function createDropServer({ origin, roomTTL = 2 * 60 * 60_000, inviteTTL 
     ws.on('error', () => {});
     ws.on('close', () => {
       clearTimeout(authTimer);
+      clearTimeout(ws.backgroundTimer);
       if (!room || room[role] !== ws) return;
-      if (role === 'guest' && !room.approved) { room.guest = null; room.requestId = null; send(room.host, { type: 'request-gone' }); }
+      if (role === 'guest' && !room.approved) { room.guest = null; room.requestId = null; send(room.host, { type: 'request-gone' }); if(ws.hiddenUntil) presence(room); }
       else removeRoom(room, 'The other device disconnected. Create a new room to reconnect.');
     });
   });

@@ -138,6 +138,39 @@ test('new rooms get a two-hour lifetime', async t => {
   assert.ok(room.expires >= before + 2 * 60 * 60_000);
   assert.ok(room.expires <= Date.now() + 2 * 60 * 60_000);
 });
+
+test('background deadline is enforced by the server for both peers and repeated hiding cannot extend it', {timeout:5000}, async t=>{
+  const {create,connect,rooms}=await fixture(t,{backgroundTTL:120});
+  const room=await create();const host=await connect(room.id,room.owner);await host.next();
+  const guest=await connect(room.id,room.invite);await guest.next();await host.next();
+  host.send({type:'approve'});await host.next();await guest.next();
+  guest.send({type:'visibility',hidden:true});
+  const h=await host.next(),g=await guest.next();
+  assert.equal(h.type,'background');assert.equal(g.selfUntil,h.peerUntil);assert.equal(h.selfUntil,0);
+  guest.send({type:'visibility',hidden:true});
+  assert.equal((await host.next()).peerUntil,h.peerUntil);await guest.next();
+  assert.match((await host.next()).reason,/background or locked for 5 minutes/);
+  assert.equal((await guest.next()).type,'closed');assert.equal(rooms.has(room.id),false);
+});
+
+test('foreground cancels only its own deadline and a later hide starts a fresh grace period', {timeout:5000}, async t=>{
+  const {create,connect,rooms}=await fixture(t,{backgroundTTL:100});
+  const room=await create();const host=await connect(room.id,room.owner);await host.next();
+  host.send({type:'visibility',hidden:true});const first=await host.next();
+  host.send({type:'visibility',hidden:false});assert.equal((await host.next()).selfUntil,0);
+  await new Promise(resolve=>setTimeout(resolve,150));assert.equal(rooms.has(room.id),true);
+  host.send({type:'visibility',hidden:true});assert.ok((await host.next()).selfUntil>first.selfUntil);
+  assert.equal((await host.next()).type,'closed');assert.equal(rooms.size,0);
+});
+
+test('one foreground device cannot cancel the other device background deadline', {timeout:5000},async t=>{
+  const {create,connect,rooms}=await fixture(t,{backgroundTTL:100});
+  const room=await create();const host=await connect(room.id,room.owner);await host.next();
+  const guest=await connect(room.id,room.invite);await guest.next();await host.next();
+  host.send({type:'visibility',hidden:true});const deadline=(await host.next()).selfUntil;await guest.next();
+  guest.send({type:'visibility',hidden:false});assert.equal((await host.next()).selfUntil,deadline);await guest.next();
+  assert.equal((await host.next()).type,'closed');await guest.next();assert.equal(rooms.size,0);
+});
 test('two devices require host approval, third device cannot join, disconnect clears room', { timeout: 5000 }, async t => {
   const { create, connect, rooms } = await fixture(t);
   const room = await create();
