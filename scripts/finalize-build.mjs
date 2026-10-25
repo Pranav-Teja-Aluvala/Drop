@@ -9,6 +9,12 @@ for(const [file,title,description,path] of info){let html=readFileSync(new URL(f
 mkdirSync(new URL('app/',dist),{recursive:true});
 if(!existsSync(new URL('app/index.html',dist)))throw new Error('The transfer-route HTML entry is missing from the build.');
 copyFileSync(new URL('../public/404.html',import.meta.url),new URL('404.html',dist));
+for(const file of ['index.html','app/index.html','404.html','privacy.html','terms.html','cookies.html','contact.html']){
+  const path=new URL(file,dist);
+  let html=readFileSync(path,'utf8');
+  if(!html.includes('src="/assets/offline-register.js"')) html=html.replace('</body>','<script src="/assets/offline-register.js" defer></script></body>');
+  writeFileSync(path,html);
+}
 writeFileSync(new URL('robots.txt',dist),`User-agent: *\nAllow: /\nDisallow: /app\nDisallow: /api/\n${origin?`Sitemap: ${origin}/sitemap.xml\n`:''}`);
 if(origin)writeFileSync(new URL('sitemap.xml',dist),`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${info.map(([, , ,path])=>`<url><loc>${origin+path}</loc></url>`).join('')}</urlset>`);
 else {if(existsSync(new URL('sitemap.xml',dist)))unlinkSync(new URL('sitemap.xml',dist));console.log('SEO: SITE_ORIGIN unset; canonical URLs, absolute social images and sitemap await production domain.');}

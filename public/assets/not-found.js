@@ -1,6 +1,5 @@
 
 (function () {
-  var SHOW_PREVIEW = true;   // set to false for production
 
   var body = document.body;
   var card = document.getElementById('card');
@@ -9,10 +8,7 @@
   var sub = document.getElementById('sub');
   var btn = document.getElementById('btn');
   var hint = document.getElementById('hint');
-  var pOn = document.getElementById('pOn');
-  var pOff = document.getElementById('pOff');
 
-  if (!SHOW_PREVIEW) document.getElementById('preview').style.display = 'none';
 
   var online = {
     label: '404 / Destination not found',
@@ -43,7 +39,7 @@
     ]
   };
 
-  var mode = online, idx = 0, timer, forced = null;
+  var mode = online, idx = 0, timer, fallback = body.hasAttribute('data-offline-fallback');
 
   function setSub(text) {
     sub.classList.add('out');
@@ -53,18 +49,17 @@
 
   function apply(isOffline) {
     mode = isOffline ? offline : online; idx = 0;
+    document.title = isOffline ? 'No connection — Drop' : 'Page not found — Drop';
     body.classList.toggle('offline', isOffline);
     label.textContent = mode.label;
     title.innerHTML = mode.title;
     btn.textContent = mode.btn;
     hint.textContent = mode.hint;
-    pOn.classList.toggle('on', !isOffline);
-    pOff.classList.toggle('on', isOffline);
     setSub(mode.subs[0]);
     clearInterval(timer);
     timer = setInterval(rotate, 5000);
   }
-  function check() { apply(forced !== null ? forced : !navigator.onLine); }
+  function check() { apply(fallback || !navigator.onLine); }
 
   btn.addEventListener('click', function (e) {
     if (body.classList.contains('offline')) { e.preventDefault(); location.reload(); }
@@ -73,13 +68,9 @@
     card.classList.remove('wiggle'); void card.offsetWidth; card.classList.add('wiggle');
     if (!body.classList.contains('offline')) rotate();
   });
-  pOn.addEventListener('click', function () { forced = false; check(); });
-  pOff.addEventListener('click', function () { forced = true; check(); });
-  window.addEventListener('offline', function () { forced = null; check(); });
-  window.addEventListener('online', function () { forced = null; check(); });
+  window.addEventListener('offline', function () { check(); });
+  window.addEventListener('online', function () { if (fallback) location.reload(); else check(); });
 
-  // ?preview=offline in the URL opens straight into offline mode
-  if (/preview=offline/.test(location.search)) forced = true;
 
   check();
 })();

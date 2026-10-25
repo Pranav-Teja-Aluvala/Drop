@@ -103,17 +103,6 @@
   body.offline .card { animation: float 4.5s ease-in-out infinite, shake 5s 1s ease-in-out infinite; }
   .zzz { font: 800 14px "Helvetica Neue", Arial, sans-serif; fill: #8b5cf6; animation: zzz 2.4s ease-in-out infinite; }
 
-  /* ---------- preview switch ---------- */
-  .preview {
-    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 4px; padding: 4px; background: #fff; border: 1px solid var(--line);
-    border-radius: 999px; box-shadow: 0 10px 30px -14px rgba(0,0,0,.3); z-index: 10;
-    font-size: 13px;
-  }
-  .preview span { align-self: center; padding: 0 10px 0 12px; color: #a2a5a3; }
-  .preview button { white-space: nowrap; border: 0; background: transparent; padding: 8px 14px; border-radius: 999px; font: 600 13px "Helvetica Neue", Arial, sans-serif; color: var(--muted); cursor: pointer; }
-  .preview button.on { background: var(--ink); color: #fff; }
-
   /* ---------- keyframes ---------- */
   @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
   @keyframes float { 0%,100% { transform: rotate(8deg) translateY(0); } 50% { transform: rotate(6deg) translateY(-12px); } }
@@ -199,12 +188,7 @@
   <a class="btn" id="btn" href="/">Return home</a>
   <p class="hint" id="hint">psst… poke the card</p>
 
-  <!-- Preview switch: remove this block (or set SHOW_PREVIEW = false) before shipping -->
-  <div class="preview" id="preview">
-    <span>preview</span>
-    <button id="pOn" class="on">Online 404</button>
-    <button id="pOff">Offline mode</button>
-  </div>
+
 
 <script src="/assets/not-found.js"></script>
 </body>

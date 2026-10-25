@@ -26,21 +26,22 @@ test('invite focus uses one rounded boundary; room timing is grouped and native 
   await page.getByRole('button',{name:'End room',exact:true}).click();
 });
 
-test('supplied 404 preserves CSS, copy and interactions with only the logo/integration substitutions',async({page,browser})=>{
+test('production 404 preserves artwork without preview controls and responds to connectivity',async({page,browser})=>{
   const reference=readFileSync('design/user-404.html','utf8');
   const built=readFileSync('public/404.html','utf8');
   const logo=readFileSync('public/drop-mark.svg','utf8').replace('<svg ','<svg aria-hidden="true" ');
-  const expected=reference.replace(/(<a class="logo"[\s\S]*?)<svg[\s\S]*?<\/svg>/,(_,prefix)=>prefix+logo).replace(/<script>[\s\S]*?<\/script>/,'<script src="/assets/not-found.js"></script>');
+  const expected=reference.replace(/(<a class="logo"[\s\S]*?)<svg[\s\S]*?<\/svg>/,(_,prefix)=>prefix+logo).replace(/<script>[\s\S]*?<\/script>/,'<script src="/assets/not-found.js"></script>').replace(/  <!-- Preview switch:[\s\S]*?<\/div>/,'').replace(/  \/\* ---------- preview switch ---------- \*\/[\s\S]*?(?=  \/\* ---------- keyframes)/,'');
   expect(built.match(/<body>[\s\S]*<\/body>/)?.[0]).toBe(expected.match(/<body>[\s\S]*<\/body>/)?.[0]);
-  expect(built.match(/<style>[\s\S]*?<\/style>/)?.[0]).toBe(reference.match(/<style>[\s\S]*?<\/style>/)?.[0]);
-  expect(readFileSync('public/assets/not-found.js','utf8')).toBe(reference.match(/<script>([\s\S]*?)<\/script>/)?.[1]);
+  expect(built.match(/<style>[\s\S]*?<\/style>/)?.[0]).toBe(expected.match(/<style>[\s\S]*?<\/style>/)?.[0]);
+  expect(readFileSync('public/assets/not-found.js','utf8')).toBe(readFileSync('scripts/error-page.js','utf8'));
+  expect(built).not.toMatch(/id="preview"|id="pOn"|id="pOff"/);
   const original=await browser.newPage({viewport:{width:390,height:900},reducedMotion:'reduce'});await original.setContent(reference);await expect(original.locator('#sub')).toHaveCSS('opacity','1');await original.evaluate(()=>document.querySelectorAll('svg').forEach(svg=>svg.pauseAnimations()));await original.screenshot({path:join(tmpdir(),'drop-404-reference.png'),fullPage:true});await original.close();
   await page.setViewportSize({width:390,height:900});await page.emulateMedia({reducedMotion:'reduce'});
   const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));const response=await page.goto('/a-missing-drop-page');expect(response?.status()).toBe(404);
   await expect(page.locator('h1')).toContainText("Oops, that page isn't");await expect(page.locator('.logo svg')).toHaveAttribute('viewBox','0 0 120 144');
   await expect(page.locator('#sub')).toHaveCSS('opacity','1');await page.evaluate(()=>document.querySelectorAll('svg').forEach(svg=>svg.pauseAnimations()));await page.screenshot({path:join(tmpdir(),'drop-404-updated.png'),fullPage:true});
   const before=await page.locator('#sub').innerText();await page.locator('#card').click();await expect(page.locator('#sub')).not.toHaveText(before);
-  await page.getByRole('button',{name:'Offline mode',exact:true}).click();await expect(page.locator('body')).toHaveClass('offline');await expect(page.locator('h1')).toContainText('left you on read');
-  await page.getByRole('button',{name:'Online 404',exact:true}).click();await expect(page.locator('body')).not.toHaveClass('offline');
+  await page.context().setOffline(true);await expect(page.locator('body')).toHaveClass('offline');await expect(page.locator('h1')).toContainText('left you on read');
+  await page.context().setOffline(false);await expect(page.locator('body')).not.toHaveClass('offline');
   await page.getByRole('link',{name:'Return home',exact:true}).click();await expect(page.locator('#hero-title')).toBeVisible();expect(errors).toEqual([]);
 });

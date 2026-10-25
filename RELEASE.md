@@ -1,5 +1,13 @@
 > Current checklist and applicability report: [LAUNCH-CHECKLIST-2026-10-26.md](LAUNCH-CHECKLIST-2026-10-26.md). Older dated results below are historical.
 
+## Production error states — 26 October 2026
+
+- Removed the preview switch, its styles, click handlers and query-string overrides from shipped error pages. The supplied artwork and copy remain. Online unknown routes return a genuine HTTP 404; an already loaded error page reacts to real browser online/offline events.
+- Added a network-first navigation service worker. After one successful online visit/installation, failed navigations show the cached offline artwork with HTTP 503, Retry reloads the requested URL, and a browser reconnect event retries that URL automatically. A first-ever offline visit cannot install this fallback. The worker does not replace successful responses or HTTP errors, and a pairing-server outage remains an app connection error rather than a false website 404.
+- Cache Storage contains exactly `/offline.html`, `/assets/not-found.js` and `/favicon.svg`. No navigation/room URL, credentials, messages or file content is cached. Privacy and cookie pages disclose the static cache and browser site-data removal. No analytics, cookies or paid service was added.
+- Browser plugin not available; Playwright tests use actual browser offline emulation, navigation failure, Retry, reconnect, genuine missing routes, absence of preview controls/URL overrides and a static-cache allowlist. Desktop/mobile screenshots confirm the original design with no preview UI. The earlier retained-preview exception below is superseded by this correction.
+- Local validation passed: production build/TypeScript, all 27 browser/protocol tests, 27 server/security tests and 35 page/viewport checks. Physical-device offline behavior is not certified by automated Chromium testing.
+
 ## Invite details, supplied 404 and sharing — 26 October 2026
 
 - Grouped the private-invite lifetime and room end time/actions into separate bordered blocks. Removed the extra inner input outline; keyboard focus remains visible on the rounded invite-field boundary.

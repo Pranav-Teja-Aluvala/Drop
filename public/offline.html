@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>No connection — Drop</title>
+<style>
+  :root {
+    --bg: #fafaf8;
+    --ink: #202423;
+    --muted: #6b6f6d;
+    --card: #ffffff;
+    --line: #e8e6df;
+    --blue: #1fb6ff;
+    --purple: #8b5cf6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    min-height: 100vh;
+    padding: 32px 20px 90px;
+    overflow-x: hidden;
+  }
+
+  /* ---------- logo ---------- */
+  .logo { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; animation: rise .6s ease both; }
+  .logo span { font-size: 30px; font-weight: 700; letter-spacing: -1px; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; }
+  .logo svg { width: 38px; height: 38px; }
+
+  /* ---------- stage ---------- */
+  .stage { position: relative; width: 240px; height: 230px; margin: 28px 0 22px; flex-shrink: 0; animation: rise .7s .1s ease both; }
+  .card {
+    position: absolute; left: 50px; top: 24px; width: 140px; height: 165px; flex-shrink: 0;
+    background: var(--card); border: 1px solid var(--line); border-radius: 28px;
+    transform: rotate(8deg);
+    box-shadow: 0 26px 50px -20px rgba(0,0,0,.2);
+    animation: float 4.5s ease-in-out infinite;
+    cursor: pointer; display: grid; place-items: center;
+  }
+  .card.wiggle { animation: wiggle .6s ease, float 4.5s .6s ease-in-out infinite; }
+  .shadow { position: absolute; left: 50%; bottom: 4px; width: 110px; height: 14px; margin-left: -55px; border-radius: 50%; background: rgba(0,0,0,.12); filter: blur(8px); animation: shadow 4.5s ease-in-out infinite; }
+
+  /* mascot */
+  .mascot { width: 100px; height: 100px; overflow: visible; }
+  .pupil { animation: look 5s ease-in-out infinite; }
+  .eye { transform-box: fill-box; transform-origin: center; animation: blink 4.2s infinite; }
+  .mouth-off, .eyes-off, .zzz { display: none; }
+
+  /* overlay decorations */
+  .deco { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .trail { fill: none; stroke: #cfc9ff; stroke-width: 2; stroke-dasharray: 3 6; stroke-linecap: round; }
+  .spark { transform-box: fill-box; transform-origin: center; animation: twinkle 2.6s ease-in-out infinite; }
+  .spark:nth-of-type(2) { animation-delay: .8s; }
+  .spark:nth-of-type(3) { animation-delay: 1.6s; }
+
+  /* floating bubble */
+  .bubble {
+    position: absolute; right: 10px; top: 2px; min-width: 42px; height: 42px; padding: 0 12px;
+    background: var(--ink); color: #fff; font-weight: 800; font-size: 20px;
+    border-radius: 14px 14px 14px 4px; display: grid; place-items: center;
+    animation: pop 4.5s ease-in-out infinite; transform-origin: 0 100%;
+  }
+  .bubble .b-off { display: none; }
+
+  /* wifi badge (offline only) */
+  .badge {
+    display: none; position: absolute; left: 12px; top: 18px; width: 46px; height: 46px;
+    background: #fff; border: 1px solid var(--line); border-radius: 50%;
+    place-items: center; color: #ef4444;
+    box-shadow: 0 10px 20px -10px rgba(0,0,0,.25);
+    animation: blink-soft 1.8s ease-in-out infinite;
+  }
+  .badge svg { width: 24px; height: 24px; }
+
+  /* ---------- text ---------- */
+  .label { font-size: 15px; letter-spacing: .02em; text-transform: uppercase; color: var(--muted); margin-bottom: 24px; animation: rise .7s .2s ease both; }
+  h1 { font-size: clamp(40px, 9vw, 60px); line-height: 1.02; letter-spacing: -0.055em; font-weight: 800; max-width: 620px; animation: rise .7s .3s ease both; }
+  .sub { margin-top: 24px; min-height: 52px; max-width: 430px; font-size: 17px; line-height: 1.5; color: var(--muted); transition: opacity .35s ease, transform .35s ease; animation: rise .7s .4s ease both; }
+  .sub.out { opacity: 0; transform: translateY(6px); }
+
+  .btn {
+    margin-top: 28px; display: inline-block; background: var(--ink); color: #fff;
+    font: 700 17px "Helvetica Neue", Helvetica, Arial, sans-serif; padding: 18px 28px;
+    border-radius: 14px; border: 0; text-decoration: none; cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease; animation: rise .7s .5s ease both;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 22px -10px rgba(0,0,0,.5); }
+  .btn:active { transform: scale(.98); }
+  .hint { margin-top: 16px; font-size: 13px; color: #a2a5a3; animation: rise .7s .6s ease both; }
+
+  /* ---------- offline mode ---------- */
+  body.offline .eyes-on, body.offline .mouth-on, body.offline .plane, body.offline .trail { display: none; }
+  body.offline .eyes-off, body.offline .mouth-off, body.offline .zzz { display: block; }
+  body.offline .badge { display: grid; }
+  body.offline .bubble .b-on { display: none; }
+  body.offline .bubble .b-off { display: inline; }
+  body.offline .bubble { background: #4b5563; }
+  body.offline .card { animation: float 4.5s ease-in-out infinite, shake 5s 1s ease-in-out infinite; }
+  .zzz { font: 800 14px "Helvetica Neue", Arial, sans-serif; fill: #8b5cf6; animation: zzz 2.4s ease-in-out infinite; }
+
+  /* ---------- keyframes ---------- */
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes float { 0%,100% { transform: rotate(8deg) translateY(0); } 50% { transform: rotate(6deg) translateY(-12px); } }
+  @keyframes shadow { 0%,100% { transform: scaleX(1); opacity: 1; } 50% { transform: scaleX(.78); opacity: .6; } }
+  @keyframes wiggle { 0%,100% { transform: rotate(8deg); } 20% { transform: rotate(-4deg); } 40% { transform: rotate(14deg); } 60% { transform: rotate(2deg); } 80% { transform: rotate(11deg); } }
+  @keyframes look { 0%,100% { transform: translate(0,0); } 20% { transform: translate(-3px,1px); } 45% { transform: translate(3px,-1px); } 70% { transform: translate(2px,2px); } }
+  @keyframes blink { 0%,94%,100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+  @keyframes twinkle { 0%,100% { opacity: .25; transform: scale(.7) rotate(0); } 50% { opacity: 1; transform: scale(1.1) rotate(20deg); } }
+  @keyframes pop { 0%,12% { opacity: 0; transform: scale(.4) translateY(6px); } 20%,80% { opacity: 1; transform: scale(1) translateY(0); } 90%,100% { opacity: 0; transform: scale(.8) translateY(-4px); } }
+  @keyframes blink-soft { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
+  @keyframes zzz { 0%,100% { opacity: .5; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+  @keyframes shake { 0%,92%,100% { translate: 0 0; } 94% { translate: -4px 0; } 96% { translate: 4px 0; } 98% { translate: -2px 0; } }
+
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+<meta name="robots" content="noindex"><meta name="description" content="This Drop page could not be found. Return to the homepage to learn about the app, or open a temporary room to connect your other device."><link rel="icon" href="/favicon.svg"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'"></head>
+<body class="offline" data-offline-fallback="true">
+
+  <a class="logo" href="/" aria-label="drop home">
+    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 144"><defs><linearGradient id="a" x2="1" y2="1"><stop stop-color="#25d6ed"/><stop offset="1" stop-color="#1243ff"/></linearGradient><linearGradient id="b" x2=".7" y2="1"><stop stop-color="#3423ff"/><stop offset="1" stop-color="#bc9bff"/></linearGradient><linearGradient id="c" x2="1" y2="1"><stop stop-color="#eeeaff"/><stop offset="1" stop-color="#ad87ff"/></linearGradient></defs><path fill="url(#a)" d="M27 3C-2-8-8 41 18 58c24 17 43 5 64-2 17-6 32 2 35 20 8-31-7-54-34-64Z"/><path fill="url(#c)" d="M117 76c-2 22-16 35-36 47L51 81c26-25 61-40 66-5Z"/><path fill="url(#b)" d="M51 77C31 86 8 100 12 120c4 25 28 31 47 17l40-31c6-26-20-43-48-29Z"/></svg>
+
+    <span>drop</span>
+  </a>
+
+  <div class="stage">
+    <div class="shadow"></div>
+
+    <div class="card" id="card" title="poke me">
+      <svg class="mascot" viewBox="0 0 96 96" aria-hidden="true">
+        <defs>
+          <linearGradient id="fileGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#1fb6ff"/><stop offset="1" stop-color="#8b5cf6"/>
+          </linearGradient>
+        </defs>
+        <!-- file body -->
+        <path d="M24 6 H56 L80 30 V82 A8 8 0 0 1 72 90 H24 A8 8 0 0 1 16 82 V14 A8 8 0 0 1 24 6 Z" fill="url(#fileGrad)"/>
+        <path d="M56 6 V22 A8 8 0 0 0 64 30 H80 Z" fill="#fff" opacity=".35"/>
+
+        <!-- online face -->
+        <g class="eyes-on">
+          <g class="eye"><circle cx="38" cy="54" r="8" fill="#fff"/><circle class="pupil" cx="38" cy="54" r="3.6" fill="#202423"/></g>
+          <g class="eye"><circle cx="60" cy="54" r="8" fill="#fff"/><circle class="pupil" cx="60" cy="54" r="3.6" fill="#202423"/></g>
+        </g>
+        <path class="mouth-on" d="M40 73 Q50 78 60 70" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+
+        <!-- offline face -->
+        <g class="eyes-off" stroke="#fff" stroke-width="3.2" stroke-linecap="round">
+          <path d="M32 48 L44 60 M44 48 L32 60"/>
+          <path d="M54 48 L66 60 M66 48 L54 60"/>
+        </g>
+        <path class="mouth-off" d="M40 76 Q50 66 60 76" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <text class="zzz" x="74" y="8">z</text>
+      </svg>
+    </div>
+
+    <!-- decorations: wrong-turn paper plane + sparkles -->
+    <svg class="deco" viewBox="0 0 240 230" aria-hidden="true">
+      <path id="trail" class="trail" d="M24 200 C10 150 80 150 130 120 C190 85 215 60 200 20"/>
+      <g class="plane">
+        <path d="M0 0 L-14 -6 L-10 0 L-14 6 Z" fill="#8b5cf6">
+          <animateMotion dur="5s" repeatCount="indefinite" rotate="auto" keyPoints="0;1" keyTimes="0;1" calcMode="linear">
+            <mpath href="#trail"/>
+          </animateMotion>
+          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="5s" repeatCount="indefinite"/>
+        </path>
+      </g>
+      <path class="spark" d="M18 70 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#1fb6ff"/>
+      <path class="spark" d="M222 120 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5z" fill="#8b5cf6"/>
+      <path class="spark" d="M205 190 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" fill="#1fb6ff"/>
+    </svg>
+
+    <div class="bubble"><span class="b-on">?</span><span class="b-off">zzz</span></div>
+
+    <div class="badge" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.8a15 15 0 0 1 5-3M22 8.8a15 15 0 0 0-9.5-3.6M5 12.9a10 10 0 0 1 3.2-2M19 12.9a10 10 0 0 0-4-2.4M8.5 16.4a5 5 0 0 1 4-1.3"/><circle cx="12" cy="20" r=".8" fill="currentColor"/><path d="M3 3l18 18"/></svg>
+    </div>
+  </div>
+
+  <p class="label" id="label">No signal / You are offline</p>
+  <h1 id="title">Bestie, the wifi<br>left you on read.</h1>
+  <p class="sub" id="sub">No internet, no drop. It's giving 2009 dial-up.</p>
+
+  <a class="btn" id="btn" href="/">Try again, no cap</a>
+  <p class="hint" id="hint">connect to the internet, then we vibe</p>
+
+
+
+<script src="/assets/not-found.js"></script>
+</body>
+</html>
