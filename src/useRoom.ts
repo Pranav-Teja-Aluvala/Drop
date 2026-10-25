@@ -170,12 +170,19 @@ export function useRoom() {
     const [id, token] = url.hash.slice(1).split('.'); connect(id, token, ++generation.current);
   }
   useEffect(() => {
-    if (/^#[\w-]{43}\.[\w-]{43}$/.test(location.hash)) join(location.href);
+    const joinFromAddress = () => {
+      if (/^#[\w-]{43}\.[\w-]{43}$/.test(location.hash)) {
+        join(location.href);
+        window.scrollTo({top:0,behavior:'instant'});
+      }
+    };
+    window.addEventListener('hashchange', joinFromAddress);
+    joinFromAddress();
     // Tell the peer before navigating away instead of relying only on a hosting
     // proxy noticing the closed WebSocket. This is best-effort, not offline detection.
     const pageExit = () => { signal({ type: 'leave' }); end('This page left the room. Create a new room to reconnect.'); };
     window.addEventListener('pagehide', pageExit);
-    return () => { window.removeEventListener('pagehide', pageExit); ++generation.current; cleanup(true); };
+    return () => { window.removeEventListener('hashchange', joinFromAddress); window.removeEventListener('pagehide', pageExit); ++generation.current; cleanup(true); };
   }, []);
   return { status, joining, phase, relayAvailable, invite, request, nickname, error, expires, items, fileCounts, offer, create, join, setError, code, confirmed,
     confirm: () => { if (gate.current) { setConfirmed(true); gate.current.confirm(); } },

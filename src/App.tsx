@@ -19,7 +19,7 @@ export function App() {
   useEffect(() => {
     if (activityView === 'chat') setReadNotes(notesKey ? notesKey.split(',') : []);
   }, [activityView, notesKey]);
-  useEffect(() => { if (room.status === 'creating' || room.status === 'closed') { setActivityView('files'); setReadNotes([]); } }, [room.status]);
+  useEffect(() => { if (room.status === 'creating') { setActivityView('files'); setReadNotes([]); setText(''); } }, [room.status]);
   const fileInput = useRef<HTMLInputElement>(null);
   const mediaInput = useRef<HTMLInputElement>(null);
   useEffect(() => { if (/^#[\w-]{43}\.[\w-]{43}$/.test(location.hash)) document.getElementById('transfer')?.scrollIntoView(); }, []);

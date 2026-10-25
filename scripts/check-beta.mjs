@@ -11,7 +11,7 @@ const origin = `http://127.0.0.1:${server.address().port}`;
 console.log(`Production-build beta tests: ${origin}`);
 try {
   const code = await new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, ['node_modules/@playwright/test/cli.js', 'test'], {
+    const child = spawn(process.execPath, ['node_modules/@playwright/test/cli.js', 'test', ...process.argv.slice(2)], {
       env: { ...process.env, TEST_BASE_URL: origin }, stdio: 'inherit'
     });
     child.once('error', reject);

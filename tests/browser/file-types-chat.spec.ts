@@ -45,6 +45,18 @@ test('every extension downloads unchanged; Files and Chat separate a two-way con
     await guest.locator('.chat-heading').click();
     await guest.locator('#room-activity').screenshot({path:'C:/Users/prana/AppData/Local/Temp/drop-chat-mobile.png'});
     await host.locator('#room-activity').screenshot({path:'C:/Users/prana/AppData/Local/Temp/drop-chat-desktop.png'});
-    await guest.getByRole('button',{name:'End room',exact:true}).click();expect(errors).toEqual([]);
+    await host.getByLabel('Text & links',{exact:true}).fill('Private draft from the old room');
+    await guest.getByRole('button',{name:'End room',exact:true}).click();
+    await expect(guest.getByRole('heading',{level:1})).toHaveText('Room ended.');
+    await expect(guest.getByRole('tab',{name:/Chat/})).toHaveAttribute('aria-selected','true');
+    await expect(guest.locator('.message-badge')).toHaveCount(0);
+    await expect(host.getByRole('button',{name:'Create a room',exact:true})).toBeVisible();
+    await host.getByRole('button',{name:'Create a room',exact:true}).click();await expect(invite).toBeVisible({timeout:80_000});
+    await guest.goto(await invite.inputValue());await host.getByRole('button',{name:'Allow device',exact:true}).click();
+    await expect(host.getByLabel('Device verification code')).toHaveText(/^[A-F0-9]{4}( [A-F0-9]{4}){7}$/);
+    await host.getByRole('button',{name:'Codes match',exact:true}).click();await guest.getByRole('button',{name:'Codes match',exact:true}).click();
+    await expect(host.getByRole('tab',{name:/Chat/})).toBeVisible();await host.getByRole('tab',{name:/Chat/}).click();
+    await expect(host.getByLabel('Text & links',{exact:true})).toHaveValue('');await expect(host.locator('.chat-message')).toHaveCount(0);
+    expect(errors).toEqual([]);
   }finally{await a.close();await b.close();}
 });
