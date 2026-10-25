@@ -1,6 +1,18 @@
 # DROP beta deployment
 
-Chosen setup: Vercel static frontend, one Render Free Node pairing service, optional Cloudflare Realtime TURN. No accounts, deployment or paid subscriptions have been created by this change.
+Chosen setup: Vercel static frontend, one Render Free Node pairing service, optional Cloudflare Realtime TURN.
+
+## Current beta setup — 25 October 2026
+
+- Source: https://github.com/Pranav-Teja-Aluvala/Drop (public), main at ccdf584a259d793a08a66c4d38bb6bed58a3b11c.
+- Render service: https://drop-pairing.onrender.com, Free Node service `drop-pairing`, health endpoint `/api/health`, Node 24, build `npm ci && npm run build`, start `npm start`.
+- Render `PUBLIC_ORIGIN`: `https://drop-devs-52b0.vercel.app`.
+- Vercel Hobby project: https://vercel.com/devs-52b0/drop. The domain `drop-devs-52b0.vercel.app` is reserved; the frontend is NOT deployed yet.
+- Vercel production configuration saved: `VITE_SIGNAL_ORIGIN=https://drop-pairing.onrender.com`, `SITE_ORIGIN=https://drop-devs-52b0.vercel.app`.
+- Live backend checks passed: HTTPS health 200; configured-origin room creation 201 with exact CORS; foreign-origin creation 403; `.env` and source path probes 404; WSS host/guest approval, signaling and closure. No cross-network file transfer or physical phone certification yet.
+- Frontend deployment is blocked on Vercel authorization. The CLI's previous token was invalid; its device authorization page remained disabled, browser folder/ZIP uploads created no deployment, and Vercel declined the temporary-deployment fallback. No account access protections were bypassed.
+- TURN is not configured; no paid plan, card or relay credentials were added.
+
 
 ## Accounts and cost
 
