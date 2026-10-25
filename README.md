@@ -2,7 +2,9 @@
 
 Move a file, link or note between two devices in a temporary room. No recipient signup. React/TypeScript UI, a small Node pairing server, and WebRTC data channels.
 
-**Status:** deployed private beta at https://drop-devs-52b0.vercel.app. Automated two-browser transfers passed on the live site. Physical-phone, TURN and cross-network checks remain pending; launch gates are in [RELEASE.md](RELEASE.md). OUTSIDE/PICK remains Plan 2.
+**Status:** direct-only public beta at https://drop-devs-52b0.vercel.app. Free, no signup. Some networks cannot connect without a relay. Physical-phone and cross-network certification, independent security review and capacity testing remain pending; see [RELEASE.md](RELEASE.md).
+
+Support/privacy: pranavteja.dev@gmail.com. Do not send private files, invite links or security codes.
 
 ## Run
 
@@ -13,7 +15,7 @@ npm ci
 npm run dev
 ```
 
-Open http://localhost:5173. Create a room. Copy its invite into a second browser/window, choose Join, then approve the device on the first window. Compare all eight groups of the verification code on the two screens, then select Codes match on both. Only then choose a file, accept it on the receiver, wait for Received, and select Save file. Text is sent explicitly, not synchronized with the system clipboard.
+Open http://localhost:5173. Create a room. Open its invite in a second browser/window (or scan the QR). The joining device automatically requests access; check the room name on both screens, then approve it on the first window. Compare all eight groups of the verification code on the two screens, then select Codes match on both. Only then choose a file, accept it on the receiver, wait for Received, and select Save file. Text is sent explicitly, not synchronized with the system clipboard.
 
 The QR contains the same invite. **A phone cannot reach your computer through `localhost`.** Deploy with HTTPS for actual phone pairing. HTTP LAN addresses are not secure contexts and this app intentionally refuses transfer there. Do not market localhost testing as phone/network testing.
 

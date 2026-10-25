@@ -57,7 +57,7 @@ export function App() {
 
     <TransferList items={room.items} cancel={room.cancel} onError={room.setError}/>
     </main>
-    <footer><p>© 2026 Drop</p><div className="app-footer-links"><button className="text-button" onClick={() => setDialog('privacy')}>Privacy</button><a href="/terms.html">Terms</a></div></footer>
+    <footer><p>© 2026 Drop · Public beta</p><div className="app-footer-links"><button className="text-button" onClick={() => setDialog('privacy')}>Privacy</button><a href="/terms.html">Terms</a><a href="/privacy.html#choices">Contact</a></div></footer>
     {dialog ? <InfoDialog kind={dialog} close={() => setDialog(null)}/> : null}
     {notes.length > 0 && <aside className="message-dock" aria-label="Room messages" onKeyDown={event => { if (event.key === 'Escape') { setMessagesOpen(false); document.querySelector<HTMLButtonElement>('.message-launcher')?.focus(); } }}>
       {messagesOpen && <section className="message-popover" id="room-messages" aria-label="Received messages"><div className="message-popover-head"><h2>From your other device</h2><button className="icon-button" aria-label="Close messages" onClick={() => setMessagesOpen(false)}><X size={18}/></button></div><div className="message-scroll">{notes.map(note => <article key={note.id}><p>{note.text}</p><span>Received note</span></article>)}</div><p className="small muted">Messages stay in this room. Copy them from the activity list.</p></section>}
