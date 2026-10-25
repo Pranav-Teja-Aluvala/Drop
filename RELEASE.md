@@ -95,4 +95,4 @@ Keep the launch film concise and let the successful transfer carry the story. Br
 - Reduced the visible connection timeline from six stages to three. Host approval and both-device certificate-code comparison remain required; no extra room-name confirmation dialog was added.
 - Incoming notes show a bottom-right message button with an unread count. Opening it shows plain-text messages and clears the count; new notes while closed become unread. Escape closes the panel. There is no automatic clipboard access or message persistence.
 - Added regression coverage for automatic joining, matching room labels, absence of a redundant Join button, three progress stages and unread-message behavior. No backend or relay configuration changes.
-
+- Validation: production build, all 23 local browser/protocol tests and 25 production page/viewport checks passed. The transfer tests capture runtime errors and exercise unread/read/reset behavior with script-like text rendered inertly. Scanned-invite joining was checked at 390 px; physical-phone testing remains pending. Source is pushed; production rollout is awaiting renewed Vercel CLI authorization.
