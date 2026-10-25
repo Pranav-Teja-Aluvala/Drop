@@ -4,13 +4,13 @@ Chosen setup: Vercel static frontend, one Render Free Node pairing service, opti
 
 ## Current beta setup — 25 October 2026
 
-- Source: https://github.com/Pranav-Teja-Aluvala/Drop (public), main at ccdf584a259d793a08a66c4d38bb6bed58a3b11c.
+- Source: https://github.com/Pranav-Teja-Aluvala/Drop (public). Frontend follow-up code commit: 7f957b7.
 - Render service: https://drop-pairing.onrender.com, Free Node service `drop-pairing`, health endpoint `/api/health`, Node 24, build `npm ci && npm run build`, start `npm start`.
 - Render `PUBLIC_ORIGIN`: `https://drop-devs-52b0.vercel.app`.
-- Vercel Hobby project: https://vercel.com/devs-52b0/drop. The domain `drop-devs-52b0.vercel.app` is reserved; the frontend is NOT deployed yet.
+- Vercel Hobby project: https://vercel.com/devs-52b0/drop. Live frontend: https://drop-devs-52b0.vercel.app. Production deployment: `dpl_9S8kYDTse4u3pAvVLrboUotN4am4`.
 - Vercel production configuration saved: `VITE_SIGNAL_ORIGIN=https://drop-pairing.onrender.com`, `SITE_ORIGIN=https://drop-devs-52b0.vercel.app`.
-- Live backend checks passed: HTTPS health 200; configured-origin room creation 201 with exact CORS; foreign-origin creation 403; `.env` and source path probes 404; WSS host/guest approval, signaling and closure. No cross-network file transfer or physical phone certification yet.
-- Frontend deployment is blocked on Vercel authorization. The CLI's previous token was invalid; its device authorization page remained disabled, browser folder/ZIP uploads created no deployment, and Vercel declined the temporary-deployment fallback. No account access protections were bypassed.
+- Live backend checks passed: HTTPS health 200; configured-origin room creation 201 with exact CORS; foreign-origin creation 403; `.env` and source path probes 404; WSS host/guest approval, signaling and closure. Browser transfers on the live HTTPS frontend also passed, including a 50 MiB download verified by SHA-256, HTML, notes and room recovery. Both automated browser peers ran on this same computer; this is not a physical phone or Wi-Fi-to-mobile-data certification.
+- The frontend was first deployed using browser ZIP upload, then updated through the authorized Vercel CLI after login completed. Source uploads are not automatically connected to Vercel Git deployments; a GitHub push alone does not publish a frontend update. No account access protections were bypassed.
 - TURN is not configured; no paid plan, card or relay credentials were added.
 
 

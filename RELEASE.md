@@ -1,3 +1,18 @@
+# Live private beta — 25 October 2026
+
+- Frontend: https://drop-devs-52b0.vercel.app
+- Pairing service: https://drop-pairing.onrender.com (Render Free).
+- Public source: https://github.com/Pranav-Teja-Aluvala/Drop
+- Final production deployment: dpl_9S8kYDTse4u3pAvVLrboUotN4am4 (Vercel Hobby).
+- All 19 automated browser/protocol tests passed with TEST_BASE_URL set to the live frontend. The browser cases used two isolated contexts on one computer; protocol unit cases remain local.
+- The live 50 MiB file was saved and checked for byte count and SHA-256. Above-limit rejection, HTML save, notes, counters, acceptance/decline, mismatched codes, page exit/disconnect and room recovery passed.
+- Live routes, custom 404, production canonical URL, sitemap, security headers and excluded-file probes passed. The production URL is accessible without a Vercel login.
+- Both live origin/CORS rejection checks and WSS approval/signaling checks passed.
+- Before a wider launch: physical phone/laptop QR pairing and downloads, Wi-Fi/mobile-data and TURN tests, provider cold-start/load review, and final legal operator/contact details remain pending. No relay was configured and no paid service was enabled.
+- The page now sends a best-effort leave message on pagehide. Network failure detection can still take time; an abrupt power/network loss cannot send that message.
+
+---
+
 # Beta validation — 25 October 2026
 
 **Local automated beta: passed. Public/physical-device beta: pending deployment.**
@@ -11,7 +26,8 @@
 - [x] 25 production route/viewport checks at 320, 390, 768, 1024 and 1440 pixels.
 - [x] Dependency audit: no known vulnerabilities after updating transitive body-parser to 2.4.0 for GHSA-27r3-jxmh-p828. The affected body-parser middleware is not used by DROP's current routes; this was a dependency finding, not a demonstrated exploit of DROP.
 - [x] Current-file pattern scan: no secret matches. No Git history exists here to scan.
-- [ ] Deploy public HTTPS frontend and pairing service; verify live TLS/WSS, CORS, headers, trusted proxies, quotas, cold starts and restarts.
+- [x] Deploy public HTTPS frontend and pairing service; live TLS/WSS, CORS and headers passed.
+- [ ] Verify deployment-specific proxy/client quotas, cold starts, restarts and capacity under load.
 - [ ] Configure TURN and test real Wi-Fi-to-mobile-data transfers and forced relay selection.
 - [ ] Physical Android/iOS and laptop testing, including phone camera QR scan, downloads, backgrounding, screen lock and network changes.
 - [ ] Complete operator/contact/provider-retention details in privacy and terms; set production SITE_ORIGIN.
@@ -39,7 +55,7 @@ The beta runner starts a temporary loopback server and closes it afterward. It n
 
 ## Friday, 23 October — release gates
 
-- [ ] Select an HTTPS Node/WebSocket host and deploy a single instance.
+- [x] Deploy Vercel Hobby frontend and single Render Free Node pairing service.
 - [ ] Verify trusted proxy addresses, real-client quotas, edge abuse controls and capacity under load.
 - [ ] Select/configure a TURN provider; verify costs, quotas and abuse controls before enabling it publicly.
 - [ ] Confirm transfer on same Wi-Fi and Wi-Fi-to-mobile-data; verify actual relay selection for the relay test.

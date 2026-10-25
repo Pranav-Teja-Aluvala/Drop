@@ -2,7 +2,7 @@
 
 Move a file, link or note between two devices in a temporary room. No recipient signup. React/TypeScript UI, a small Node pairing server, and WebRTC data channels.
 
-**Status:** working local MVP, not a deployed or cross-network-certified release. Launch gates are in [RELEASE.md](RELEASE.md). OUTSIDE/PICK remains Plan 2.
+**Status:** deployed private beta at https://drop-devs-52b0.vercel.app. Automated two-browser transfers passed on the live site. Physical-phone, TURN and cross-network checks remain pending; launch gates are in [RELEASE.md](RELEASE.md). OUTSIDE/PICK remains Plan 2.
 
 ## Run
 
