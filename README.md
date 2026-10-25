@@ -51,9 +51,9 @@ WebRTC encrypts transport. Before enabling transfers, both users must compare an
 
 - Two devices, 2-hour room lifetime, one active file in each direction.
 - Unused invites expire after 10 minutes. Approval consumes the invite; rejecting pairing revokes the room. Verification must finish within 90 seconds.
-- Common executable/script/active-content filenames and common executable headers are blocked on both sender and receiver. This is a limited file policy, not malware detection; allowed formats and archives can still carry malicious content.
+- All file extensions and binary contents are allowed, including programs, scripts and archives. File names are normalized for safe OS-compatible downloads. Nothing is automatically previewed or executed, and nothing is scanned for malware.
 - 50 MiB per file. Received files are buffered in memory. At most 20 retained downloads / 150 MiB per receiver per room.
-- The activity list shows the latest 40 items. Save files before creating a new room.
+- Files and Chat have separate tabs. The room retains up to 40 file activity entries and the latest 200 sent/received messages in memory. Save files or copy messages before creating a new room.
 - Notes up to 50,000 characters. Clipboard access happens only on Copy; no clipboard monitoring.
 - Background tabs, locked phones and network changes can interrupt transfer. No retry/resume promise.
 - No relay is configured by default. A direct connection may fail even on some Wi-Fi networks.

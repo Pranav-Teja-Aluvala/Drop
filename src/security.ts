@@ -41,18 +41,14 @@ export class VerificationGate {
   dispose() { this.done = true; clearTimeout(this.timer); this.channel.onmessage = null; }
 }
 
-const dangerous = /\.(exe|dll|com|scr|msi|msp|bat|cmd|ps1|psm1|vbs|vbe|js|jse|wsf|wsh|hta|reg|lnk|url|sh|bash|zsh|jar|apk|app|dmg|pkg|deb|rpm|svg|docm|xlsm|pptm|xlam|iso)$/i;
+/** Normalize OS-sensitive names without filtering file extensions or file contents. */
 export function safeFilename(name: string): string {
-  return name.normalize('NFC').replace(/[\x00-\x1f\x7f<>:"/\\|?*\u202a-\u202e\u2066-\u2069]/g, '_').replace(/[. ]+$/g, '').slice(0, 180) || 'download';
-}
-export function fileRisk(name: string): string | null {
-  if (/[\u202a-\u202e\u2066-\u2069]/.test(name)) return 'Filenames with hidden direction-changing characters are blocked.';
-  const cleaned = name.trim().replace(/[. ]+$/g, '');
-  if (dangerous.test(cleaned)) return 'Executable, script and certain active-content file types are blocked in DROP.';
-  if (/^(con|prn|aux|nul|com[0-9]|lpt[0-9])(?:\.|$)/i.test(cleaned)) return 'This filename is reserved by the operating system. Rename the file.';
-  return null;
-}
-export function executableHeader(bytes: Uint8Array): boolean {
-  const hex = Array.from(bytes.slice(0, 4)).map(x => x.toString(16).padStart(2, '0')).join('');
-  return hex.startsWith('4d5a') || hex === '7f454c46' || ['feedface', 'feedfacf', 'cefaedfe', 'cffaedfe', 'cafebabe'].includes(hex) || hex.startsWith('2321');
+  let clean = name.normalize('NFC').replace(/[\x00-\x1f\x7f<>:"/\\|?*\u202a-\u202e\u2066-\u2069]/g, '_').replace(/[. ]+$/g, '') || 'download';
+  if (/^(con|prn|aux|nul|com[0-9]|lpt[0-9])(?:\.|$)/i.test(clean)) clean = '_' + clean;
+  if (clean.length > 180) {
+    const dot = clean.lastIndexOf('.');
+    const extension = dot > 0 && clean.length - dot <= 32 ? clean.slice(dot) : '';
+    clean = clean.slice(0, 180 - extension.length) + extension;
+  }
+  return clean;
 }

@@ -1,25 +1,25 @@
 import { Brand } from './Brand';
 
 import { useEffect, useRef, useState } from 'react';
-import { ArrowUpRight, FileUp, MessageSquare, Send, X } from 'lucide-react';
+import { ArrowUpRight, FileUp, MessageSquare, X } from 'lucide-react';
 import { useRoom } from './useRoom';
-import { Connection, InfoDialog, TransferList, bytes } from './components';
-import { MAX_TEXT } from './transfer';
+import { Connection, InfoDialog, bytes } from './components';
+import {RoomActivity, type ActivityView} from './RoomActivity';
 
 export function App() {
   const room = useRoom();
   const [dialog, setDialog] = useState<'help' | 'privacy' | null>(null);
   const [text, setText] = useState('');
   const [dragging, setDragging] = useState(false);
-  const [messagesOpen, setMessagesOpen] = useState(false);
+  const [activityView, setActivityView] = useState<ActivityView>('files');
   const [readNotes, setReadNotes] = useState<string[]>([]);
   const notes = room.items.filter(item => item.text !== undefined && item.direction === 'in');
   const unread = notes.filter(item => !readNotes.includes(item.id)).length;
   const notesKey = notes.map(item => item.id).join(',');
   useEffect(() => {
-    if (messagesOpen) setReadNotes(notesKey ? notesKey.split(',') : []);
-  }, [messagesOpen, notesKey]);
-  useEffect(() => { if (room.status === 'creating' || room.status === 'closed') { setMessagesOpen(false); setReadNotes([]); } }, [room.status]);
+    if (activityView === 'chat') setReadNotes(notesKey ? notesKey.split(',') : []);
+  }, [activityView, notesKey]);
+  useEffect(() => { if (room.status === 'creating' || room.status === 'closed') { setActivityView('files'); setReadNotes([]); } }, [room.status]);
   const fileInput = useRef<HTMLInputElement>(null);
   const mediaInput = useRef<HTMLInputElement>(null);
   useEffect(() => { if (/^#[\w-]{43}\.[\w-]{43}$/.test(location.hash)) document.getElementById('transfer')?.scrollIntoView(); }, []);
@@ -48,21 +48,19 @@ export function App() {
     {room.error ? <div className="notice" role="alert"><p>{room.error}</p><button className="icon-button" aria-label="Dismiss message" onClick={() => room.setError('')}><X size={18}/></button></div> : null}
     {connected && <div className="file-counts" aria-label="Files in this room"><span>This room</span><span><strong aria-label="Files sent">{room.fileCounts.sent}</strong> sent</span><span><strong aria-label="Files received">{room.fileCounts.received}</strong> received</span></div>}
     <div className="workspace"><Connection room={room}/><section className={`send-panel ${dragging ? 'dragging' : ''}`} aria-label="Send files and notes" onDragOver={e => { e.preventDefault(); if (connected && !activeOutgoing) setDragging(true); }} onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false); }} onDrop={e => { e.preventDefault(); setDragging(false); selectFiles(e.dataTransfer.files); }}>
-      <div className="drop-zone"><FileUp size={72} strokeWidth={1.1} className="upload-icon"/><h2>{connected ? 'Drop something good.' : 'Good things travel light.'}</h2><p>{connected ? 'A photo. A document. Whatever needs to get there.' : 'Pair two devices to start sending.'}</p>
-      <input ref={fileInput} className="sr-only" type="file" accept="application/*,text/*,.pdf,.zip,.txt,.csv,.json,.html,.htm,.md,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.bin" aria-label="Choose file to send" tabIndex={-1} onChange={e => { selectFiles(e.target.files); e.target.value = ''; }}/>
+      <div className="drop-zone"><FileUp size={72} strokeWidth={1.1} className="upload-icon"/><h2>{connected ? 'Drop something good.' : 'Good things travel light.'}</h2><p>{connected ? 'Any file type. Your original bytes, delivered.' : 'Pair two devices to start sending.'}</p>
+      <input ref={fileInput} className="sr-only" type="file" aria-label="Choose file to send" tabIndex={-1} onChange={e => { selectFiles(e.target.files); e.target.value = ''; }}/>
       <input ref={mediaInput} className="sr-only" type="file" accept="image/*,video/*" aria-label="Choose photo or video to send" tabIndex={-1} onChange={e => { selectFiles(e.target.files); e.target.value = ''; }}/>
-      <div className="file-picker-actions"><button className={`button document-picker ${connected ? 'accent' : 'secondary'}`} disabled={!connected || activeOutgoing} onClick={() => fileInput.current?.click()}><FileUp size={19}/>{activeOutgoing ? 'File in progress' : 'Browse files'}</button><button className="button secondary media-picker" disabled={!connected || activeOutgoing} onClick={() => mediaInput.current?.click()}>Photos & videos</button></div><span className="small muted file-limit">One file at a time · up to 50 MB</span><p className="picker-help">For documents, choose Files, Browse or your phone’s file manager. Media has its own picker above.</p></div>
-      <form className="text-composer" onSubmit={e => { e.preventDefault(); if (room.sendText(text)) setText(''); }}><label htmlFor="note">Text & links</label><textarea id="note" placeholder="Type a note, link or anything to send…" maxLength={MAX_TEXT} disabled={!connected} value={text} onChange={e => setText(e.target.value)}/><div className="composer-bottom"><span className="small muted">{text.length.toLocaleString()} / 50,000</span><button className="button text-send" disabled={!connected || !text.trim()}><Send size={17}/>Send note</button></div></form>
+      <div className="file-picker-actions"><button className={`button document-picker ${connected ? 'accent' : 'secondary'}`} disabled={!connected || activeOutgoing} onClick={() => fileInput.current?.click()}><FileUp size={19}/>{activeOutgoing ? 'File in progress' : 'Browse files'}</button><button className="button secondary media-picker" disabled={!connected || activeOutgoing} onClick={() => mediaInput.current?.click()}>Photos & videos</button></div><span className="small muted file-limit">One file at a time · up to 50 MB</span><p className="picker-help">Choose any file from Files or your file manager. Nothing is previewed or opened automatically.</p></div>
     </section></div>
 
-    <TransferList items={room.items} cancel={room.cancel} onError={room.setError}/>
+    {(connected || room.status === 'recovering' || room.items.length > 0) && <RoomActivity room={room} view={activityView} setView={setActivityView} text={text} setText={setText} unread={unread}/>}
     </main>
-    <footer><p>© 2026 Drop · Public beta</p><div className="app-footer-links"><button className="text-button" onClick={() => setDialog('privacy')}>Privacy</button><a href="/terms.html">Terms</a><a href="/privacy.html#choices">Contact</a></div></footer>
+    <footer><p>© 2026 Drop · Public beta</p><div className="app-footer-links"><button className="text-button" onClick={() => setDialog('privacy')}>Privacy</button><a href="/terms.html">Terms</a><a href="/cookies.html">Cookies</a><a href="/privacy.html#choices">Contact</a></div></footer>
     {dialog ? <InfoDialog kind={dialog} close={() => setDialog(null)}/> : null}
-    {notes.length > 0 && <aside className="message-dock" aria-label="Room messages" onKeyDown={event => { if (event.key === 'Escape') { setMessagesOpen(false); document.querySelector<HTMLButtonElement>('.message-launcher')?.focus(); } }}>
-      {messagesOpen && <section className="message-popover" id="room-messages" aria-label="Received messages"><div className="message-popover-head"><h2>From your other device</h2><button className="icon-button" aria-label="Close messages" onClick={() => setMessagesOpen(false)}><X size={18}/></button></div><div className="message-scroll">{notes.map(note => <article key={note.id}><p>{note.text}</p><span>Received note</span></article>)}</div><p className="small muted">Messages stay in this room. Copy them from the activity list.</p></section>}
+    {(connected || room.items.length > 0) && activityView !== 'chat' && <aside className="message-dock" aria-label="Room messages">
       <span className="sr-only" role="status">{unread ? `${unread} unread message${unread === 1 ? '' : 's'} from your other device` : ''}</span>
-      <button className="message-launcher" aria-label={unread ? `Messages, ${unread} unread` : 'Open messages'} aria-expanded={messagesOpen} aria-controls={messagesOpen ? 'room-messages' : undefined} onClick={() => setMessagesOpen(open => !open)}><MessageSquare size={23}/>{unread > 0 && <span className="message-badge">{unread}</span>}</button>
+      <button className="message-launcher" aria-label={unread ? `Messages, ${unread} unread` : 'Open messages'} aria-controls="room-activity" onClick={() => { setActivityView('chat'); requestAnimationFrame(() => document.getElementById('room-activity')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})); }}><MessageSquare size={23}/>{unread > 0 && <span className="message-badge">{unread}</span>}</button>
     </aside>}
   </div></>;
 }

@@ -50,7 +50,7 @@ test('mobile document and media pickers are separate; approval and verification 
     await expect(host.locator('.document-picker')).toBeDisabled();
     await guest.getByRole('button',{name:'Codes match',exact:true}).click();
     await expect(guest.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled();
-    await expect(guest.getByLabel('Choose file to send',{exact:true})).toHaveAttribute('accept',/application\/\*/);
+    await expect(guest.getByLabel('Choose file to send',{exact:true})).not.toHaveAttribute('accept',/.*/);
     await expect(guest.getByLabel('Choose file to send',{exact:true})).not.toHaveAttribute('capture',/.*/);
     await expect(guest.getByLabel('Choose photo or video to send')).toHaveAttribute('accept','image/*,video/*');
     const chooserPromise=guest.waitForEvent('filechooser');await guest.getByRole('button',{name:'Browse files',exact:true}).click();

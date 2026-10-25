@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { connectionCode, VerificationGate, fileRisk, safeFilename, executableHeader } from '../../src/security';
+import { connectionCode, VerificationGate, safeFilename } from '../../src/security';
 import { Transfer } from '../../src/transfer';
 
 const sdp = (byte: string) => `v=0\r\na=fingerprint:sha-256 ${Array(32).fill(byte).join(':')}\r\n`;
@@ -39,32 +39,22 @@ test('verification gate needs both confirmations and rejects pre-verification da
   expect(ready).toBe(true);
 });
 
-test('common dangerous names and binary signatures are blocked; ordinary files remain allowed', () => {
-  for (const name of ['install.EXE', 'photo.jpg.exe', 'icon.svg', 'run.ps1', 'sheet.xlsm', 'x\u202Egpj.exe', 'CON.txt', 'setup.exe. ']) expect(fileRisk(name)).not.toBeNull();
-  for (const name of ['photo.jpg', 'document.pdf', 'archive.zip', 'notes.txt', 'page.html', 'index.htm', 'PAGE.HTML']) expect(fileRisk(name)).toBeNull();
+test('all file extensions are preserved while OS-sensitive filenames are normalized', () => {
+  for (const name of ['install.EXE','photo.jpg.exe','icon.svg','run.ps1','sheet.xlsm','app.apk','page.html','unknown.xyz','README']) expect(safeFilename(name)).toBe(name);
   expect(safeFilename('../a:b.txt')).toBe('.._a_b.txt');
-  expect(executableHeader(new Uint8Array([0x4d,0x5a,0,0]))).toBe(true);
-  expect(executableHeader(new Uint8Array([0x7f,0x45,0x4c,0x46]))).toBe(true);
-  expect(executableHeader(new Uint8Array([0xff,0xd8,0xff,0xe0]))).toBe(false);
+  expect(safeFilename('CON.txt')).toBe('_CON.txt');
+  expect(safeFilename('a'.repeat(220)+'.custom')).toMatch(/\.custom$/);
+  expect(safeFilename('photo\u202Egpj.exe')).not.toContain('\u202E');
 });
 
-test('receiver rejects dangerous offers even if sender bypasses its UI checks', () => {
-  const channel = new Channel(); const errors: string[] = []; const offers: unknown[] = [];
-  const transfer = new Transfer(channel.asRTC(), { item: () => {}, offer: value => offers.push(value), error: value => errors.push(value) });
-  channel.receive(JSON.stringify({ type:'offer', id:'attack', name:'run.exe', size:4, hash:'a'.repeat(64) }));
-  expect(channel.messages).toContainEqual({type:'cancel',id:'attack'});
-  expect(errors[0]).toContain('blocked'); expect(offers).toEqual([]); transfer.dispose();
-});
-
-test('receiver blocks a disguised executable after bytes arrive', async () => {
-  const channel = new Channel(); const items: any[] = []; const errors: string[] = [];
-  const transfer = new Transfer(channel.asRTC(), { item: item => items.push(item), offer: () => {}, error: value => errors.push(value) });
-  channel.receive(JSON.stringify({type:'offer',id:'disguised',name:'photo.jpg',size:4,hash:'a'.repeat(64)}));
-  transfer.accept();
+test('program extensions still require explicit recipient acceptance', () => {
+  const channel = new Channel(); const offers: any[]=[]; const items: any[]=[];
+  const transfer=new Transfer(channel.asRTC(),{item:item=>items.push(item),offer:value=>offers.push(value),error:()=>{}});
+  channel.receive(JSON.stringify({type:'offer',id:'program',name:'tool.exe',size:4,hash:'a'.repeat(64)}));
+  expect(offers[0].name).toBe('tool.exe');expect(channel.messages).not.toContainEqual({type:'accept',id:'program'});
   channel.receive(new Uint8Array([0x4d,0x5a,0,0]).buffer);
-  channel.receive(JSON.stringify({type:'end',id:'disguised'}));
-  await expect.poll(() => errors.length).toBe(1);
-  expect(items.some(item => item.url)).toBe(false); transfer.dispose();
+  expect(items.some(item=>item.url)).toBe(false);transfer.decline();
+  expect(channel.messages).toContainEqual({type:'cancel',id:'program'});transfer.dispose();
 });
 
 test('zero-byte and undersized chunks cannot inflate receiver object memory', () => {
@@ -76,17 +66,6 @@ test('zero-byte and undersized chunks cannot inflate receiver object memory', ()
     expect(channel.messages).toContainEqual({type:'cancel',id:'fragment'});
     transfer.dispose();
   }
-});
-
-test('filename normalization cannot turn an allowed name into an executable download', () => {
-  const channel = new Channel(); const offers: unknown[] = [];
-  const transfer = new Transfer(channel.asRTC(), {item:()=>{},offer:value=>offers.push(value),error:()=>{}});
-  const name = 'a'.repeat(176) + '.exe.txt';
-  expect(fileRisk(name)).toBeNull();
-  expect(safeFilename(name)).toMatch(/\.exe$/);
-  channel.receive(JSON.stringify({type:'offer',id:'truncated',name,size:1,hash:'a'.repeat(64)}));
-  expect(channel.messages).toContainEqual({type:'cancel',id:'truncated'});
-  expect(offers).toEqual([]); transfer.dispose();
 });
 
 test('altered file bytes fail integrity verification and create no download', async () => {

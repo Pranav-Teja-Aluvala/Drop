@@ -34,7 +34,7 @@
       ]
     },
     {
-      "source": "/(privacy|terms).html",
+      "source": "/(privacy|terms|cookies).html",
       "headers": [
         {
           "key": "Content-Security-Policy",

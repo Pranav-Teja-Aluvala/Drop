@@ -14,7 +14,7 @@ try {
     const page = await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'});
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    for (const route of ['/', '/app', '/privacy.html', '/terms.html', '/missing-release-check']) {
+    for (const route of ['/', '/app', '/privacy.html', '/terms.html','/cookies.html', '/missing-release-check']) {
       const response = await page.goto(origin + route);
       assert.equal(response.status(), route.includes('missing') ? 404 : 200);
       await page.locator('h1').waitFor();
@@ -31,7 +31,7 @@ try {
       assert.ok(state.title && !/Vite|React App/.test(state.title));
       assert.equal(state.headings, 1); assert.equal(state.overflow, false);
       assert.equal(state.missingAlt, 0); assert.equal(state.overlay, false);
-      if (['/', '/privacy.html', '/terms.html'].includes(route)) assert.equal(state.canonical, origin + route);
+      if (['/', '/privacy.html', '/terms.html','/cookies.html'].includes(route)) assert.equal(state.canonical, origin + route);
       const headers = response.headers();
       assert.match(state.csp || headers['content-security-policy'] || '', /object-src 'none'/);
       assert.equal(headers['x-content-type-options'], 'nosniff');

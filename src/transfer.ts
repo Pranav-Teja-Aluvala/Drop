@@ -1,8 +1,8 @@
-import { executableHeader, fileRisk, safeFilename } from './security';
+import { safeFilename } from './security';
 export const MAX_FILE = 50 * 1024 * 1024;
 export const MAX_TEXT = 50_000;
 const CHUNK = 16 * 1024;
-export type Item = { id: string; name: string; size: number; direction: 'in' | 'out'; status: string; progress: number; url?: string; text?: string };
+export type Item = { id: string; name: string; size: number; direction: 'in' | 'out'; status: string; progress: number; url?: string; text?: string; createdAt?: number };
 type Offer = { type: 'offer'; id: string; name: string; size: number; hash: string };
 type Callbacks = { item: (item: Item) => void; offer: (offer: Offer | null) => void; error: (message: string) => void };
 const digest = async (bytes: ArrayBuffer) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))).map(x => x.toString(16).padStart(2, '0')).join('');
@@ -35,12 +35,10 @@ export class Transfer {
   async offer(file: File) {
     if (this.outgoing) throw new Error('Finish or cancel your current file first.');
     if (file.size > MAX_FILE) throw new Error('This first version supports files up to 50 MB.');
-    const risk = fileRisk(file.name); if (risk) throw new Error(risk);
-    const item: Item = { id: crypto.randomUUID(), name: file.name.slice(0, 240), size: file.size, direction: 'out', status: 'Preparing', progress: 0 };
+    const item: Item = { id: crypto.randomUUID(), name: safeFilename(file.name), size: file.size, direction: 'out', status: 'Preparing', progress: 0 };
     const outgoing = { file, item, hash: '', cancelled: false, timer: undefined as ReturnType<typeof setTimeout> | undefined };
     this.outgoing = outgoing; this.callbacks.item(item);
     try {
-      if (executableHeader(new Uint8Array(await file.slice(0, 4).arrayBuffer()))) throw new Error('This file looks like a program or script. DROP blocked it.');
       outgoing.hash = await digest(await file.arrayBuffer());
       if (outgoing.cancelled || this.disposed) return;
       this.send({ type: 'offer', id: item.id, name: item.name, size: file.size, hash: outgoing.hash });
@@ -127,8 +125,6 @@ export class Transfer {
         this.send({ type: 'cancel', id: msg.id });
         this.callbacks.error('This room’s download memory limit is reached (20 files or 150 MB). Save your downloads, then create a new room.'); return;
       }
-      const risk = fileRisk(msg.name) || fileRisk(safeFilename(msg.name));
-      if (risk) { this.send({ type: 'cancel', id: msg.id }); this.callbacks.error(risk); return; }
       const offer: Offer = { type: 'offer', id: msg.id, name: safeFilename(msg.name), size: msg.size, hash: msg.hash };
       this.incoming = { offer, item: { id: offer.id, name: offer.name, size: offer.size, direction: 'in', status: 'Awaiting your approval', progress: 0 }, chunks: [], received: 0, accepted: false };
       this.callbacks.item(this.incoming.item); this.callbacks.offer(offer); this.deadline();
@@ -143,7 +139,6 @@ export class Transfer {
       if (incoming.received !== incoming.offer.size) { this.cancel(msg.id); return; }
       this.update(incoming.item, 'Verifying');
       const blob = new Blob(incoming.chunks, { type: 'application/octet-stream' });
-      if (executableHeader(new Uint8Array(await blob.slice(0, 4).arrayBuffer()))) { this.cancel(msg.id); this.callbacks.error('Received file looks like a program or script. No download was created.'); return; }
       const hash = await digest(await blob.arrayBuffer());
       if (this.incoming !== incoming || this.disposed) return;
       if (hash !== incoming.offer.hash) { this.cancel(msg.id); this.callbacks.error('File integrity check failed. Nothing was saved.'); return; }

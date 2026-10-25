@@ -55,7 +55,11 @@ export function useRoom() {
         gate.current = new VerificationGate(channel, value, () => {
           verified.current = true; setStatus('connected'); setPhase('ready');
           transfer.current = new Transfer(channel, { item: item => {
-            setItems(prev => [item, ...prev.filter(x => x.id !== item.id)].slice(0, 40));
+            setItems(prev => {
+              const updated = { ...item, createdAt: prev.find(old => old.id === item.id)?.createdAt ?? Date.now() };
+              const all = [updated, ...prev.filter(old => old.id !== item.id)];
+              return [...all.filter(entry => entry.text === undefined).slice(0, 40), ...all.filter(entry => entry.text !== undefined).slice(0, 200)].sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+            });
             // The protocol emits each completed receipt once. Keep room totals independent
             // of the bounded activity history, so sending notes cannot reduce the count.
             if (item.text === undefined && (item.status === 'Delivered' || item.status === 'Received')) {

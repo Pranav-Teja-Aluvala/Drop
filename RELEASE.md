@@ -1,5 +1,13 @@
 # DROP release check — 25 October 2026
 
+## Files / Chat update
+
+- The room now has keyboard-accessible Files and Chat tabs. Chat includes sent/received bubbles, local display times, delivery states, per-message copy, Enter-to-send, Shift+Enter, and unread indicators outside the conversation. File activity and chat history are retained separately (40 file entries / latest 200 messages).
+- All file extensions and binary contents are allowed, including executables and scripts. Removed both filename-extension and executable-header filters on sender and receiver. OS-safe filename normalization, recipient acceptance, file/memory limits, byte counts, SHA-256 checks and opaque download-only handling remain. File safety is never certified and nothing is automatically opened or previewed.
+- Added Cookies & local data, shared legal styling, footer links, canonical/social metadata and sitemap inclusion; updated privacy, terms and security documentation. No cookie banner or tracking SDK was added.
+- The new end-to-end test downloads 11 representative file types and compares exact bytes and names; it also checks two-way chat, tab switching, newline handling and absence of cookies/localStorage/sessionStorage. The latest local suite has 22 cases after replacing obsolete file-denylist tests with the all-extension and recipient-acceptance cases. Local production suite: 22/22 passed. Server tests: 27/27 passed. Page/viewport checks: 30/30 passed. Production dependency audit: zero known advisories.
+- Hosted validation and deployment for this update will be recorded after rollout. Refresh both devices so an old recipient build does not apply its former extension restrictions.
+
 ## Release scope
 
 A limited, direct-only public beta. Frontend: https://drop-devs-52b0.vercel.app/app. Pairing: https://drop-pairing.onrender.com. Public source: https://github.com/Pranav-Teja-Aluvala/Drop.
