@@ -8,7 +8,7 @@ test('three devices share with one admission per device, private recipient selec
  const contexts=await Promise.all([browser.newContext(),browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true}),browser.newContext()]);const [host,phone,third]=await Promise.all(contexts.map(c=>c.newPage()));try{
  const invite=await create(host);await admit(host,phone,invite);await admit(host,third,invite);await expect(host.getByLabel('Room devices').locator('li')).toHaveCount(3);await expect(host.getByRole('button',{name:/Choose Device/})).toHaveCount(2);await phone.screenshot({path:join(tmpdir(),'drop-v2-phone-connected.png'),fullPage:true});await host.screenshot({path:join(tmpdir(),'drop-room-desktop.png'),fullPage:true});await host.getByRole('button',{name:'Choose Device 2',exact:true}).click();
  await note(host,'Only the phone should receive this');await phone.getByRole('tab',{name:/Chat/}).click();await expect(phone.locator('.message-text')).toContainText('Only the phone');await expect(third.locator('.message-text')).toHaveCount(0);
- const file={name:'unchanged.html',mimeType:'text/html',buffer:Buffer.from('<script>throw new Error("must never execute")</script>original bytes')};await host.getByLabel('Choose file to send',{exact:true}).setInputFiles(file);await expect(phone.getByLabel('Incoming file')).toContainText(file.name);await expect(third.getByLabel('Incoming file')).toHaveCount(0);await phone.getByRole('button',{name:'Accept file',exact:true}).click();await phone.getByRole('tab',{name:/Files/}).click();const save=phone.getByRole('link',{name:'Save file',exact:true});await expect(save).toBeVisible();const downloading=phone.waitForEvent('download');await save.click();const download=await downloading;expect(download.suggestedFilename()).toBe(file.name);expect(await readFile((await download.path())!)).toEqual(file.buffer);
+ const file={name:'unchanged.html',mimeType:'text/html',buffer:Buffer.from('<script>throw new Error("must never execute")</script>original bytes')};await host.getByLabel('Choose file to send',{exact:true}).setInputFiles(file);await expect(phone.getByLabel('Incoming file',{exact:true})).toContainText(file.name);await expect(third.getByLabel('Incoming file',{exact:true})).toHaveCount(0);await phone.getByRole('button',{name:'Accept file',exact:true}).click();await phone.getByRole('tab',{name:/Files/}).click();const save=phone.getByRole('link',{name:'Save file',exact:true});await expect(save).toBeVisible();const downloading=phone.waitForEvent('download');await save.click();const download=await downloading;expect(download.suggestedFilename()).toBe(file.name);expect(await readFile((await download.path())!)).toEqual(file.buffer);
  await third.getByRole('button',{name:'Choose Device 2',exact:true}).click();await note(third,'Third to phone');await phone.getByRole('tab',{name:/Chat/}).click();await expect(phone.locator('.message-text').last()).toHaveText('Third to phone');
  const extra=await browser.newPage();await extra.goto(invite);await expect(extra.getByRole('alert')).toContainText('unavailable, expired or full');await extra.close();
  await host.getByRole('button',{name:'End room',exact:true}).click();await expect(phone.getByRole('heading',{level:1})).toHaveText('Let’s reconnect.');
@@ -100,4 +100,43 @@ test('mobile creation shows invitation first; connected invite drawer opens and 
     await expect(more).toHaveAttribute('aria-expanded','false');
     await host.getByRole('button',{name:'End room',exact:true}).click();
   } finally {await owner.close();await other.close();}
+});
+
+test('code joining retains approval and automatic acceptance is opt-in and reversible',async({browser})=>{
+ const owner=await browser.newContext(),other=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+ const host=await owner.newPage(),guest=await other.newPage();
+ try{
+   await create(host);
+   const code=await host.getByLabel('Room join code',{exact:true}).innerText();
+   expect(code).toMatch(/^\d{5}$/);
+   await guest.goto('/app');
+   await guest.getByRole('textbox',{name:'Room code or invite link',exact:true}).fill(code);
+   await guest.getByRole('button',{name:'Join',exact:true}).click();
+   await expect(guest.getByRole('heading',{name:'One check, then you’re in.'})).toBeVisible();
+   await expect(guest.getByRole('button',{name:'Browse files',exact:true})).toBeHidden();
+   await host.getByRole('button',{name:'Allow device',exact:true}).click();
+   await expect(guest.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled();
+   const auto=guest.getByRole('checkbox',{name:/Accept all incoming files/});
+   await expect(auto).not.toBeChecked();
+   const first={name:'first.html',mimeType:'text/html',buffer:Buffer.from('<script>throw Error("must not execute")</script>hello')};
+   await host.getByLabel('Choose file to send',{exact:true}).setInputFiles(first);
+   await expect(guest.getByLabel('Incoming file',{exact:true})).toBeVisible();
+   await auto.check();
+   await expect(guest.getByLabel('Incoming file',{exact:true})).toHaveCount(0);
+   const save=guest.getByRole('link',{name:'Save file',exact:true});
+   await expect(save).toBeVisible();
+   const pending=guest.waitForEvent('download');await save.click();
+   const download=await pending;
+   expect(await readFile((await download.path())!)).toEqual(first.buffer);
+   await expect(host.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled();
+   await host.getByLabel('Choose file to send',{exact:true}).setInputFiles({name:'second.txt',mimeType:'text/plain',buffer:Buffer.from('automatic')});
+   await expect(guest.getByRole('link',{name:'Save file',exact:true})).toHaveCount(2);
+   await auto.uncheck();
+   await expect(host.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled();
+   await host.getByLabel('Choose file to send',{exact:true}).setInputFiles({name:'third.txt',mimeType:'text/plain',buffer:Buffer.from('ask again')});
+   await expect(guest.getByLabel('Incoming file',{exact:true})).toBeVisible();
+   await guest.getByRole('button',{name:'Decline file',exact:true}).click();
+   await guest.reload();
+   await expect(guest.getByRole('checkbox',{name:/Accept all incoming files/})).not.toBeChecked({timeout:20000});
+ }finally{await owner.close();await other.close();}
 });

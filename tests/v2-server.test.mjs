@@ -1,6 +1,6 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import {WebSocket} from 'ws';import {createDropServer} from '../server/app.mjs';
 async function fixture(t,options={}){const d=createDropServer(options);await new Promise(r=>d.server.listen(0,'127.0.0.1',r));t.after(()=>d.close());const origin=`http://127.0.0.1:${d.server.address().port}`;const create=async()=>{const r=await fetch(origin+'/api/v2/rooms',{method:'POST',headers:{Origin:origin}});assert.equal(r.status,201);return r.json();};
-const connect=async(room,credential,memberId)=>{const ws=new WebSocket(origin.replace('http','ws')+'/signal-v2',{origin});const q=[],waiters=[];ws.on('message',raw=>{const data=JSON.parse(raw);const index=waiters.findIndex(w=>w.type===data.type);if(index>=0){const [w]=waiters.splice(index,1);clearTimeout(w.timer);w.resolve(data);}else q.push(data);});await new Promise(r=>ws.once('open',r));ws.send(JSON.stringify({type:'join',id:room.id,token:credential,memberId}));return {ws,send:data=>ws.send(JSON.stringify(data)),next(type){const i=q.findIndex(d=>d.type===type);if(i>=0)return Promise.resolve(q.splice(i,1)[0]);return new Promise((resolve,reject)=>{const w={type,resolve,timer:setTimeout(()=>reject(Error('No '+type)),2500)};waiters.push(w);});}};};return {...d,origin,create,connect};}
+const connect=async(room,credential,memberId)=>{const ws=new WebSocket(origin.replace('http','ws')+'/signal-v2',{origin});const q=[],waiters=[];ws.on('message',raw=>{const data=JSON.parse(raw);const index=waiters.findIndex(w=>w.type===data.type);if(index>=0){const [w]=waiters.splice(index,1);clearTimeout(w.timer);w.resolve(data);}else q.push(data);});await new Promise(r=>ws.once('open',r));ws.send(JSON.stringify(typeof room==='string'?{type:'join',code:room}:{type:'join',id:room.id,token:credential,memberId}));return {ws,send:data=>ws.send(JSON.stringify(data)),next(type){const i=q.findIndex(d=>d.type===type);if(i>=0)return Promise.resolve(q.splice(i,1)[0]);return new Promise((resolve,reject)=>{const w={type,resolve,timer:setTimeout(()=>reject(Error('No '+type)),2500)};waiters.push(w);});}};};return {...d,origin,create,connect};}
 
 test('v2: six letter rooms, three devices, one approval, no admission by nickname',async t=>{
  const {create,connect,v2}=await fixture(t);const r=await create();assert.match(r.nickname,/^[A-Z]{6}$/);const host=await connect(r,r.owner,r.memberId);const h=await host.next('joined');assert.equal(h.resumeTTL,600000);
@@ -57,4 +57,40 @@ test('a hidden approved device can replace a lingering socket with its own retur
  const foreground=await connect(room,room.owner,room.memberId);
  assert.equal((await foreground.next('joined')).approved,true);
  assert.equal(v2.rooms.get(room.id).members.size,1);
+});
+
+test('five-digit codes are unique discovery routes and require owner approval',async t=>{
+ const {create,connect,v2}=await fixture(t);
+ const room=await create(),second=await create();
+ assert.match(room.joinCode,/^\d{5}$/);
+ assert.notEqual(room.joinCode,second.joinCode);
+ const host=await connect(room,room.owner,room.memberId);
+ await host.next('joined');
+ const guest=await connect(room.joinCode);
+ const joined=await guest.next('joined');
+ assert.equal(joined.approved,false);
+ assert.equal(joined.joinCode,undefined);
+ assert.notEqual(joined.credential,room.invite);
+ const pending=await connect(room.joinCode);
+ assert.equal((await pending.next('closed')).code,'invite');
+ let requests;
+ do{requests=(await host.next('requests')).requests;}while(!requests.length);
+ host.send({type:'approve',memberId:joined.memberId,requestId:requests[0].requestId});
+ await guest.next('approved');
+ await guest.next('link');
+ assert.equal(v2.rooms.get(room.id).members.size,2);
+ host.send({type:'leave'});
+ await guest.next('closed');
+ const expired=await connect(room.joinCode);
+ assert.equal((await expired.next('closed')).code,'invite');
+});
+
+test('a short code expires with the invitation even while its room is alive',async t=>{
+ const {create,connect}=await fixture(t,{inviteTTL:100});
+ const room=await create();
+ const host=await connect(room,room.owner,room.memberId);
+ await host.next('joined');
+ await new Promise(resolve=>setTimeout(resolve,130));
+ const guest=await connect(room.joinCode);
+ assert.equal((await guest.next('closed')).code,'invite');
 });

@@ -10,9 +10,9 @@ Send a file, link or note from one browser to another. Create a temporary room o
 
 ## Try a transfer
 
-1. Open a room on the first device. Scan its private QR or open the invite link on the second.
+1. Open a room on the first device. Scan its private QR, enter its five-digit code, or open the invite link on the second.
 2. Compare the six-letter room name on both screens. The owner approves each new device once.
-3. Select a recipient and browse for a file. On the receiving screen, accept the offer and save the download. For a link or note, use **Chat** instead.
+3. Select a recipient and browse for a file. On the receiving screen, accept the offer and save the download. For a link or note, use **Chat** instead. Enable **Accept all incoming files** on a receiving device to skip individual prompts for this room. It resets when leaving or reloading; files still need to be saved.
 
 Keep both pages open during transfers. Files are delivered individually to the selected recipient, including in a three-device room.
 

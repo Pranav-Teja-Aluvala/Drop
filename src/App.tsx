@@ -113,7 +113,7 @@ export function App() {
     <>
       <RoomAtmosphere phase={room.status} />
       <div className="app-shell app-page">
-        {room.offer ? (
+        {room.offer && !room.autoAccept ? (
           <section
             className="incoming-offer"
             aria-label="Incoming file"
@@ -251,6 +251,22 @@ export function App() {
           )}
           <div className="workspace">
             <Connection room={room} compact={enteredRoom} />
+            {enteredRoom && (
+              <label className="auto-accept">
+                <input
+                  type="checkbox"
+                  checked={room.autoAccept}
+                  onChange={(event) => room.setAutoAccept(event.target.checked)}
+                />
+                <span>
+                  <strong>Accept all incoming files</strong>
+                  <small>
+                    From approved devices in this room. Files are not scanned
+                    for malware. Resets when you leave or reload.
+                  </small>
+                </span>
+              </label>
+            )}
             <section
               id="send-file"
               hidden={!enteredRoom}

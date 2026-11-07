@@ -168,7 +168,7 @@ export function Connection({
             Create a room
           </button>
           <div className="divider">
-            <span>or use an invitation</span>
+            <span>or join another room</span>
           </div>
           <form
             className="join-form"
@@ -180,9 +180,9 @@ export function Connection({
             <label className="invite-field">
               <Link size={18} />
               <input
-                aria-label="Invite link"
-                type="url"
-                placeholder="Paste invitation link"
+                aria-label="Room code or invite link"
+                type="text"
+                placeholder="5-digit code or invitation link"
                 required
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
@@ -264,6 +264,12 @@ export function Connection({
                     </button>
                   )}
                 </div>
+                <label className="join-code-label">
+                  Room code
+                  <output aria-label="Room join code" className="join-code">
+                    {room.joinCode || "…"}
+                  </output>
+                </label>
                 <label className="invite-url-label">
                   Private invitation
                   <input
