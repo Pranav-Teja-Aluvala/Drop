@@ -52,7 +52,7 @@
 
   function apply(isOffline) {
     mode = isOffline ? offline : online; idx = 0;
-    document.title = isOffline ? 'No connection — Drop' : kind ? (kind === 'room-expired' ? 'Room ended — Drop' : 'Connection help — Drop') : 'Page not found — Drop';
+    document.title = isOffline ? 'No connection — shareEm' : kind ? (kind === 'room-expired' ? 'Room ended — shareEm' : 'Connection help — shareEm') : 'Page not found — shareEm';
     body.classList.toggle('offline', isOffline);
     label.textContent = mode.label;
     title.innerHTML = mode.title;

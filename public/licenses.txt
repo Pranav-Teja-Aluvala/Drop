@@ -1,6 +1,6 @@
-Drop — Third-party notices
+shareEm — Third-party notices
 
-Copyright and license notices for software used by Drop.
+Copyright and license notices for software used by shareEm.
 
 @types/react 19.3.0
 License: MIT

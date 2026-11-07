@@ -1,4 +1,4 @@
-/* DROP — one quiet, shared product system. */
+/* shareEm — one quiet, shared product system. */
 :root{font-family:Arial,Helvetica,sans-serif;color:#202322;background:#fafaf8;--ink:#202322;--muted:#717773;--line:#e3e6e1;--accent:#565dea;--canvas:#fff;font-synthesis:none}
 body,body:has(.app-page){margin:0;background:#fafaf8;color:var(--ink);-webkit-font-smoothing:antialiased}button,input,textarea{font:inherit}a{color:inherit}button,a{touch-action:manipulation}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #565dea;outline-offset:5px}button:disabled{color:#737373;background:#f0f1ee;border-color:#e5e7e2;box-shadow:none}button:disabled:hover{transform:none}
 .drop-brand{display:inline-flex;align-items:center;gap:10px;font-size:29px;font-weight:750;letter-spacing:-1.2px;color:#202322}.drop-brand img{width:30px;height:36px}.brand{letter-spacing:normal}.drop-brand.light{color:white}

@@ -3,7 +3,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {chromium} from '@playwright/test';
 
-const origin = process.env.TEST_BASE_URL || 'https://roptransfer.vercel.app';
+const origin = process.env.TEST_BASE_URL || 'https://shareem.vercel.app';
 const backend = process.env.TEST_SIGNAL_ORIGIN || 'https://drop-pairing.onrender.com';
 assert.equal(new URL(origin).protocol, 'https:');
 assert.equal(new URL(backend).protocol, 'https:');
