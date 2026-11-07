@@ -44,7 +44,7 @@ export function useRoom(){
       clearTimeout(l.timer);
       l.transfer=new Transfer(channel,{item:item=>updateItem(l.peerId,l.label,item),offer:value=>setOffers(prev=>{const next={...prev};if(value)next[l.peerId]=value;else delete next[l.peerId];return next;}),error:setError});refresh();setError('');
     };
-    channel.onclose=()=>{if(links.current.get(l.peerId)===l){dropLink(l.peerId);if(!ended.current)setError('A device paused its connection. Return to sharEEm there, or choose Reconnect devices.');}};
+    channel.onclose=()=>{if(links.current.get(l.peerId)===l){dropLink(l.peerId);if(!ended.current)setError('A device paused its connection. Return to Drop there, or choose Reconnect devices.');}};
   }
   async function setup(msg:any){
     dropLink(msg.peerId);const pc=new RTCPeerConnection({iceServers:msg.iceServers});
@@ -105,7 +105,7 @@ export function useRoom(){
   function reset(){clearReturn();inviteRef.current='';signal({type:'leave'});++gen.current;approved.current=false;cleanup(true);session.current=null;ended.current=false;background.current=0;disconnectedAt.current=0;setAwayUntil(0);setItems([]);setFileCounts({sent:0,received:0});setError('');setRequests([]);setMembers([]);setTarget('');setRole('');setNickname('');setInvite('');setExpires(0);}
   async function create(){if(busy.current)return;reset();setJoining(false);setStatus('creating');busy.current=true;const generation=gen.current;
     try{const response=await fetch(`${import.meta.env.VITE_SIGNAL_ORIGIN||''}/api/v2/rooms`,{method:'POST',credentials:'omit',signal:AbortSignal.timeout(75000)});let data;try{data=await response.json();}catch{throw Error('The pairing service is waking up. Try again shortly.');}if(!response.ok)throw Error(data.error||'Could not open a room.');if(gen.current!==generation)return;inviteRef.current=`${location.origin}/app#${data.id}.${data.invite}`;setInvite(inviteRef.current);connect({id:data.id,memberId:data.memberId,token:data.owner},generation);}catch(e){if(gen.current===generation)end(e instanceof Error?e.message:'Could not open the room.');}}
-  function join(value:string){let url;try{url=new URL(value);}catch{setError('Paste the complete invitation link.');return;}if(url.origin!==location.origin||!/^#[\w-]{43}\.[\w-]{43}$/.test(url.hash)){setError('Use an invitation from this sharEEm website.');return;}reset();setJoining(true);setStatus('creating');busy.current=true;const [id,token]=url.hash.slice(1).split('.');history.replaceState(null,'',location.pathname);connect({id,token},gen.current);}
+  function join(value:string){let url;try{url=new URL(value);}catch{setError('Paste the complete invitation link.');return;}if(url.origin!==location.origin||!/^#[\w-]{43}\.[\w-]{43}$/.test(url.hash)){setError('Use an invitation from this Drop website.');return;}reset();setJoining(true);setStatus('creating');busy.current=true;const [id,token]=url.hash.slice(1).split('.');history.replaceState(null,'',location.pathname);connect({id,token},gen.current);}
   useEffect(()=>{const hash=()=>{if(/^#[\w-]{43}\.[\w-]{43}$/.test(location.hash))join(location.href);};
     if(/^#[\w-]{43}\.[\w-]{43}$/.test(location.hash))hash();
     else {
