@@ -53,4 +53,8 @@ test('a hidden approved device can replace a lingering socket with its own retur
  const resumed=await connect(room,room.owner,room.memberId);
  assert.equal((await resumed.next('joined')).approved,true);
  assert.equal(v2.rooms.get(room.id).members.size,1);
+ resumed.send({type:'visibility',hidden:false});
+ const foreground=await connect(room,room.owner,room.memberId);
+ assert.equal((await foreground.next('joined')).approved,true);
+ assert.equal(v2.rooms.get(room.id).members.size,1);
 });
