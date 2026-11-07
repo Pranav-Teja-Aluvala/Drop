@@ -1,8 +1,12 @@
-# Drop
+<img src="public/assets/logo-full.svg" width="155" alt="Drop">
+
+# Send it to my other device
 
 Send a file, link or note from one browser to another. Create a temporary room on your laptop, scan its QR with your phone, and choose which device should receive the next item. A room supports up to three devices without an account or an installed app.
 
 [Open Drop](https://drop-devs-52b0.vercel.app/app) · [Privacy](https://drop-devs-52b0.vercel.app/privacy.html) · [Build checks](https://github.com/Pranav-Teja-Aluvala/Drop/actions/workflows/checks.yml)
+
+![Drop’s landing page with its interactive postcard](docs/drop-home.png)
 
 ## Try a transfer
 
@@ -34,7 +38,7 @@ flowchart TB
 
 **Delivery.** Each approved pair establishes its own WebRTC data channel. The sender offers the filename and size, the recipient accepts or declines, and accepted bytes are checked with SHA-256 before a download is offered. Notes travel over the selected peer connection. The signaling service handles coordination and holds no file store.
 
-**Recovery.** The server keeps membership and timers in one process. A retained browser page can use its in-memory return credential to rebuild a connection. Reloading the page can lose that credential. Restarting the server clears active rooms.
+**Recovery.** The server keeps membership and timers in one process. The same tab can use a credential in session storage to rejoin after an app switch or reload. Files and chat stay in memory and are lost on reload. Restarting the server clears active rooms.
 
 | Limit | Behavior |
 | --- | --- |
@@ -59,17 +63,6 @@ Open [localhost:5173/app](http://localhost:5173/app). To exercise pairing on one
 
 To test the production bundle locally, run `npm run build`, then `npm run preview:v2` and open [localhost:5174](http://localhost:5174/).
 
-## Repository map
-
-| Location | Responsibility |
-| --- | --- |
-| `src/App.tsx`, `src/components.tsx`, `src/RoomActivity.tsx` | Room UI, device approval, file offers, downloads and chat |
-| `src/useRoom.ts`, `src/transfer.ts` | Device membership, peer connections and transfer protocol |
-| `src/Story.tsx`, `src/DispatchArt.tsx` | Public landing page and interactive artwork |
-| `server/v2.mjs`, `server/app.mjs`, `server/ice.mjs` | Signaling, service entry points, quotas and ICE configuration |
-| `public/`, `scripts/` | Public assets, legal pages, error templates, build and release checks |
-| `tests/`, `.github/workflows/` | Node server tests, Playwright browser journeys and CI |
-
 ## Verification
 
 ```sh
@@ -82,7 +75,7 @@ npm audit --omit=dev
 npm run check:secrets -- --history
 ```
 
-The beta runner starts local production-build servers and exercises admission, three-device recipient isolation, reconnects, and byte-identical downloads with synthetic files. The release check covers mobile and desktop layouts, metadata, offline-related assets and HTTP behavior. To use an installed Chrome, set `PLAYWRIGHT_CHANNEL=chrome` in your shell. The configured browser suite targets v2; older UI specifications remain as historical references.
+The browser test runner starts local production-build servers and exercises admission, three-device recipient isolation, reconnects, and byte-identical downloads with synthetic files. The release check covers mobile and desktop layouts, metadata, offline-related assets and HTTP behavior. To use an installed Chrome, set `PLAYWRIGHT_CHANNEL=chrome` in your shell.
 
 ## Self-hosting
 

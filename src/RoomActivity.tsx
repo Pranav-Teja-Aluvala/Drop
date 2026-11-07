@@ -27,7 +27,7 @@ export function RoomActivity({room,view,setView,text,setText,unread}:{room:Room;
     <div id="activity-files" role="tabpanel" aria-labelledby="activity-files-tab" hidden={view!=='files'} tabIndex={0}>
       {view==='files'&&(files.length?<TransferList items={files} cancel={room.cancel} onError={room.setError}/>:<div className="activity-empty"><Files size={32}/><h3>No files yet.</h3><p>Files you send and receive will appear here, ready to save.</p></div>)}
     </div><div id="activity-chat" className="chat-panel" role="tabpanel" aria-labelledby="activity-chat-tab" hidden={view!=='chat'}>{view==='chat'&&<>
-      <div className="chat-heading"><div className="chat-avatar"><MessageSquare size={19}/></div><div><h3>Your other device</h3><p>Messages stay in this open page. Choose a recipient before sending.</p></div></div>
+      <div className="chat-heading"><div className="chat-avatar"><MessageSquare size={19}/></div><div><h3>Room chat</h3><p>Sending to {room.members.find(member=>member.id===room.target)?.label || 'your selected device'}.</p></div></div>
       <div ref={feed} className="chat-feed" aria-label="Conversation" onScroll={()=>{if(feed.current)atBottom.current=feed.current.scrollHeight-feed.current.scrollTop-feed.current.clientHeight<64;}}>
         {!messages.length?<div className="activity-empty"><MessageSquare size={30}/><h3>Send something small.</h3><p>A link, an address, a note. Pick up the conversation on your other screen.</p></div>:messages.map(item=><article key={item.id} className={`chat-message ${item.direction==='out'?'sent':'received'}`} aria-label={item.direction==='out'?'Sent message':'Received message'}>
           <div className="chat-bubble"><pre className="message-text">{item.text}</pre></div>

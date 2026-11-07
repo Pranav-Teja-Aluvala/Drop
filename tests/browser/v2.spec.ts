@@ -17,7 +17,15 @@ test('three devices share with one admission per device, private recipient selec
 
 test('approved mobile returns from a dropped socket without scanning or another approval',async({browser})=>{
  const a=await browser.newContext(),b=await browser.newContext();const host=await a.newPage(),guest=await b.newPage();await guest.addInitScript(()=>{const Native=WebSocket;window.WebSocket=class extends Native{constructor(url:string|URL,protocols?:string|string[]){super(url,protocols);(window as Window&{testSocket?:WebSocket}).testSocket=this;}};});
- try{await admit(host,guest,await create(host));await guest.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,value:'hidden'});document.dispatchEvent(new Event('visibilitychange'));});await expect(host.getByLabel('Background time remaining')).toBeVisible();await guest.evaluate(()=>(window as Window&{testSocket?:WebSocket}).testSocket?.close());await guest.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,value:'visible'});document.dispatchEvent(new Event('visibilitychange'));});await expect(guest.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled({timeout:20000});await expect(host.getByRole('button',{name:'Allow device',exact:true})).toHaveCount(0);await note(guest,'I came back without scanning');await host.getByRole('tab',{name:/Chat/}).click();await expect(host.locator('.message-text')).toContainText('came back');await host.getByRole('button',{name:'End room',exact:true}).click();}finally{await a.close();await b.close();}
+ try{await admit(host,guest,await create(host));await guest.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,value:'hidden'});document.dispatchEvent(new Event('visibilitychange'));});await expect(host.getByLabel('Background time remaining')).toBeVisible();await guest.evaluate(()=>(window as Window&{testSocket?:WebSocket}).testSocket?.close());await guest.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,value:'visible'});document.dispatchEvent(new Event('visibilitychange'));});await expect(guest.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled({timeout:20000});await expect(host.getByRole('button',{name:'Allow device',exact:true})).toHaveCount(0);await guest.setViewportSize({width:844,height:390});
+ await guest.getByRole('link',{name:'Chat',exact:true}).click();
+ await guest.reload();
+ await expect(guest.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled({timeout:20000});
+ expect(await guest.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await host.reload();
+ await expect(host.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled({timeout:20000});
+ await expect(host.getByLabel('Room invite',{exact:true})).toHaveValue(/#.+/);
+ await note(guest,'I came back without scanning');await host.getByRole('tab',{name:/Chat/}).click();await expect(host.locator('.message-text')).toContainText('came back');await host.getByRole('button',{name:'End room',exact:true}).click();}finally{await a.close();await b.close();}
 });
 
 test('v2 landing, legal pages and error states render at mobile widths without overflow or personal-detail duplication',async({page})=>{

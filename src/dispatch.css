@@ -188,3 +188,21 @@ body:has(.reeded-glass) {background:#101526}
 .dispatch .v2-hero:has([data-edition=link]) {background-color:#faf1e7}
 .dispatch .v2-hero:has([data-edition=note]) {background-color:#eff3e9}
 @media(prefers-reduced-motion:no-preference){.dispatch .v2-hero,.dispatch-art .paper-stack{transition:background-color .35s ease}}
+
+.room-shortcuts {display:flex;flex-wrap:wrap;gap:.6rem;margin:1rem 0}
+.room-shortcuts a {display:inline-flex;align-items:center;min-height:44px;padding:0 1rem;border:1px solid var(--line);border-radius:2rem;background:white;color:#172b45;text-decoration:none}
+.room-shortcuts a:hover,.room-shortcuts a:focus-visible {background:#edf1ff}
+.chat-feed {overscroll-behavior-y:auto}
+.chat-message .message-text {max-height:none;overflow:visible}
+@media (max-width:760px), (orientation:landscape) and (max-height:550px) {
+  .app-page .chat-feed {height:auto;min-height:6rem;max-height:min(52dvh,26rem);overflow-y:auto;touch-action:pan-y}
+  .app-page .chat-message {flex:none;min-width:0}
+  .app-page .chat-feed .activity-empty {min-height:0;padding:16px}
+  .app-page .chat-heading,.app-page .activity-heading {padding:12px 16px}
+  .app-page .chat-composer textarea {resize:none;min-height:44px}
+  .app-page .chat-composer-hint span:first-child {display:none}
+  .app-page .connected-layout .workspace {grid-template-columns:minmax(0,1fr)}
+  .app-page .connected-layout .drop-zone {padding:8px}
+  .app-page .connected-layout .upload-icon {display:none}
+  .app-page .connected-layout .intro h1 {font-size:clamp(2rem,7vw,3rem);letter-spacing:-.04em}
+}

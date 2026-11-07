@@ -1,15 +1,16 @@
-# Drop v2
+# Drop
 
-Drop is a browser-based utility for temporary, direct WebRTC file and note transfers between up to three devices. No signup or file storage server.
+> Send files, links and notes directly between up to three browsers. Drop uses temporary rooms and requires no account.
 
-The host checks a six-letter room recognition name and approves each new device once. The invitation and return credentials are separate random secrets. The signaling service and website are trusted; v2 does not offer independent certificate verification.
+## Using Drop
 
-Rooms last up to two hours; invitations last ten minutes. Approved devices may return within ten minutes in the same retained page. Background execution is not guaranteed and interrupted files must be resent. No TURN relay is enabled, so some networks cannot connect.
+- [Open Drop](https://drop-devs-52b0.vercel.app/): Overview and pairing instructions.
+- [Create or join a room](https://drop-devs-52b0.vercel.app/app): Scan the private QR and approve the joining device.
+- [Connection help](https://drop-devs-52b0.vercel.app/connection-help.html): Troubleshoot direct connections and expired sessions.
 
-Files up to 50 MiB; explicit recipient acceptance and SHA-256 receipt verification. No malware scanning.
+## Documentation
 
-- /app: create or join
-- /privacy.html: data handling
-- /cookies.html: browser storage
-- /terms.html: terms
-- /contact.html: maintainer and support
+- [Architecture and limits](https://github.com/Pranav-Teja-Aluvala/Drop#system-architecture): WebRTC delivery, room lifetime and local setup.
+- [Privacy](https://drop-devs-52b0.vercel.app/privacy.html): Data handling and retention.
+- [Cookies and local data](https://drop-devs-52b0.vercel.app/cookies.html): Browser storage and offline assets.
+- [Contact](https://drop-devs-52b0.vercel.app/contact.html): Support and privacy questions.

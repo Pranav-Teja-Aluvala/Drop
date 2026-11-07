@@ -1,7 +1,7 @@
 {
   "name": "drop-transfer",
   "private": true,
-  "version": "2.0.0-preview.1",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "node server/index.mjs",
