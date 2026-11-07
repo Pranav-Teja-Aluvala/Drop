@@ -23,7 +23,7 @@ function readReturn():{session:Session;invite:string;deadline:number}|null{
 export function useRoom(){
   const [status,setStatus]=useState<Status>('idle'),[joining,setJoining]=useState(()=>!!location.hash),[invite,setInvite]=useState(''),[nickname,setNickname]=useState(''),[expires,setExpires]=useState(0),[error,setError]=useState('');
   const [members,setMembers]=useState<Member[]>([]),[requests,setRequests]=useState<Request[]>([]),[role,setRole]=useState(''),[selfId,setSelfId]=useState(''),[target,setTarget]=useState(''),[readyIds,setReadyIds]=useState<string[]>([]),[awayUntil,setAwayUntil]=useState(0);
-  const [items,setItems]=useState<Item[]>([]),[offers,setOffers]=useState<Record<string,{name:string;size:number}>>({}),[fileCounts,setFileCounts]=useState({sent:0,received:0});
+  const [items,setItems]=useState<Item[]>([]),[offers,setOffers]=useState<Record<string,{name:string;size:number}>>({});
   const inviteRef=useRef('');
   const retryAttempt=useRef(0);
   const socket=useRef<WebSocket|null>(null),session=useRef<Session|null>(null),links=useRef(new Map<string,Link>()),retired=useRef<Transfer[]>([]),gen=useRef(0),approved=useRef(false),retry=useRef<ReturnType<typeof setTimeout>|undefined>(undefined),background=useRef(0),backgroundTimer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined),disconnectedAt=useRef(0),busy=useRef(false),ended=useRef(false),memberRef=useRef<Member[]>([]);
@@ -35,7 +35,6 @@ export function useRoom(){
   function updateItem(peerId:string,label:string,item:Item){
     const value={...item,id:peerId+':'+item.id,peerId,peerLabel:label,createdAt:Date.now()};
     setItems(prev=>{const old=prev.find(i=>i.id===value.id);value.createdAt=old?.createdAt||value.createdAt;const all=[value,...prev.filter(i=>i.id!==value.id)];return [...all.filter(i=>i.text===undefined).slice(0,40),...all.filter(i=>i.text!==undefined).slice(0,200)].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));});
-    if(item.text===undefined&&['Delivered','Received'].includes(item.status)){const key=item.direction==='out'?'sent':'received';setFileCounts(p=>({...p,[key]:p[key]+1}));}
   }
   function attach(l:Link,channel:RTCDataChannel){
     if(l.channel){channel.close();return;}l.channel=channel;
@@ -44,7 +43,7 @@ export function useRoom(){
       clearTimeout(l.timer);
       l.transfer=new Transfer(channel,{item:item=>updateItem(l.peerId,l.label,item),offer:value=>setOffers(prev=>{const next={...prev};if(value)next[l.peerId]=value;else delete next[l.peerId];return next;}),error:setError});refresh();setError('');
     };
-    channel.onclose=()=>{if(links.current.get(l.peerId)===l){dropLink(l.peerId);if(!ended.current)setError('A device paused its connection. Return to Drop there, or choose Reconnect devices.');}};
+    channel.onclose=()=>{if(links.current.get(l.peerId)===l){dropLink(l.peerId);if(!ended.current)setError('A device paused its connection. Return to Drop there to resume sharing.');}};
   }
   async function setup(msg:any){
     dropLink(msg.peerId);const pc=new RTCPeerConnection({iceServers:msg.iceServers});
@@ -53,7 +52,7 @@ export function useRoom(){
     pc.onicecandidate=e=>{if(current()&&e.candidate)signal({type:'signal',to:l.peerId,linkId:l.id,signal:{candidate:e.candidate.toJSON()}});};
     pc.ondatachannel=e=>{if(current())attach(l,e.channel);};
     pc.onconnectionstatechange=()=>{if(!current())return;if(pc.connectionState==='failed'){dropLink(l.peerId);setError('No network route to that device. Try the same Wi-Fi. A relay is not enabled.');}else if(pc.connectionState==='connected'||pc.connectionState==='disconnected')refresh();};
-    l.timer=setTimeout(()=>{if(current()&&!l.transfer){dropLink(l.peerId);setError('That device could not connect. Try the same Wi-Fi, then Reconnect devices.');}},45000);
+    l.timer=setTimeout(()=>{if(current()&&!l.transfer){dropLink(l.peerId);setError('That device could not connect. Try the same Wi-Fi, then return to Drop on both screens.');}},45000);
     if(msg.initiator){attach(l,pc.createDataChannel('drop-v2',{ordered:true}));await pc.setLocalDescription(await pc.createOffer());if(current())signal({type:'signal',to:l.peerId,linkId:l.id,signal:{description:pc.localDescription}});}
   }
   function visibility(){
@@ -85,7 +84,7 @@ export function useRoom(){
       }else if(msg.type==='peer-away'||msg.type==='peer-left')dropLink(msg.peerId);
       else if(msg.type==='closed')end(msg.reason);
       else if(msg.type==='notice')setError(msg.message);
-    }).catch(()=>{if(gen.current===generation)setError('A connection could not be prepared. Choose Reconnect devices.');});};
+    }).catch(()=>{if(gen.current===generation)setError('A connection could not be prepared. Return to Drop on both screens.');});};
     ws.onerror=()=>{};
     ws.onclose=()=>{
       clearTimeout(authTimer);if(gen.current!==generation||ended.current||socket.current!==ws)return;socket.current=null;busy.current=false;
@@ -102,7 +101,7 @@ export function useRoom(){
     if(socket.current&&socket.current.readyState<2)return;
     setStatus('recovering');connect({id:session.current.id,token:session.current.token,memberId:session.current.memberId},gen.current);
   }
-  function reset(){clearReturn();inviteRef.current='';signal({type:'leave'});++gen.current;approved.current=false;cleanup(true);session.current=null;ended.current=false;background.current=0;disconnectedAt.current=0;setAwayUntil(0);setItems([]);setFileCounts({sent:0,received:0});setError('');setRequests([]);setMembers([]);setTarget('');setRole('');setNickname('');setInvite('');setExpires(0);}
+  function reset(){clearReturn();inviteRef.current='';signal({type:'leave'});++gen.current;approved.current=false;cleanup(true);session.current=null;ended.current=false;background.current=0;disconnectedAt.current=0;setAwayUntil(0);setItems([]);setError('');setRequests([]);setMembers([]);setTarget('');setRole('');setNickname('');setInvite('');setExpires(0);}
   async function create(){if(busy.current)return;reset();setJoining(false);setStatus('creating');busy.current=true;const generation=gen.current;
     try{const response=await fetch(`${import.meta.env.VITE_SIGNAL_ORIGIN||''}/api/v2/rooms`,{method:'POST',credentials:'omit',signal:AbortSignal.timeout(75000)});let data;try{data=await response.json();}catch{throw Error('The pairing service is waking up. Try again shortly.');}if(!response.ok)throw Error(data.error||'Could not open a room.');if(gen.current!==generation)return;inviteRef.current=`${location.origin}/app#${data.id}.${data.invite}`;setInvite(inviteRef.current);connect({id:data.id,memberId:data.memberId,token:data.owner},generation);}catch(e){if(gen.current===generation)end(e instanceof Error?e.message:'Could not open the room.');}}
   function join(value:string){let url;try{url=new URL(value);}catch{setError('Paste the complete invitation link.');return;}if(url.origin!==location.origin||!/^#[\w-]{43}\.[\w-]{43}$/.test(url.hash)){setError('Use an invitation from this Drop website.');return;}reset();setJoining(true);setStatus('creating');busy.current=true;const [id,token]=url.hash.slice(1).split('.');history.replaceState(null,'',location.pathname);connect({id,token},gen.current);}
@@ -116,10 +115,18 @@ export function useRoom(){
     window.addEventListener('pagehide',pageHide);window.addEventListener('pageshow',visibility);window.addEventListener('hashchange',hash);document.addEventListener('visibilitychange',visibility);window.addEventListener('online',resume);
     // Do not send leave on pagehide: mobile browsers emit it during suspension.
     return()=>{window.removeEventListener('pagehide',pageHide);window.removeEventListener('pageshow',visibility);window.removeEventListener('hashchange',hash);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('online',resume);ended.current=true;++gen.current;cleanup(true);};},[]);
+  useEffect(() => {
+    if (status !== 'waiting') return;
+    const timer = setInterval(() => {
+      const anotherDevice = memberRef.current.some(member => member.id !== session.current?.memberId && member.online);
+      if (approved.current && anotherDevice && links.current.size === 0) signal({type:'retry'});
+    }, 8000);
+    return () => clearInterval(timer);
+  }, [status]);
   const firstOffer=Object.entries(offers)[0];const offer=firstOffer?{...firstOffer[1],peerId:firstOffer[0],label:members.find(m=>m.id===firstOffer[0])?.label||'Other device'}:null;
-  return {status,joining,invite,nickname,expires,error,setError,members,requests,role,selfId,target,setTarget,readyIds,awayUntil,items,fileCounts,offer,create,join,
+  return {status,joining,invite,nickname,expires,error,setError,members,requests,role,selfId,target,setTarget,readyIds,awayUntil,items,offer,create,join,
     approve:(r:Request)=>signal({type:'approve',memberId:r.id,requestId:r.requestId}),reject:(r:Request)=>signal({type:'reject',memberId:r.id,requestId:r.requestId}),
-    leave:()=>{signal({type:'leave'});end();},reconnect:()=>{if(socket.current?.readyState===WebSocket.OPEN){signal({type:'retry'});setError('');}else resume();},
+    leave:()=>{signal({type:'leave'});end();},
     sendFile:async(file:File)=>{try{const t=links.current.get(target)?.transfer;if(!t)throw Error('Choose a connected recipient.');await t.offer(file);}catch(e){setError(e instanceof Error?e.message:'Could not send file.');}},
     sendText:(text:string)=>{try{const t=links.current.get(target)?.transfer;if(!t)return false;t.text(text);return true;}catch(e){setError(e instanceof Error?e.message:'Could not send message.');return false;}},
     accept:()=>{if(offer)links.current.get(offer.peerId)?.transfer?.accept();},decline:()=>{if(offer)links.current.get(offer.peerId)?.transfer?.decline();},

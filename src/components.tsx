@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import QRCode from "qrcode";
+import gsap from "gsap";
 import {
   ArrowDownToLine,
   ArrowUpRight,
@@ -9,7 +10,6 @@ import {
   Link,
   LoaderCircle,
   Plus,
-  RefreshCw,
   Share2,
   Smartphone,
   X,
@@ -62,7 +62,38 @@ export function CopyButton({
   );
 }
 
-export function Connection({ room }: { room: Room }) {
+export function Connection({
+  room,
+  compact = false,
+}: {
+  room: Room;
+  compact?: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const drawer = useRef<HTMLDivElement>(null);
+  const toggle = useRef<HTMLButtonElement>(null);
+  const open = !compact || expanded;
+  useEffect(() => {
+    if (!compact) setExpanded(false);
+  }, [compact]);
+  useEffect(() => {
+    if (!drawer.current) return;
+    const tween = gsap.to(drawer.current, {
+      height: open ? "auto" : 0,
+      opacity: open ? 1 : 0,
+      duration: matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? 0
+        : 0.35,
+      ease: "power2.inOut",
+    });
+    return () => {
+      tween.kill();
+    };
+  }, [open, room.invite]);
+  function closeInvite() {
+    setExpanded(false);
+    toggle.current?.focus();
+  }
   const [link, setLink] = useState("");
   const [qr, setQR] = useState("");
   const [sharing, setSharing] = useState(false);
@@ -96,7 +127,9 @@ export function Connection({ room }: { room: Room }) {
   const seconds = Math.max(0, Math.ceil((until - now) / 1000));
   return (
     <section
-      className="connection panel v2-connection"
+      className={
+        "connection panel v2-connection" + (compact ? " room-toolbar" : "")
+      }
       aria-labelledby="connection-title"
     >
       <div className="room-heading">
@@ -106,8 +139,25 @@ export function Connection({ room }: { room: Room }) {
             ? "Bring your devices together."
             : room.nickname || "Opening Drop…"}
         </h2>
-        {!initial && <p>Up to 3 devices · One approval per new device</p>}
+        {!initial && !compact && (
+          <p>Up to 3 devices · One approval per new device</p>
+        )}
       </div>
+      {compact &&
+        room.role === "host" &&
+        room.invite &&
+        room.members.length < 3 && (
+          <button
+            ref={toggle}
+            className="button secondary connect-more"
+            aria-expanded={expanded}
+            aria-controls="room-invitation"
+            onClick={() => setExpanded((value) => !value)}
+          >
+            <Plus size={18} className={expanded ? "plus-open" : ""} />
+            Connect more
+          </button>
+        )}
       {initial ? (
         <>
           <button
@@ -149,64 +199,84 @@ export function Connection({ room }: { room: Room }) {
       ) : (
         <>
           {room.role === "host" && room.invite && room.members.length < 3 && (
-            <div className="v2-invite">
-              <div className="qr-frame">
-                {qr ? (
-                  <img
-                    src={qr}
-                    width="220"
-                    height="220"
-                    alt="Scan to request access to this Drop room"
-                  />
-                ) : (
-                  <LoaderCircle className="spin" />
-                )}
-              </div>
-              <p>Scan on your next device</p>
-              <div className="invite-actions">
-                <CopyButton value={room.invite} onError={room.setError}>
-                  Copy link
-                </CopyButton>
-                {typeof navigator.share === "function" && (
+            <div
+              ref={drawer}
+              id="room-invitation"
+              className="invite-drawer"
+              aria-hidden={!open}
+              inert={!open}
+              onKeyDown={(event) => {
+                if (event.key === "Escape" && compact) closeInvite();
+              }}
+            >
+              <div className="v2-invite">
+                {compact && (
                   <button
-                    className="button secondary"
-                    disabled={sharing}
-                    onClick={async () => {
-                      setSharing(true);
-                      try {
-                        await navigator.share({
-                          title: "Join my Drop room",
-                          url: room.invite,
-                        });
-                      } catch (e) {
-                        if (!(
-                          e instanceof DOMException && e.name === "AbortError"
-                        ))
-                          room.setError(
-                            "Use Copy invite link to share this invitation.",
-                          );
-                      } finally {
-                        setSharing(false);
-                      }
-                    }}
+                    className="icon-button close-invite"
+                    aria-label="Close invitation"
+                    onClick={closeInvite}
                   >
-                    <Share2 size={18} />
-                    Share invite
+                    <X size={20} />
                   </button>
                 )}
+                <div className="qr-frame">
+                  {qr ? (
+                    <img
+                      src={qr}
+                      width="220"
+                      height="220"
+                      alt="Scan to request access to this Drop room"
+                    />
+                  ) : (
+                    <LoaderCircle className="spin" />
+                  )}
+                </div>
+                <p>Scan on your next device</p>
+                <div className="invite-actions">
+                  <CopyButton value={room.invite} onError={room.setError}>
+                    Copy link
+                  </CopyButton>
+                  {typeof navigator.share === "function" && (
+                    <button
+                      className="button secondary"
+                      disabled={sharing}
+                      onClick={async () => {
+                        setSharing(true);
+                        try {
+                          await navigator.share({
+                            title: "Join my Drop room",
+                            url: room.invite,
+                          });
+                        } catch (e) {
+                          if (!(
+                            e instanceof DOMException && e.name === "AbortError"
+                          ))
+                            room.setError(
+                              "Use Copy invite link to share this invitation.",
+                            );
+                        } finally {
+                          setSharing(false);
+                        }
+                      }}
+                    >
+                      <Share2 size={18} />
+                      Share invite
+                    </button>
+                  )}
+                </div>
+                <label className="invite-url-label">
+                  Private invitation
+                  <input
+                    className="invite-visible"
+                    aria-label="Room invite"
+                    value={room.invite}
+                    readOnly
+                  />
+                </label>
+                <small>
+                  Invitation valid for 10 minutes. Share only with your devices.
+                </small>
               </div>
-              <label className="invite-url-label">
-                Private invitation
-                <input
-                  className="invite-visible"
-                  aria-label="Room invite"
-                  value={room.invite}
-                  readOnly
-                />
-              </label>
-              <small>
-                Invitation valid for 10 minutes. Share only with your devices.
-              </small>
             </div>
           )}
           {room.requests.map((request) => (
@@ -308,10 +378,6 @@ export function Connection({ room }: { room: Room }) {
                 . Return within 10 minutes after switching apps.
               </p>
               <div className="session-actions">
-                <button className="session-action" onClick={room.reconnect}>
-                  <RefreshCw size={16} aria-hidden="true" />
-                  Reconnect devices
-                </button>
                 <button
                   className="session-action session-exit"
                   onClick={room.leave}

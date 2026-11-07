@@ -71,3 +71,33 @@ test('mobile chat has compact metadata, scrolls independently and keeps its layo
     await mobile.close();
   }
 });
+
+test('mobile creation shows invitation first; connected invite drawer opens and closes accessibly', async ({browser}) => {
+  const owner = await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  const other = await browser.newContext();
+  const host=await owner.newPage(), guest=await other.newPage();
+  try {
+    const invite=await create(host);
+    await expect(host.getByLabel('Room invite',{exact:true})).toBeVisible();
+    await expect(host.getByRole('button',{name:'Browse files',exact:true})).toBeHidden();
+    await host.screenshot({path:join(tmpdir(),'drop-qr-first-mobile.png'),fullPage:true});
+    await admit(host,guest,invite);
+    const more=host.getByRole('button',{name:'Connect more',exact:true});
+    await expect(more).toHaveAttribute('aria-expanded','false');
+    await expect(host.getByRole('button',{name:'Reconnect devices',exact:true})).toHaveCount(0);
+    await expect(host.getByLabel('Files in this room')).toHaveCount(0);
+    await more.click();
+    await expect(host.locator('#room-invitation')).toHaveAttribute('aria-hidden','false');
+    await expect.poll(()=>host.locator('#room-invitation').evaluate(el=>el.getBoundingClientRect().height)).toBeGreaterThan(150);
+    await expect(host.getByLabel('Room invite',{exact:true})).toBeVisible();
+    expect(await host.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await host.screenshot({path:join(tmpdir(),'drop-invite-drawer-mobile.png'),fullPage:true});
+    await host.getByRole('button',{name:'Close invitation',exact:true}).click();
+    await expect(more).toBeFocused();
+    await expect(more).toHaveAttribute('aria-expanded','false');
+    await more.click();
+    await host.getByRole('button',{name:'Close invitation',exact:true}).press('Escape');
+    await expect(more).toHaveAttribute('aria-expanded','false');
+    await host.getByRole('button',{name:'End room',exact:true}).click();
+  } finally {await owner.close();await other.close();}
+});

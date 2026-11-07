@@ -37,6 +37,12 @@ export function App() {
       document.getElementById("transfer")?.scrollIntoView();
   }, []);
   const connected = room.status === "connected";
+  const [enteredRoom, setEnteredRoom] = useState(false);
+  useEffect(() => {
+    if (connected) setEnteredRoom(true);
+    if (room.status === "creating" || room.status === "closed")
+      setEnteredRoom(false);
+  }, [connected, room.status]);
   const hasRoom =
     connected ||
     room.members.length > 0 ||
@@ -162,8 +168,11 @@ export function App() {
                 : "onboarding-layout"
           }
         >
-          <div id="transfer" className="intro">
-            <h1>{intro[0]}</h1>
+          <div
+            id="transfer"
+            className={enteredRoom ? "intro sr-only" : "intro"}
+          >
+            <h1>{enteredRoom ? room.nickname : intro[0]}</h1>
             <p>{intro[1]}</p>
             {["idle", "closed"].includes(room.status) && (
               <>
@@ -226,22 +235,7 @@ export function App() {
               </button>
             </div>
           ) : null}
-          {hasRoom && (
-            <div className="file-counts" aria-label="Files in this room">
-              <span>This room</span>
-              <span>
-                <strong aria-label="Files sent">{room.fileCounts.sent}</strong>{" "}
-                sent
-              </span>
-              <span>
-                <strong aria-label="Files received">
-                  {room.fileCounts.received}
-                </strong>{" "}
-                received
-              </span>
-            </div>
-          )}
-          {hasRoom && (
+          {enteredRoom && (
             <nav className="room-shortcuts" aria-label="Room shortcuts">
               <a href="#send-file">Send a file</a>
               {(["files", "chat"] as const).map((view) => (
@@ -256,9 +250,10 @@ export function App() {
             </nav>
           )}
           <div className="workspace">
-            <Connection room={room} />
+            <Connection room={room} compact={enteredRoom} />
             <section
               id="send-file"
+              hidden={!enteredRoom}
               className={`send-panel ${dragging ? "dragging" : ""}`}
               aria-label="Send files and notes"
               onDragOver={(e) => {
@@ -384,15 +379,13 @@ export function App() {
               onClick={() => {
                 setActivityView("chat");
                 requestAnimationFrame(() =>
-                  document
-                    .getElementById("room-activity")
-                    ?.scrollIntoView({
-                      behavior: matchMedia("(prefers-reduced-motion: reduce)")
-                        .matches
-                        ? "auto"
-                        : "smooth",
-                      block: "start",
-                    }),
+                  document.getElementById("room-activity")?.scrollIntoView({
+                    behavior: matchMedia("(prefers-reduced-motion: reduce)")
+                      .matches
+                      ? "auto"
+                      : "smooth",
+                    block: "start",
+                  }),
                 );
               }}
             >
