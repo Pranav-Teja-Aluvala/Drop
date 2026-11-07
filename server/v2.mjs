@@ -84,7 +84,12 @@ export function mountV2(app,server,{allowed,quota,clientIP,maxRooms=1000,roomTTL
           if(!member||!equal(member.credential,d.token)||(member.hiddenUntil||member.resumeUntil||Infinity)<=Date.now())return deny();
           // A mobile browser may reconnect before the proxy reports the old socket closed.
           // Only the holder of this member's credential may retry the occupied slot.
-          if(member.ws)return ws.close(1013,'Previous connection is closing');
+          if(member.ws){
+            if(!member.approved || !member.hiddenUntil)return ws.close(1013,'Previous connection is closing');
+            const previous=member.ws;
+            member.ws=null;
+            previous.terminate();
+          }
           m=member;
         }else{
           if(r.inviteExpires<=Date.now()||!equal(r.invite,d.token)||r.members.size>=3||!r.members.get(r.hostId)?.ws)return deny();

@@ -39,3 +39,18 @@ test('v2: server removes an expired background guest but preserves the owner and
 test('v2: owner returning before timeout cancels its deadline; an expired owner ends the room',async t=>{
  const {create,connect,v2}=await fixture(t,{v2ResumeTTL:180});const r=await create();const host=await connect(r,r.owner,r.memberId);await host.next('joined');host.send({type:'visibility',hidden:true});await host.next('members');host.send({type:'visibility',hidden:false});await new Promise(r=>setTimeout(r,210));assert.equal(v2.rooms.has(r.id),true);host.send({type:'visibility',hidden:true});await host.next('closed');assert.equal(v2.rooms.has(r.id),false);
 });
+
+test('a hidden approved device can replace a lingering socket with its own return credential',async t=>{
+ const {create,connect,v2}=await fixture(t);
+ const room=await create();
+ const old=await connect(room,room.owner,room.memberId);
+ await old.next('joined');
+ old.send({type:'visibility',hidden:true});
+ let members;
+ do {members=(await old.next('members')).members;} while(!members[0].awayUntil);
+ const wrong=await connect(room,room.invite,room.memberId);
+ assert.equal((await wrong.next('closed')).code,'invite');
+ const resumed=await connect(room,room.owner,room.memberId);
+ assert.equal((await resumed.next('joined')).approved,true);
+ assert.equal(v2.rooms.get(room.id).members.size,1);
+});
