@@ -9,3 +9,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(<App/>);
 
 import './v2.css';
 import './dispatch.css';
+
+import './room.css';

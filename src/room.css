@@ -1,0 +1,515 @@
+/* Room surfaces stay consistent while a device reconnects. */
+body:has(.app-page) {
+  background: #f3f1ec;
+  color: #182e43;
+}
+.room-atmosphere {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+.room-orbit {
+  position: absolute;
+  width: 90vw;
+  height: 90vw;
+  right: -55vw;
+  top: -20vw;
+  border: 1px solid #afa38e38;
+  border-radius: 50%;
+}
+.room-orbit i {
+  position: absolute;
+  inset: 5%;
+  border: 1px solid #afa38e30;
+  border-radius: 50%;
+}
+.room-orbit i:nth-child(2) {
+  inset: 16%;
+  border-style: dashed;
+}
+.room-orbit i:nth-child(3) {
+  inset: 30%;
+  background: #deded138;
+  border: 0;
+}
+.room-paper {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 30vw;
+  height: 45vh;
+  background: url("/assets/postal-watermark.svg") center/contain no-repeat;
+  opacity: 0.06;
+}
+.app-page {
+  max-width: 1320px;
+  padding: 0 40px;
+  background: transparent !important;
+  font-family: Inter, "Segoe UI", sans-serif;
+}
+.app-page .workspace-bar {
+  height: 84px;
+}
+.app-page main.connected-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  padding-top: 24px;
+}
+.app-page .intro {
+  padding: 24px 0 18px;
+}
+.app-page .intro h1 {
+  font-family: Georgia, serif;
+  font-size: clamp(38px, 4.5vw, 64px);
+  line-height: 1.08;
+  color: #182e43;
+  letter-spacing: -0.045em;
+}
+.app-page .intro > p {
+  color: #606a70;
+  font-size: 17px;
+  line-height: 1.6;
+}
+.app-page .workspace {
+  grid-template-columns: minmax(270px, 0.7fr) minmax(0, 1.3fr);
+  gap: 24px;
+  align-items: start;
+}
+.app-page .connection,
+.app-page .send-panel,
+.app-page .room-activity {
+  border: 1px solid #d7d9d3;
+  border-radius: 20px;
+  background: #fffefb;
+  box-shadow: 0 8px 28px #182e4307;
+}
+.app-page .connection {
+  padding: 28px;
+  min-height: 0;
+  border-top: 1px solid #d7d9d3;
+}
+.app-page .send-panel {
+  min-height: 390px;
+  padding: 32px;
+  background: #fdfcf8;
+  position: relative;
+  overflow: hidden;
+}
+
+.app-page .send-panel .drop-zone {
+  padding: 20px 0;
+  min-height: 320px;
+}
+.app-page .drop-zone .upload-icon {
+  width: 48px;
+  height: 48px;
+  padding: 10px;
+  background: #edf1f0;
+  border-radius: 14px;
+  margin-bottom: 24px;
+}
+.app-page .drop-zone h2 {
+  font-family: Georgia, serif;
+  font-size: 32px;
+  font-weight: 400;
+  letter-spacing: -1px;
+}
+.app-page .file-picker-actions {
+  gap: 12px;
+}
+.app-page .button {
+  border-radius: 10px;
+  min-height: 48px;
+  font-size: 15px;
+  padding: 12px 18px;
+}
+.app-page .room-heading h2 {
+  font-family: ui-monospace, monospace;
+  letter-spacing: 0.08em;
+  font-size: 28px;
+}
+.app-page .v2-invite {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px 0;
+  border-block: 1px solid #e5e5dd;
+  text-align: center;
+}
+.app-page .v2-invite .qr-frame {
+  margin: 0 auto;
+  width: 180px;
+  height: 180px;
+  border-radius: 12px;
+  padding: 7px;
+  flex: none;
+}
+.app-page .v2-invite > p {
+  margin: 0;
+  font-size: 14px;
+}
+.app-page .invite-actions {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 12px;
+}
+.app-page .invite-actions .button {
+  flex: 1;
+  white-space: nowrap;
+  padding: 12px;
+  gap: 8px;
+}
+.app-page .invite-url-label {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-size: 12px;
+  color: #677276;
+}
+.app-page .v2-invite .invite-visible {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 46px;
+  margin: 8px 0 0;
+  padding: 12px;
+  border: 1px solid #d5dad7;
+  border-radius: 9px;
+  background: #f6f7f3;
+  font-size: 13px;
+}
+.app-page .v2-invite > small {
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: left;
+  color: #66716e;
+}
+.app-page .device-roster {
+  margin: 18px 0;
+}
+.app-page .device-roster li {
+  padding: 12px 0;
+  font-size: 14px;
+  gap: 10px;
+}
+.app-page .device-roster small {
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 4px 7px;
+}
+.device-choice {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #cdd4d5;
+  border-radius: 8px;
+  background: white;
+  color: #182e43;
+}
+.device-choice[aria-pressed="true"] {
+  background: #182e43;
+  color: white;
+  border-color: #182e43;
+}
+.app-page .room-session {
+  padding: 16px;
+  border: 1px solid #e0e3db;
+  border-radius: 12px;
+  background: #f6f7f2;
+  margin: 18px 0 0;
+}
+.app-page .v2-connection .room-session p {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0 0 12px;
+  color: #626d70;
+}
+.app-page .session-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.app-page .session-action {
+  flex: 1;
+  font-size: 13px;
+  min-height: 46px;
+  font-weight: 500;
+  padding: 10px;
+  line-height: 1.4;
+}
+.app-page .file-counts {
+  font-size: 13px;
+  gap: 16px;
+  margin: 0 0 8px;
+}
+.app-page .room-shortcuts {
+  margin: 12px 0 24px;
+  gap: 8px;
+}
+.app-page .room-shortcuts a {
+  font-size: 14px;
+  border-radius: 10px;
+  background: #fffefb;
+  padding: 10px 16px;
+  text-decoration: none;
+}
+.app-page .room-activity {
+  width: 100%;
+  min-width: 0;
+  margin-top: 24px;
+}
+.app-page .activity-heading {
+  padding: 22px 24px 12px;
+}
+.app-page .activity-heading h2 {
+  font-size: 22px;
+  letter-spacing: -0.5px;
+}
+.app-page .activity-heading p,
+.app-page .activity-heading > span {
+  font-size: 13px !important;
+}
+.app-page .activity-tabs {
+  padding: 0 24px;
+  gap: 28px;
+}
+.app-page .activity-tabs [role="tab"] {
+  font-size: 15px !important;
+  min-height: 52px;
+}
+.app-page .activity-tabs [role="tab"] > span {
+  font-size: 11px !important;
+}
+.app-page .chat-panel {
+  max-width: none;
+}
+.app-page .chat-heading {
+  padding: 16px 24px;
+}
+.app-page .chat-heading h3 {
+  font-size: 15px !important;
+}
+.app-page .chat-heading p {
+  font-size: 12px !important;
+}
+.app-page .chat-feed {
+  height: 360px;
+  max-height: 55dvh;
+  min-height: 160px;
+  padding: 20px 24px;
+  gap: 12px;
+  overflow: auto;
+  overscroll-behavior: auto;
+}
+.app-page .chat-message {
+  flex: none;
+  max-width: 80%;
+  min-width: 0;
+}
+.app-page .chat-bubble {
+  padding: 10px 14px;
+  background: #edf0ec;
+}
+.app-page .sent .chat-bubble {
+  background: #e7eaf4;
+}
+.app-page .message-text {
+  font-size: 15px !important;
+  line-height: 1.55 !important;
+  max-height: none;
+  overflow: visible;
+}
+.app-page .chat-meta {
+  font-size: 11px !important;
+  gap: 4px;
+  margin: 2px 0 0;
+  line-height: 1.4 !important;
+}
+.app-page .chat-meta .copy-message {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 12px;
+  color: #697776;
+}
+.app-page .copy-message svg {
+  width: 14px;
+  height: 14px;
+}
+.app-page .chat-composer {
+  padding: 14px 20px 10px;
+  gap: 10px;
+}
+.app-page .chat-composer textarea {
+  font-size: 16px;
+  min-height: 48px;
+  max-height: 110px;
+  resize: none;
+  border-radius: 12px;
+  padding: 12px;
+}
+.app-page .chat-composer > .button {
+  min-height: 46px;
+  width: 46px;
+  padding: 0;
+  border-radius: 12px;
+  margin-bottom: 0;
+}
+.app-page .chat-composer-hint,
+.app-page .chat-retention {
+  font-size: 11px !important;
+  line-height: 1.5 !important;
+}
+.app-page .chat-retention {
+  padding: 0 20px 16px;
+  text-align: left;
+}
+.app-page .notice {
+  width: 100%;
+  margin: 0 0 20px;
+}
+.app-page .onboarding-layout .intro h1 {
+  color: #182e43;
+}
+.app-page .onboarding-layout .intro > p {
+  color: #606a70;
+}
+.app-page .onboarding-layout .connection-steps {
+  background: transparent;
+  border-color: #d8d9cf;
+  padding: 0;
+}
+.app-page .onboarding-layout .connection-steps strong {
+  color: #182e43;
+}
+.app-page .onboarding-layout .connection-steps p {
+  color: #606a70;
+}
+.app-page .onboarding-layout .v2-connection {
+  background: #fffefb;
+  border-color: #d7d9d3;
+  border-radius: 20px;
+  box-shadow: 0 8px 28px #182e4307;
+}
+@media (max-width: 900px) {
+  .app-page {
+    padding: 0 20px;
+  }
+  .app-page .workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app-page .connected-layout .workspace {
+    display: contents;
+  }
+  .app-page main.connected-layout {
+    display: flex;
+    flex-direction: column;
+  }
+  .app-page .connected-layout > .intro {
+    order: 0;
+  }
+  .app-page .connected-layout > .notice {
+    order: 1;
+  }
+  .app-page .connected-layout > .file-counts {
+    order: 2;
+  }
+  .app-page .connected-layout > .room-shortcuts {
+    order: 3;
+  }
+  .app-page .connected-layout .send-panel {
+    order: 4;
+    width: 100%;
+    min-height: 0;
+    padding: 24px;
+  }
+  .app-page .connected-layout > .room-activity {
+    order: 5;
+    width: 100%;
+  }
+  .app-page .connected-layout .connection {
+    order: 6;
+    width: 100%;
+    margin-top: 24px;
+  }
+  .app-page .send-panel .drop-zone {
+    min-height: 0;
+    padding: 4px 0;
+  }
+  .app-page .drop-zone .upload-icon {
+    display: none;
+  }
+  .app-page .intro h1 {
+    font-size: 38px;
+  }
+  .app-page .drop-zone h2 {
+    font-size: 28px;
+  }
+  .app-page .connection {
+    padding: 24px;
+  }
+  .app-page .activity-heading {
+    padding: 18px 16px 10px;
+  }
+  .app-page .activity-tabs {
+    padding: 0 16px;
+  }
+  .app-page .chat-heading {
+    padding: 12px 16px;
+  }
+  .app-page .chat-feed {
+    padding: 16px;
+    height: 340px;
+    max-height: 48dvh;
+  }
+  .app-page .chat-message {
+    max-width: 90%;
+  }
+  .app-page .chat-composer {
+    padding: 12px 12px 8px;
+  }
+  .app-page .chat-composer-hint span:first-child {
+    display: none;
+  }
+  .app-page .picker-help,
+  .app-page .file-limit {
+    font-size: 12px !important;
+  }
+  .app-page .transfer-row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .app-page .transfer-actions {
+    margin-left: 54px;
+  }
+}
+@media (max-width: 380px) {
+  .app-page {
+    padding: 0 14px;
+  }
+  .app-page .connection {
+    padding: 20px;
+  }
+  .app-page .invite-actions .button {
+    font-size: 14px;
+  }
+  .app-page .workspace-bar .text-button {
+    font-size: 13px;
+  }
+}
+@media (orientation: landscape) and (max-height: 550px) {
+  .app-page .chat-feed {
+    max-height: 45dvh;
+    min-height: 120px;
+  }
+  .app-page .intro {
+    padding: 12px 0;
+  }
+  .app-page .workspace-bar {
+    height: 64px;
+  }
+}

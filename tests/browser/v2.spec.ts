@@ -6,10 +6,10 @@ async function note(page:Page,text:string){await page.getByRole('tab',{name:/Cha
 
 test('three devices share with one admission per device, private recipient selection and unchanged HTML bytes',async({browser})=>{
  const contexts=await Promise.all([browser.newContext(),browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true}),browser.newContext()]);const [host,phone,third]=await Promise.all(contexts.map(c=>c.newPage()));try{
- const invite=await create(host);await admit(host,phone,invite);await admit(host,third,invite);await expect(host.getByLabel('Room devices').locator('li')).toHaveCount(3);await expect(host.getByLabel('Send to device').locator('option')).toHaveCount(2);await phone.screenshot({path:join(tmpdir(),'drop-v2-phone-connected.png'),fullPage:true});await host.getByLabel('Send to device').selectOption({label:'Device 2'});
+ const invite=await create(host);await admit(host,phone,invite);await admit(host,third,invite);await expect(host.getByLabel('Room devices').locator('li')).toHaveCount(3);await expect(host.getByRole('button',{name:/Choose Device/})).toHaveCount(2);await phone.screenshot({path:join(tmpdir(),'drop-v2-phone-connected.png'),fullPage:true});await host.screenshot({path:join(tmpdir(),'drop-room-desktop.png'),fullPage:true});await host.getByRole('button',{name:'Choose Device 2',exact:true}).click();
  await note(host,'Only the phone should receive this');await phone.getByRole('tab',{name:/Chat/}).click();await expect(phone.locator('.message-text')).toContainText('Only the phone');await expect(third.locator('.message-text')).toHaveCount(0);
  const file={name:'unchanged.html',mimeType:'text/html',buffer:Buffer.from('<script>throw new Error("must never execute")</script>original bytes')};await host.getByLabel('Choose file to send',{exact:true}).setInputFiles(file);await expect(phone.getByLabel('Incoming file')).toContainText(file.name);await expect(third.getByLabel('Incoming file')).toHaveCount(0);await phone.getByRole('button',{name:'Accept file',exact:true}).click();await phone.getByRole('tab',{name:/Files/}).click();const save=phone.getByRole('link',{name:'Save file',exact:true});await expect(save).toBeVisible();const downloading=phone.waitForEvent('download');await save.click();const download=await downloading;expect(download.suggestedFilename()).toBe(file.name);expect(await readFile((await download.path())!)).toEqual(file.buffer);
- await third.getByLabel('Send to device').selectOption({label:'Device 2'});await note(third,'Third to phone');await phone.getByRole('tab',{name:/Chat/}).click();await expect(phone.locator('.message-text').last()).toHaveText('Third to phone');
+ await third.getByRole('button',{name:'Choose Device 2',exact:true}).click();await note(third,'Third to phone');await phone.getByRole('tab',{name:/Chat/}).click();await expect(phone.locator('.message-text').last()).toHaveText('Third to phone');
  const extra=await browser.newPage();await extra.goto(invite);await expect(extra.getByRole('alert')).toContainText('unavailable, expired or full');await extra.close();
  await host.getByRole('button',{name:'End room',exact:true}).click();await expect(phone.getByRole('heading',{level:1})).toHaveText('Let’s reconnect.');
  }finally{await Promise.all(contexts.map(c=>c.close()));}
@@ -43,4 +43,31 @@ test('landing mouse field responds without moving controls; reduced motion and m
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.setViewportSize({width:1440,height:1000});await page.emulateMedia({reducedMotion:'no-preference'});await page.goto('/');const canvas=page.locator('.ribbon-field');const first=await canvas.evaluate(el=>(el as HTMLCanvasElement).toDataURL());const cta=page.getByRole('link',{name:'Start sharing',exact:true}).first();const before=await cta.boundingBox();await page.mouse.move(150,160);await expect.poll(()=>canvas.evaluate(el=>(el as HTMLCanvasElement).toDataURL())).not.toBe(first);expect(await cta.boundingBox()).toEqual(before);
  await page.emulateMedia({reducedMotion:'reduce'});await page.reload();const still=await canvas.evaluate(el=>(el as HTMLCanvasElement).toDataURL());await page.mouse.move(1000,550);await page.waitForTimeout(150);expect(await canvas.evaluate(el=>(el as HTMLCanvasElement).toDataURL())).toBe(still);
  await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Open menu',exact:true}).click();await expect(page.getByRole('navigation',{name:'Primary'})).toBeVisible();await page.keyboard.press('Escape');await expect(page.getByRole('navigation',{name:'Primary'})).toBeHidden();await expect(page.getByRole('link',{name:'See how it works'})).toHaveCSS('min-height','48px');await page.getByRole('link',{name:'See how it works'}).click();await expect(page.locator('#how')).toBeInViewport();expect(errors).toEqual([]);
+});
+
+test('mobile chat has compact metadata, scrolls independently and keeps its layout when a peer leaves', async ({browser}) => {
+  const owner = await browser.newContext();
+  const mobile = await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  const host = await owner.newPage(), phone = await mobile.newPage();
+  try {
+    await admit(host, phone, await create(host));
+    for(let index=0; index<10; index++) await note(host, 'Message '+index+' '+ 'A useful note. '.repeat(18));
+    await phone.getByRole('tab',{name:/Chat/}).click();
+    await expect(phone.locator('.chat-message')).toHaveCount(10);
+    await expect(phone.locator('.chat-meta').first()).toHaveCSS('font-size','11px');
+    await expect(phone.getByRole('button',{name:'Copy message'}).first()).toHaveCSS('width','44px');
+    const feed=phone.getByLabel('Conversation');
+    await feed.evaluate(el=>{el.scrollTop=0});
+    expect(await feed.evaluate(el=>el.scrollHeight>el.clientHeight)).toBe(true);
+    await phone.screenshot({path:join(tmpdir(),'drop-room-chat-mobile.png'),fullPage:true});
+    await phone.setViewportSize({width:844,height:390});
+    expect(await phone.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await host.close();
+    await expect(phone.locator('main.connected-layout')).toBeVisible();
+    await expect(phone.locator('.room-activity')).toHaveCSS('width',/px/);
+    expect(await phone.locator('.room-activity').evaluate(el=>el.getBoundingClientRect().width>innerWidth*.8)).toBe(true);
+  } finally {
+    await owner.close();
+    await mobile.close();
+  }
 });
