@@ -1,19 +1,20 @@
 {
   "name": "drop-transfer",
   "private": true,
-  "version": "0.1.0",
+  "version": "2.0.0-preview.1",
   "type": "module",
   "scripts": {
     "dev": "node server/index.mjs",
     "build": "node scripts/generate-notices.mjs && node scripts/prepare-404.mjs && tsc --noEmit && vite build && node scripts/finalize-build.mjs",
     "start": "node server/index.mjs --production",
-    "test": "node --test tests/server.test.mjs",
+    "test": "node --test tests/server.test.mjs tests/v2-server.test.mjs",
     "test:e2e": "playwright test",
     "test:beta": "node scripts/check-beta.mjs",
     "check:release": "node scripts/check-release.mjs",
     "check:secrets": "node scripts/scan-secrets.mjs",
     "check:live": "node scripts/check-live.mjs",
-    "icons:generate": "node scripts/generate-icons.mjs"
+    "icons:generate": "node scripts/generate-icons.mjs",
+    "preview:v2": "node scripts/preview-v2.mjs"
   },
   "dependencies": {
     "express": "^5.3.0",

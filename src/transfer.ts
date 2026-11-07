@@ -2,7 +2,7 @@ import { safeFilename } from './security';
 export const MAX_FILE = 50 * 1024 * 1024;
 export const MAX_TEXT = 50_000;
 const CHUNK = 16 * 1024;
-export type Item = { id: string; name: string; size: number; direction: 'in' | 'out'; status: string; progress: number; url?: string; text?: string; createdAt?: number };
+export type Item = { id: string; name: string; size: number; direction: 'in' | 'out'; status: string; progress: number; url?: string; text?: string; createdAt?: number; peerId?: string; peerLabel?: string };
 type Offer = { type: 'offer'; id: string; name: string; size: number; hash: string };
 type Callbacks = { item: (item: Item) => void; offer: (offer: Offer | null) => void; error: (message: string) => void };
 const digest = async (bytes: ArrayBuffer) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))).map(x => x.toString(16).padStart(2, '0')).join('');

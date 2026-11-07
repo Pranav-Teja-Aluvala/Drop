@@ -6,11 +6,12 @@ import { WebSocketServer, WebSocket } from 'ws';
 import proxyaddr from 'proxy-addr';
 import { isIP } from 'node:net';
 import { allocateIdentity, allocateNickname, randomToken as token } from './identity.mjs';
+import {mountV2} from './v2.mjs';
 
 const equal = (a, b) => typeof a === 'string' && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b));
 const send = (ws, data) => { if (ws?.readyState === WebSocket.OPEN) { if (ws.bufferedAmount > 256 * 1024) { ws.terminate(); return; } ws.send(JSON.stringify(data)); } };
 
-export function createDropServer({ origin, roomTTL = 2 * 60 * 60_000, inviteTTL = 10 * 60_000, backgroundTTL = 5 * 60_000, maxRooms = 1000, trustedProxyCIDRs = [] } = {}) {
+export function createDropServer({ origin, roomTTL = 2 * 60 * 60_000, inviteTTL = 10 * 60_000, backgroundTTL = 5 * 60_000, v2ResumeTTL = 600000, maxRooms = 1000, trustedProxyCIDRs = [] } = {}) {
   const app = express();
   const relay = relayConfiguration(process.env.TURN_SECRET, process.env.TURN_URLS);
   const cloudflare = cloudflareConfiguration(process.env.CF_TURN_KEY_ID,process.env.CF_TURN_API_TOKEN);
@@ -62,9 +63,11 @@ export function createDropServer({ origin, roomTTL = 2 * 60 * 60_000, inviteTTL 
     res.set({ 'Access-Control-Allow-Origin': req.headers.origin, 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'Content-Type' });
     res.vary('Origin'); res.sendStatus(204);
   });
+  const v2=mountV2(app,server,{allowed,quota,clientIP,maxRooms,roomTTL,inviteTTL,resumeTTL:v2ResumeTTL});
   app.use('/api', (_req, res) => res.status(404).json({ error: 'Endpoint not found.' }));
   const wss = new WebSocketServer({ noServer: true, maxPayload: 24 * 1024 });
   server.on('upgrade', (req, socket, head) => {
+    if(req.url==='/signal-v2')return;
     if (req.url !== '/signal' || !allowed(req) || wss.clients.size >= maxRooms * 2 || !quota(clientIP(req))) { socket.destroy(); return; }
     wss.handleUpgrade(req, socket, head, ws => wss.emit('connection', ws));
   });
@@ -170,5 +173,5 @@ export function createDropServer({ origin, roomTTL = 2 * 60 * 60_000, inviteTTL 
     for (const ws of wss.clients) { if (!ws.alive) ws.terminate(); else { ws.alive = false; ws.ping(); } }
   }, 15_000);
   sweep.unref();
-  return { app, server, rooms, close: async () => { clearInterval(sweep); for (const ws of wss.clients) ws.terminate(); wss.close(); await new Promise(resolve => server.close(resolve)); } };
+  return { app, server, rooms, v2, close: async () => { v2.close(); clearInterval(sweep); for (const ws of wss.clients) ws.terminate(); wss.close(); await new Promise(resolve => server.close(resolve)); } };
 }

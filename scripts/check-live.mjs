@@ -7,7 +7,7 @@ const origin = process.env.TEST_BASE_URL || 'https://drop-devs-52b0.vercel.app';
 const backend = process.env.TEST_SIGNAL_ORIGIN || 'https://drop-pairing.onrender.com';
 assert.equal(new URL(origin).protocol, 'https:');
 assert.equal(new URL(backend).protocol, 'https:');
-const browser = await chromium.launch();
+const browser = await chromium.launch(process.env.PLAYWRIGHT_CHANNEL?{channel:process.env.PLAYWRIGHT_CHANNEL}:{});
 const results = [];
 try {
   for (const width of [320, 390, 768, 1440]) {

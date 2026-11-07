@@ -1,0 +1,190 @@
+/* Printed correspondence, midnight ink and vermilion. */
+:root { --postal-ink:#172b45; --postal-paper:#f8f5ec; --postal-red:#9d3727; --postal-rule:#cccdc3; }
+.dispatch.landing {background:var(--postal-paper);color:var(--postal-ink)}
+.dispatch .nav {background:transparent;border-bottom:1px solid var(--postal-rule)}
+.dispatch .primary,.app-page .button.primary,.app-page .button.accent {background:var(--postal-ink);color:white;border-color:var(--postal-ink);border-radius:6px}
+.dispatch .primary:hover,.app-page .primary:hover,.app-page .accent:hover {background:#304b66}
+.dispatch .primary svg {transition:transform .2s}
+.dispatch .primary:hover svg {transform:translate(2px,-2px)}
+.dispatch .v2-hero {padding:clamp(48px,6vw,94px) 0}
+.dispatch .ribbon-field {opacity:.29}
+.dispatch .v2-hero-grid {grid-template-columns:.88fr 1.12fr;gap:6vw}
+.dispatch h1 {font:600 clamp(70px,7.6vw,116px)/.95 Arial,sans-serif;letter-spacing:-.08em}
+.headline-line {display:block;overflow:hidden;padding-bottom:.1em;margin-bottom:-.1em}
+.headline-line>span {display:block}
+.dispatch h1 em {font:italic 1.05em/.85 Georgia,serif;color:var(--postal-red);letter-spacing:-.08em;padding-right:.08em}
+.dispatch .v2-description {margin:24px 0 0;line-height:1.6;color:#465363}
+.dispatch .v2-how-link {text-decoration:underline;text-underline-offset:5px}
+.dispatch-art {margin:0;min-width:0}
+.paper-stack {position:relative;isolation:isolate;padding:14% 4% 14% 6%;background:#dee4e2;overflow:hidden;border:1px solid #c6ccc9}
+.dispatch-sheet,.paper-stack::before {aspect-ratio:1.58;box-shadow:3px 10px 13px #16263922}
+.paper-stack::before {content:"";position:absolute;inset:19% 5% auto 8%;background:#c9bfa6;transform:rotate(5deg)}
+.dispatch-sheet {position:relative;background:#fffbed;rotate:-6deg;border:1px solid #d9d0ba;display:flex;align-items:flex-end;padding:5%;background-image:repeating-linear-gradient(128deg,#9a3e31 0 9px,transparent 9px 18px,#354965 18px 27px,transparent 27px 36px);background-size:100% 4px;background-repeat:no-repeat}
+.postal-address {font:italic clamp(15px,1.9vw,28px)/1.2 Georgia,serif;width:48%;color:#273e54}
+.postal-address span {display:block;font:10px/1.5 monospace;letter-spacing:.16em;margin:14% 0 4%;color:#62685d}
+.stamp {position:absolute;top:6%;right:5%;width:45%;height:auto;filter:drop-shadow(1px 2px 1px #1112)}
+.postmark {position:absolute;right:15%;bottom:8%;width:29%;rotate:-8deg;opacity:.89}
+.dispatch-art figcaption {display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:12px}
+.dispatch-art figcaption div {display:flex;gap:3px}
+.dispatch-art button {min-width:46px;height:44px;padding:0 11px;border:0;border-bottom:2px solid transparent;background:transparent;color:#425267;font:inherit;cursor:pointer}
+.dispatch-art button[aria-pressed=true] {border-color:var(--postal-red);color:var(--postal-red);font-weight:700}
+.dispatch-art figcaption>span {font:12px/1.5 monospace;text-align:right}
+.dispatch .v2-how {display:grid;grid-template-columns:.95fr 1.05fr;gap:6vw;border-color:var(--postal-rule);padding-block:70px}
+.dispatch .v2-section-heading {display:block}
+.dispatch .v2-section-heading h2,.dispatch .v2-trust h2,.dispatch .closing-cta h2 {font:normal clamp(40px,4.5vw,70px)/1.02 Georgia,serif;letter-spacing:-.06em}
+.dispatch .v2-section-heading p {margin-top:20px}
+.dispatch .v2-steps {display:block;margin:0}
+.dispatch .v2-steps article {display:grid;grid-template-columns:42px 1fr;gap:4px 14px;padding:20px 0;border-top-color:var(--postal-rule)}
+.dispatch .v2-steps article>span {grid-row:span 2;align-self:start;display:grid;gap:8px;color:var(--postal-red);font:12px monospace}
+.dispatch .v2-steps h3,.dispatch .v2-steps p {margin:0}
+.dispatch .v2-return {background:#1e3449;color:#fff;border-radius:0;border-left:6px solid #d89a69}
+.dispatch .v2-return p,.dispatch .v2-return svg,.dispatch .v2-return a {color:#e6eceb}
+.dispatch .closing-cta {border-top:1px solid var(--postal-rule);display:flex;justify-content:space-between;align-items:center;gap:24px}
+.dispatch .closing-cta h2 {margin:0}
+.app-page {color:var(--postal-ink)}
+body:has(.app-page) {background:#f5f4ef}
+.app-page .workspace-bar {border-bottom:1px solid var(--postal-rule)}
+.app-page .intro h1 {font:normal clamp(40px,5.2vw,78px)/1.04 Georgia,serif;letter-spacing:-.06em}
+.app-page .connection-steps li>span {color:var(--postal-red);font-family:monospace}
+.app-page .v2-connection,.app-page .send-panel,.app-page .room-activity {border-radius:6px;border-color:#ccd2d4;box-shadow:0 4px 12px #253b4408}
+.app-page .v2-connection {border-top:4px solid var(--postal-ink);background:#fffdf7}
+.app-page .room-heading>span {color:#814630;font:12px monospace;text-transform:uppercase;letter-spacing:.1em}
+.app-page .room-heading h2 {color:var(--postal-ink)}
+.app-page .v2-invite {padding-block:14px;border-block:1px dashed #b8bbaa}
+.app-page .qr-frame {background:white;border:1px solid #c4c8be;border-radius:4px}
+.app-page .device-roster small {background:#eef1ed;color:#384d40;padding:4px 8px;border-radius:4px}
+.app-page .v2-approval,.app-page .incoming-offer {background:#fff3db;color:#382c1c;border-left:4px solid #ad712b}
+.app-page .file-icon,.app-page .upload-icon {color:#335b79}
+.app-page .file-counts strong,.app-page progress {font-variant-numeric:tabular-nums;accent-color:var(--postal-ink)}
+.app-page .message-launcher {background:var(--postal-ink);color:white}
+.dispatch :focus-visible,.app-page :focus-visible {outline:3px solid #99552c;outline-offset:3px}
+@media(max-width:760px){
+  .dispatch .v2-hero-grid,.dispatch .v2-how {grid-template-columns:minmax(0,1fr);gap:32px}
+  .dispatch .v2-hero {padding:34px 0}
+  .dispatch h1 {font-size:clamp(62px,13vw,85px)}
+  .dispatch .v2-description {margin-top:16px}
+  .dispatch .v2-hero-actions {margin-top:18px;gap:3px}
+  .dispatch .v2-how {padding:38px 0}
+  .dispatch .v2-section-heading h2 br {display:none}
+  .dispatch .closing-cta {align-items:flex-start}
+  .postal-address {font-size:clamp(17px,4vw,28px)}
+  .dispatch-art figcaption>span {font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){.dispatch .primary svg{transition:none;transform:none}}
+
+/* Reading guide: one continuous index with native disclosure controls. */
+.transfer-guide {background:#203b44;color:#fff8e9}
+.guide-layout {display:grid;grid-template-columns:.95fr 1.05fr;gap:6vw;padding-block:clamp(40px,5vw,72px)}
+.guide-layout h2 {font:normal clamp(36px,4.4vw,66px)/1.06 Georgia,serif;letter-spacing:-.055em;max-width:9em}
+.guide-layout p {line-height:1.7;color:#e2ebe5}
+.guide-layout h2+p {margin-top:16px}
+.guide-entries details {border-top:1px solid #73878a}
+.guide-entries details:last-child {border-bottom:1px solid #73878a}
+.guide-entries summary {display:flex;align-items:center;gap:14px;padding:16px 2px;cursor:pointer;list-style:none;font-size:21px}
+.guide-entries summary::-webkit-details-marker {display:none}
+.guide-entries summary span {font-size:14px;color:#d6e0d9}
+.guide-entries summary::after {content:'+';margin-left:auto;color:#ffcb89}
+.guide-entries details[open] summary::after {content:'−'}
+.guide-entries details p {margin:0 24px 20px 2px}
+.guide-entries summary:focus-visible {outline-color:#ffcb89}
+.dispatch .v2-trust {padding-block:clamp(38px,5vw,70px)}
+.room-drawing {width:100%;aspect-ratio:520/184;margin:24px 0 0;background:#e8eeea url('/assets/room-drawing.svg') center/contain no-repeat;border-block:1px solid #bdc9c4}
+.app-page:has(.onboarding-layout) {background-color:#f6f7f2;background-image:radial-gradient(#cad3ce 0.7px,transparent 0.9px);background-size:13px 13px}
+.app-page .room-drawing+.connection-steps {margin-top:0;border-top:none}
+.dispatch a:not(.button,.skip):is(:hover,:focus-visible),.app-page footer a:is(:hover,:focus-visible) {color:#953d27;text-decoration:underline;text-underline-offset:5px}
+.dispatch a:active,.app-page a:active {color:#82321f;text-decoration:underline}
+.dispatch a.button:active,.app-page a.button:active {background:#344f5d;color:white;box-shadow:inset 0 2px 4px #13202d55}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+  .dispatch a svg {transition:transform .18s ease}
+  .dispatch a:not(.primary):hover svg {transform:translate(2px,-2px)}
+  .dispatch a.v2-how-link:hover svg {transform:translateY(3px)}
+}
+@media(max-width:760px){
+  .guide-layout {grid-template-columns:minmax(0,1fr);gap:24px}
+  .guide-entries summary {flex-wrap:wrap;gap:8px}
+  .room-drawing {max-width:420px;margin:16px auto 0}
+}
+
+/* The illustration covers the viewport; only the working area has a measure. */
+body:has(.app-page) {background:#f3f4ee;isolation:isolate}
+.app-page,.app-page:has(.onboarding-layout) {background:transparent}
+.app-page .v2-invite .invite-visible {text-overflow:ellipsis;padding:8px;border:1px solid #d1d8cf;background:#fff;border-radius:4px}
+@media(min-width:900px){
+  .app-page:has(.onboarding-layout) .workspace-bar {height:74px;padding-block:12px}
+  .app-page main.onboarding-layout {grid-template-columns:minmax(0,.8fr) minmax(0,1.24fr);align-content:start;gap:clamp(24px,4vw,60px);padding-block:24px}
+  .app-page .onboarding-layout .intro h1 {font-size:clamp(44px,4.1vw,64px)}
+  .onboarding-layout .v2-connection:has(.v2-invite) {padding:clamp(18px,2vw,29px)}
+  .onboarding-layout .room-heading {margin-bottom:12px}
+  .onboarding-layout .v2-invite {display:grid;grid-template-columns:clamp(158px,14vw,206px) minmax(0,1fr);column-gap:18px;row-gap:8px;align-items:center;text-align:left}
+  .onboarding-layout .v2-invite .qr-frame {grid-column:1;grid-row:1/5;width:100%;height:auto;aspect-ratio:1;margin:0}
+  .onboarding-layout .v2-invite>:not(.qr-frame) {grid-column:2;min-width:0;margin:0}
+  .onboarding-layout .invite-actions {display:flex;flex-wrap:wrap;gap:5px}
+  .onboarding-layout .invite-actions .button {min-height:44px;padding:8px 10px}
+  .onboarding-layout .device-roster {margin:8px 0}
+  .onboarding-layout .device-roster li {padding-block:8px}
+  .onboarding-layout .room-session {margin-top:6px;padding:10px 14px}
+  .onboarding-layout .room-session p {margin:0 0 6px}
+}
+/* Fluted glass: moving light belongs to the room backdrop only. */
+body:has(.reeded-glass) {background:#101526}
+.reeded-glass {position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1}
+.app-page:has(main.onboarding-layout) :is(.workspace-bar .text-button,.drop-brand,footer,footer a,footer .text-button) {color:#f3efea}
+.app-page:has(main.onboarding-layout) :is(.workspace-bar,footer) {border-color:#ffffff29}
+.app-page .onboarding-layout .intro h1 {color:#fff9f2}
+.app-page .onboarding-layout .intro>p {color:#e2deda}
+.app-page .onboarding-layout .v2-connection {background:#fbfaf7;border:1px solid #ffffff80;border-radius:14px;box-shadow:0 18px 56px #08081040}
+.app-page .onboarding-layout .connection-steps {border-color:#ffffff38;padding:16px 18px 0;background:#191c26ed;border-radius:8px}
+.app-page .onboarding-layout .connection-steps strong {color:#fff9f1}
+.app-page .onboarding-layout .connection-steps p {color:#d6d6de}
+@media(prefers-reduced-motion:no-preference){
+ .glass-light {animation:glass-settle 3.8s cubic-bezier(.16,1,.3,1) both}
+ @keyframes glass-settle {from{transform:translateY(35px);opacity:.55}to{transform:translateY(0);opacity:1}}
+}
+@media(max-width:760px){.reeded-glass{opacity:.65}.onboarding-layout .intro{width:100%}}
+.reeded-glass {mask-image:linear-gradient(to bottom,transparent 0%,#0003 28%,black 55%)}
+
+/* Light travels down adjacent flutes with a small phase offset. */
+@media(prefers-reduced-motion:no-preference){
+  .glass-reflection {animation:reed-swell 4.2s ease-in-out infinite alternate}
+  @keyframes reed-swell {from{transform:translateY(-30px)}to{transform:translateY(30px)}}
+}
+.app-page .session-actions {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.session-action {display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:8px 12px;border:1px solid #bdc9ce;border-radius:7px;background:#eff3f4;color:#243e50;font:inherit;font-weight:600;cursor:pointer;transition:background-color .16s,border-color .16s,box-shadow .16s}
+.session-exit {background:#fff8f5;border-color:#ddc5bd;color:#823b30}
+@media(hover:hover){
+  .session-action:hover {background:#e1ebef;border-color:#899fa9;box-shadow:0 2px 5px #162b3614}
+  .session-exit:hover {background:#f8e8e2;border-color:#bd8e81}
+}
+.session-action:active {box-shadow:inset 0 2px 4px #19273526}
+@media(max-width:420px){.app-page .session-actions{grid-template-columns:1fr}}
+.dispatch .v2-hero::before,.dispatch .v2-hero::after {content:"";position:absolute;pointer-events:none;z-index:-1;background:url('/assets/postal-watermark.svg') center/contain no-repeat;width:clamp(280px,36vw,640px);aspect-ratio:540/260;opacity:.095}
+.dispatch .v2-hero::before {bottom:-7%;left:-12%;rotate:-8deg}
+.dispatch .v2-hero::after {top:-10%;right:-7%;rotate:155deg}
+.dispatch .ribbon-field {opacity:.52}
+@media(prefers-reduced-motion:no-preference){
+  .dispatch .v2-hero::before {animation:ink-drift 12s ease-in-out infinite alternate}
+  .dispatch .v2-hero::after {animation:ink-drift 15s -8s ease-in-out infinite alternate-reverse}
+  @keyframes ink-drift {from{transform:translateY(-8px)}to{transform:translateY(8px)}}
+}
+@media(max-width:760px){
+  .dispatch .v2-hero::before {bottom:35%;left:-42%}
+  .dispatch .v2-hero::after {right:-42%;top:0}
+}
+
+/* A different printing stock for each postcard edition. */
+.dispatch-art[data-edition=file] .paper-stack {
+  background-color:#c9dbe1;
+  background-image:repeating-radial-gradient(ellipse at 8% 140%,transparent 0 16px,#415d752a 17px 18px,transparent 19px 26px);
+}
+.dispatch-art[data-edition=link] .paper-stack {
+  background-color:#ead3c0;
+  background-image:repeating-linear-gradient(34deg,transparent 0 43px,#b983653f 44px 46px,transparent 47px 65px),repeating-linear-gradient(-32deg,transparent 0 33px,#fff5df94 34px 37px,transparent 38px 72px);
+}
+.dispatch-art[data-edition=note] .paper-stack {
+  background-color:#cbdacf;
+  background-image:linear-gradient(90deg,transparent 8%,#ab60585c 8% 8.4%,transparent 8.4%),repeating-linear-gradient(0deg,transparent 0 17px,#5c786c52 18px,transparent 19px 20px);
+}
+.dispatch .v2-hero:has([data-edition=file]) {background-color:#f1f4f2}
+.dispatch .v2-hero:has([data-edition=link]) {background-color:#faf1e7}
+.dispatch .v2-hero:has([data-edition=note]) {background-color:#eff3e9}
+@media(prefers-reduced-motion:no-preference){.dispatch .v2-hero,.dispatch-art .paper-stack{transition:background-color .35s ease}}

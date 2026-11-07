@@ -1,4 +1,4 @@
-const CACHE = 'drop-error-screen-v1';
+const CACHE = 'drop-error-screen-v2';
 const ASSETS = ['/offline.html', '/assets/not-found.js', '/favicon.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));

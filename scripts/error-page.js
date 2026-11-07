@@ -38,6 +38,9 @@
       'Wifi said "new phone, who dis." Reconnect and we run it back.'
     ]
   };
+  var kind = body.getAttribute('data-error-kind');
+  if (kind === 'room-expired') online = {label:'Room closed / Time for a new one', title:'This room has<br>said goodbye.', btn:'Create a fresh room', hint:'Your saved files are still yours.', subs:['The invitation expired or the room ended. Start a fresh connection.', 'Old invitations cannot reopen a room. Ask your other device for a new one.']};
+  if (kind === 'connection-help') online = {label:'Connection paused / Let’s find a route', title:'Your next screen<br>is a little out of reach.', btn:'Try connecting again', hint:'Try the same Wi-Fi on both devices.', subs:['A direct connection could not be established. No relay is enabled in this build.', 'Return to both pages, check your network and choose Reconnect devices.']};
 
   var mode = online, idx = 0, timer, fallback = body.hasAttribute('data-offline-fallback');
 
@@ -49,7 +52,7 @@
 
   function apply(isOffline) {
     mode = isOffline ? offline : online; idx = 0;
-    document.title = isOffline ? 'No connection — Drop' : 'Page not found — Drop';
+    document.title = isOffline ? 'No connection — Drop' : kind ? (kind === 'room-expired' ? 'Room ended — Drop' : 'Connection help — Drop') : 'Page not found — Drop';
     body.classList.toggle('offline', isOffline);
     label.textContent = mode.label;
     title.innerHTML = mode.title;
@@ -62,7 +65,11 @@
   function check() { apply(fallback || !navigator.onLine); }
 
   btn.addEventListener('click', function (e) {
-    if (body.classList.contains('offline')) { e.preventDefault(); location.reload(); }
+    if (body.classList.contains('offline')) {
+      e.preventDefault();
+      if (!navigator.onLine) setSub('Still offline. Reconnect to the internet and we will try this page again.');
+      else location.reload();
+    }
   });
   card.addEventListener('click', function () {
     card.classList.remove('wiggle'); void card.offsetWidth; card.classList.add('wiggle');
@@ -73,4 +80,5 @@
 
 
   check();
+  body.setAttribute('data-error-ready','true');
 })();

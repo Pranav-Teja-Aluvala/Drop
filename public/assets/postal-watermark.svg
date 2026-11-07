@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 260" fill="none" stroke="currentColor">
+  <g transform="rotate(-13 120 142)" opacity=".76">
+    <circle cx="114" cy="145" r="96" stroke-width="2.5"/>
+    <circle cx="114" cy="145" r="88" stroke-dasharray="1 6" stroke-width="4"/>
+    <circle cx="114" cy="145" r="74"/>
+    <path d="m76 141 74-23-41 55-2-23-31-9Zm31 9 43-32" stroke-width="2.4"/>
+    <path id="wave" d="M184 130q36-22 71 0t71 0t71 0t71 0t71 0" stroke-width="2"/>
+    <use href="#wave" y="-25"/><use href="#wave" y="-12"/><use href="#wave" y="13"/><use href="#wave" y="26"/>
+  </g>
+</svg>

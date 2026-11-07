@@ -20,6 +20,7 @@ test('real offline navigation uses the cached error artwork and reconnect restor
   await expect(page.locator('h1')).toContainText('left you on read');
   await expect(page.locator('#preview')).toHaveCount(0);
   await expect(page.locator('#sub')).toHaveCSS('opacity','1');
+  await expect(page.locator('body')).toHaveAttribute('data-error-ready','true');
   await page.screenshot({path:join(tmpdir(),'drop-real-offline-mobile.png'),fullPage:true});
   const cached=await page.evaluate(async()=>{
     const names=(await caches.keys()).filter(name=>name.startsWith('drop-error-screen-'));
@@ -28,8 +29,8 @@ test('real offline navigation uses the cached error artwork and reconnect restor
   expect(cached.sort()).toEqual(['/assets/not-found.js','/favicon.svg','/offline.html']);
   // Retry remains a real offline screen, rather than Chrome's network error.
   const requested=page.url();
-  const [retry]=await Promise.all([page.waitForNavigation({waitUntil:'commit'}),page.getByRole('link',{name:'Try again, no cap',exact:true}).click()]);
-  expect(retry?.status()).toBe(503);expect(page.url()).toBe(requested);
+  await page.getByRole('link',{name:'Try again, no cap',exact:true}).click();
+  await expect(page.locator('#sub')).toContainText('Still offline');expect(page.url()).toBe(requested);
   await expect(page.locator('h1')).toContainText('left you on read');
   await context.setOffline(false);
   await expect(page.getByRole('button',{name:'Create a room',exact:true})).toBeVisible({timeout:30_000});

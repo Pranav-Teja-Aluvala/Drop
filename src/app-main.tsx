@@ -6,3 +6,6 @@ import './premium.css';
 // The transfer route has its own initial entry: no landing animation bundle
 // or second lazy-import hop is required to render its controls.
 ReactDOM.createRoot(document.getElementById('root')!).render(<App/>);
+
+import './v2.css';
+import './dispatch.css';

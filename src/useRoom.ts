@@ -1,219 +1,105 @@
-import { useEffect, useRef, useState } from 'react';
-import { Transfer, type Item } from './transfer';
-import { connectionCode, VerificationGate } from './security';
-export type Status = 'idle' | 'creating' | 'waiting' | 'approval' | 'connecting' | 'verifying' | 'connected' | 'recovering' | 'closed';
-export type ConnectionPhase = 'service' | 'invite' | 'approval' | 'gathering' | 'routing' | 'secure' | 'confirm' | 'ready' | 'reconnecting' | 'closed';
-export function useRoom() {
-  const [joining, setJoining] = useState(() => /^#[\w-]{43}\.[\w-]{43}$/.test(location.hash));
-  const [status, setStatus] = useState<Status>('idle');
-  const [invite, setInvite] = useState('');
-  const [phase, setPhase] = useState<ConnectionPhase>('service');
-  const [relayAvailable, setRelayAvailable] = useState<boolean | null>(null);
-  const verified = useRef(false);
-  const [request, setRequest] = useState('');
-  const [nickname, setNickname] = useState('');
-  const [error, setError] = useState('');
-  const [expires, setExpires] = useState(0);
-  const [background, setBackground] = useState({selfUntil:0, peerUntil:0});
-  const hiddenUntil = useRef(0);
-  const backgroundTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const [code, setCode] = useState('');
-  const [confirmed, setConfirmed] = useState(false);
-  const gate = useRef<VerificationGate | null>(null);
-  const [items, setItems] = useState<Item[]>([]);
-  const [fileCounts, setFileCounts] = useState({ sent: 0, received: 0 });
-  const [offer, setOffer] = useState<{ name: string; size: number } | null>(null);
-  const socket = useRef<WebSocket | null>(null);
-  const peer = useRef<RTCPeerConnection | null>(null);
-  const transfer = useRef<Transfer | null>(null);
-  const generation = useRef(0);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const busy = useRef(false);
-  const channelAttached = useRef(false);
-
-  function cleanup(release = false) {
-    clearTimeout(backgroundTimer.current); hiddenUntil.current = 0; setBackground({selfUntil:0, peerUntil:0});
-    clearTimeout(timer.current); verified.current = false;
-    gate.current?.dispose(); gate.current = null; setCode(''); setConfirmed(false);
-    transfer.current?.dispose();
-    if (release) transfer.current?.releaseDownloads();
-    if (peer.current) { peer.current.onconnectionstatechange = null; peer.current.onicegatheringstatechange = null; peer.current.onicecandidate = null; peer.current.ondatachannel = null; peer.current.close(); peer.current = null; }
-    if (socket.current) { socket.current.onclose = null; socket.current.onmessage = null; socket.current.onerror = null; socket.current.onopen = null; socket.current.close(); socket.current = null; }
-    setOffer(null); setRequest(''); setNickname(''); channelAttached.current = false; busy.current = false;
+import {useEffect,useRef,useState} from 'react';
+import {Transfer,type Item} from './transfer';
+export type Status='idle'|'creating'|'waiting'|'approval'|'connecting'|'connected'|'recovering'|'closed';
+type Member={id:string;label:string;online:boolean;awayUntil:number};
+type Request={id:string;label:string;requestId:string};
+type Link={id:string;peerId:string;label:string;pc:RTCPeerConnection;transfer?:Transfer;channel?:RTCDataChannel;timer?:ReturnType<typeof setTimeout>;candidates:RTCIceCandidateInit[];chain:Promise<void>};
+type Session={id:string;memberId:string;token:string;expires:number;role:string};
+const GRACE=600000;
+export function useRoom(){
+  const [status,setStatus]=useState<Status>('idle'),[joining,setJoining]=useState(()=>!!location.hash),[invite,setInvite]=useState(''),[nickname,setNickname]=useState(''),[expires,setExpires]=useState(0),[error,setError]=useState('');
+  const [members,setMembers]=useState<Member[]>([]),[requests,setRequests]=useState<Request[]>([]),[role,setRole]=useState(''),[selfId,setSelfId]=useState(''),[target,setTarget]=useState(''),[readyIds,setReadyIds]=useState<string[]>([]),[awayUntil,setAwayUntil]=useState(0);
+  const [items,setItems]=useState<Item[]>([]),[offers,setOffers]=useState<Record<string,{name:string;size:number}>>({}),[fileCounts,setFileCounts]=useState({sent:0,received:0});
+  const retryAttempt=useRef(0);
+  const socket=useRef<WebSocket|null>(null),session=useRef<Session|null>(null),links=useRef(new Map<string,Link>()),retired=useRef<Transfer[]>([]),gen=useRef(0),approved=useRef(false),retry=useRef<ReturnType<typeof setTimeout>|undefined>(undefined),background=useRef(0),backgroundTimer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined),disconnectedAt=useRef(0),busy=useRef(false),ended=useRef(false),memberRef=useRef<Member[]>([]);
+  function signal(data:object){if(socket.current?.readyState===WebSocket.OPEN)socket.current.send(JSON.stringify(data));}
+  function refresh(){const ids=[...links.current.values()].filter(l=>l.channel?.readyState==='open'&&l.transfer&&l.pc.connectionState==='connected').map(l=>l.peerId);setReadyIds(ids);setTarget(prev=>ids.includes(prev)?prev:ids[0]||'');if(approved.current)setStatus(ids.length?'connected':'waiting');}
+  function dropLink(id:string){const l=links.current.get(id);if(!l)return;links.current.delete(id);clearTimeout(l.timer);if(l.transfer){l.transfer.dispose();retired.current.push(l.transfer);}l.pc.onconnectionstatechange=null;l.pc.onicecandidate=null;l.pc.ondatachannel=null;l.pc.close();setOffers(prev=>{const next={...prev};delete next[id];return next;});refresh();}
+  function cleanup(release=false){clearTimeout(retry.current);clearTimeout(backgroundTimer.current);for(const id of [...links.current.keys()])dropLink(id);if(socket.current){socket.current.onclose=null;socket.current.onmessage=null;socket.current.close();socket.current=null;}if(release){for(const t of retired.current)t.releaseDownloads();retired.current=[];}setReadyIds([]);setOffers({});busy.current=false;}
+  function end(message=''){ended.current=true;++gen.current;approved.current=false;cleanup();session.current=null;background.current=0;setAwayUntil(0);setInvite('');setRequests([]);setMembers([]);setStatus('closed');setError(message);}
+  function updateItem(peerId:string,label:string,item:Item){
+    const value={...item,id:peerId+':'+item.id,peerId,peerLabel:label,createdAt:Date.now()};
+    setItems(prev=>{const old=prev.find(i=>i.id===value.id);value.createdAt=old?.createdAt||value.createdAt;const all=[value,...prev.filter(i=>i.id!==value.id)];return [...all.filter(i=>i.text===undefined).slice(0,40),...all.filter(i=>i.text!==undefined).slice(0,200)].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));});
+    if(item.text===undefined&&['Delivered','Received'].includes(item.status)){const key=item.direction==='out'?'sent':'received';setFileCounts(p=>({...p,[key]:p[key]+1}));}
   }
-  function end(message: string) { ++generation.current; cleanup(); setInvite(''); setStatus('closed'); setPhase('closed'); if (message) setError(message); }
-  function signal(data: object) { if (socket.current?.readyState === WebSocket.OPEN) socket.current.send(JSON.stringify(data)); }
-  function visibility() {
-    if(socket.current?.readyState !== WebSocket.OPEN) return;
-    if(hiddenUntil.current && Date.now() >= hiddenUntil.current) {
-      signal({type:'leave'}); end('This page was in the background or locked for 5 minutes. Create a new room to reconnect.'); return;
-    }
-    const hidden = document.visibilityState === 'hidden';
-    if(hidden && !hiddenUntil.current) {
-      hiddenUntil.current = Date.now() + 5 * 60_000;
-      const gen = generation.current;
-      backgroundTimer.current = setTimeout(() => {
-        if(generation.current === gen && hiddenUntil.current) {
-          signal({type:'leave'}); end('This page was in the background or locked for 5 minutes. Create a new room to reconnect.');
-        }
-      },5 * 60_000);
-    } else if(!hidden) { clearTimeout(backgroundTimer.current); hiddenUntil.current = 0; }
-    setBackground(prev=>({...prev,selfUntil:hiddenUntil.current}));
+  function attach(l:Link,channel:RTCDataChannel){
+    if(l.channel){channel.close();return;}l.channel=channel;
+    channel.onopen=()=>{
+      if(links.current.get(l.peerId)!==l||!approved.current){channel.close();return;}
+      clearTimeout(l.timer);
+      l.transfer=new Transfer(channel,{item:item=>updateItem(l.peerId,l.label,item),offer:value=>setOffers(prev=>{const next={...prev};if(value)next[l.peerId]=value;else delete next[l.peerId];return next;}),error:setError});refresh();setError('');
+    };
+    channel.onclose=()=>{if(links.current.get(l.peerId)===l){dropLink(l.peerId);if(!ended.current)setError('A device paused its connection. Return to Drop there, or choose Reconnect devices.');}};
+  }
+  async function setup(msg:any){
+    dropLink(msg.peerId);const pc=new RTCPeerConnection({iceServers:msg.iceServers});
+    const l:Link={id:msg.linkId,peerId:msg.peerId,label:msg.label,pc,candidates:[],chain:Promise.resolve()};links.current.set(l.peerId,l);
+    const current=()=>links.current.get(l.peerId)===l;
+    pc.onicecandidate=e=>{if(current()&&e.candidate)signal({type:'signal',to:l.peerId,linkId:l.id,signal:{candidate:e.candidate.toJSON()}});};
+    pc.ondatachannel=e=>{if(current())attach(l,e.channel);};
+    pc.onconnectionstatechange=()=>{if(!current())return;if(pc.connectionState==='failed'){dropLink(l.peerId);setError('No network route to that device. Try the same Wi-Fi. A relay is not enabled.');}else if(pc.connectionState==='connected'||pc.connectionState==='disconnected')refresh();};
+    l.timer=setTimeout(()=>{if(current()&&!l.transfer){dropLink(l.peerId);setError('That device could not connect. Try the same Wi-Fi, then Reconnect devices.');}},45000);
+    if(msg.initiator){attach(l,pc.createDataChannel('drop-v2',{ordered:true}));await pc.setLocalDescription(await pc.createOffer());if(current())signal({type:'signal',to:l.peerId,linkId:l.id,signal:{description:pc.localDescription}});}
+  }
+  function visibility(){
+    if(!session.current)return;
+    if(background.current&&Date.now()>=background.current){signal({type:'leave'});end('You were away for 10 minutes. Open a new room to continue.');return;}
+    const hidden=document.visibilityState==='hidden';
+    if(hidden&&!background.current){background.current=Date.now()+GRACE;setAwayUntil(background.current);clearTimeout(backgroundTimer.current);backgroundTimer.current=setTimeout(()=>{signal({type:'leave'});end('You were away for 10 minutes. Open a new room to continue.');},GRACE);}
+    else if(!hidden){background.current=0;setAwayUntil(0);clearTimeout(backgroundTimer.current);if(!socket.current||socket.current.readyState>1)resume();else if(memberRef.current.some(m=>m.id!==session.current?.memberId&&m.online&&(!links.current.get(m.id)?.transfer||links.current.get(m.id)?.pc.connectionState!=='connected')))signal({type:'retry'});}
     signal({type:'visibility',hidden});
   }
-  function attach(channel: RTCDataChannel, roomId: string) {
-    if (channelAttached.current) { channel.close(); end('Unexpected additional transfer channel.'); return; }
-    channelAttached.current = true;
-    const gen = generation.current;
-    channel.onopen = async () => {
-      clearTimeout(timer.current); setStatus('verifying'); setPhase('confirm'); setInvite(''); setError('');
-      // Reject unexpected traffic while the comparison code is being computed.
-      channel.onmessage = () => end('Unexpected traffic before verification.');
-      try {
-        const pc = peer.current;
-        const value = await connectionCode(pc?.localDescription?.sdp || '', pc?.remoteDescription?.sdp || '', roomId);
-        if (generation.current !== gen || channel.readyState !== 'open') return;
-        setCode(value);
-        gate.current = new VerificationGate(channel, value, () => {
-          verified.current = true; setStatus('connected'); setPhase('ready');
-          transfer.current = new Transfer(channel, { item: item => {
-            setItems(prev => {
-              const updated = { ...item, createdAt: prev.find(old => old.id === item.id)?.createdAt ?? Date.now() };
-              const all = [updated, ...prev.filter(old => old.id !== item.id)];
-              return [...all.filter(entry => entry.text === undefined).slice(0, 40), ...all.filter(entry => entry.text !== undefined).slice(0, 200)].sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
-            });
-            // The protocol emits each completed receipt once. Keep room totals independent
-            // of the bounded activity history, so sending notes cannot reduce the count.
-            if (item.text === undefined && (item.status === 'Delivered' || item.status === 'Received')) {
-              const key = item.direction === 'out' ? 'sent' : 'received';
-              setFileCounts(prev => ({ ...prev, [key]: prev[key] + 1 }));
-            }
-          }, offer: setOffer, error: setError });
-        }, end);
-      } catch { if (generation.current === gen) end('Could not verify this connection. Create a new room.'); }
+  function connect(credentials:{id:string;token:string;memberId?:string},generation:number){
+    const endpoint=new URL(import.meta.env.VITE_SIGNAL_ORIGIN||location.origin);const ws=new WebSocket(`${endpoint.protocol==='https:'?'wss:':'ws:'}//${endpoint.host}/signal-v2`);socket.current=ws;
+    const authTimer=setTimeout(()=>{if(socket.current===ws&&ws.readyState!==WebSocket.OPEN)ws.close();},25000);
+    ws.onopen=()=>{clearTimeout(authTimer);if(gen.current!==generation){ws.close();return;}ws.send(JSON.stringify({type:'join',...credentials}));};
+    let chain=Promise.resolve();
+    ws.onmessage=event=>{chain=chain.then(async()=>{
+      if(gen.current!==generation||socket.current!==ws)return;const msg=JSON.parse(event.data);
+      if(msg.type==='joined'){
+        session.current={id:credentials.id,memberId:msg.memberId,token:msg.credential,expires:msg.expires,role:msg.role};disconnectedAt.current=0;retryAttempt.current=0;approved.current=msg.approved;setRole(msg.role);setSelfId(msg.memberId);setNickname(msg.nickname);setExpires(msg.expires);setMembers(msg.members);memberRef.current=msg.members;setStatus(msg.approved?'waiting':'approval');busy.current=false;setError('');signal({type:'visibility',hidden:document.visibilityState==='hidden'});if(document.visibilityState==='hidden')visibility();
+      }else if(msg.type==='members'){setMembers(msg.members);memberRef.current=msg.members;}
+      else if(msg.type==='requests')setRequests(msg.requests);
+      else if(msg.type==='approved'){approved.current=true;setStatus('connecting');}
+      else if(msg.type==='link'){if(!approved.current)throw Error('Unapproved connection');await setup(msg);}
+      else if(msg.type==='signal'){
+        const l=links.current.get(msg.from);if(!l||l.id!==msg.linkId)return;
+        const s=msg.signal;if(s.description){if(l.pc.remoteDescription)return;await l.pc.setRemoteDescription(s.description);for(const c of l.candidates)await l.pc.addIceCandidate(c);l.candidates=[];if(s.description.type==='offer'){await l.pc.setLocalDescription(await l.pc.createAnswer());signal({type:'signal',to:l.peerId,linkId:l.id,signal:{description:l.pc.localDescription}});}}
+        else if(s.candidate){if(l.pc.remoteDescription)await l.pc.addIceCandidate(s.candidate);else if(l.candidates.length<256)l.candidates.push(s.candidate);}
+      }else if(msg.type==='peer-away'||msg.type==='peer-left')dropLink(msg.peerId);
+      else if(msg.type==='closed')end(msg.reason);
+      else if(msg.type==='notice')setError(msg.message);
+    }).catch(()=>{if(gen.current===generation)setError('A connection could not be prepared. Choose Reconnect devices.');});};
+    ws.onerror=()=>{};
+    ws.onclose=()=>{
+      clearTimeout(authTimer);if(gen.current!==generation||ended.current||socket.current!==ws)return;socket.current=null;busy.current=false;
+      if(!session.current||!approved.current){end('The connection paused before approval. Scan a fresh invitation.');return;}
+      for(const id of [...links.current.keys()])dropLink(id);setStatus('recovering');
+      if(!disconnectedAt.current)disconnectedAt.current=Date.now();
+      clearTimeout(retry.current);retry.current=setTimeout(resume,Math.min(30000,2000*2**Math.min(4,retryAttempt.current++)));
     };
-    channel.onclose = () => { if (generation.current === gen && peer.current) end('Connection ended. Create a new room to send again.'); };
-    channel.onerror = () => { if (generation.current === gen) setError('The transfer channel encountered a problem.'); };
   }
-  function connect(id: string, token: string, gen: number) {
-    const endpoint = new URL(import.meta.env.VITE_SIGNAL_ORIGIN || location.origin);
-    const ws = new WebSocket(`${endpoint.protocol === 'https:' ? 'wss:' : 'ws:'}//${endpoint.host}/signal`);
-    socket.current = ws;
-    timer.current = setTimeout(() => { if (generation.current === gen) end('The pairing service did not respond. Check your connection and create a fresh room.'); }, 25_000);
-    ws.onopen = () => { if (generation.current !== gen) { ws.close(); return; } ws.send(JSON.stringify({ type: 'join', id, token })); };
-    let candidates: RTCIceCandidateInit[] = [];
-    let chain = Promise.resolve();
-    ws.onmessage = event => {
-      chain = chain.then(async () => {
-        if (generation.current !== gen) return;
-        const msg = JSON.parse(event.data);
-        if (msg.type === 'joined') { clearTimeout(timer.current); setPhase(msg.role === 'host' ? 'invite' : 'approval'); setNickname(msg.nickname); setExpires(msg.expires); setStatus(msg.role === 'host' ? 'waiting' : 'approval'); busy.current = false; if(document.visibilityState === 'hidden') visibility(); }
-        else if(msg.type === 'background') setBackground({selfUntil:msg.selfUntil,peerUntil:msg.peerUntil});
-        else if (msg.type === 'request') { setRequest(msg.requestId); setPhase('approval'); }
-        else if (msg.type === 'request-gone') { setRequest(''); setPhase('invite'); }
-        else if (msg.type === 'request-stale') setError('The joining device changed. Review the current request again.');
-        else if (msg.type === 'closed' || msg.type === 'error') end(msg.reason || msg.message);
-        else if (msg.type === 'ready') {
-          if (peer.current) { end('Unexpected duplicate connection setup.'); return; }
-          setRequest(''); setStatus('connecting'); setPhase('gathering');
-          const hasRelay = (msg.iceServers || []).some((server: RTCIceServer) => (Array.isArray(server.urls) ? server.urls : [server.urls]).some((url: string) => /^turns?:/.test(url)));
-          setRelayAvailable(hasRelay);
-          const routeFailure = hasRelay ? 'No direct or relayed route could be established. Check both devices’ internet connections, temporarily disable a VPN if you use one, then create a fresh room.' : 'A direct route could not be established. This service has no TURN relay enabled yet. Try both devices on the same Wi-Fi, with mobile data and VPNs off, then create a fresh room.';
-          const pc = new RTCPeerConnection({ iceServers: msg.iceServers }); peer.current = pc;
-          pc.onicecandidate = e => { if (generation.current === gen && e.candidate) signal({ type: 'signal', signal: { candidate: e.candidate.toJSON() } }); };
-          pc.onicegatheringstatechange = () => {
-            if (generation.current !== gen) return;
-            if (pc.iceGatheringState === 'complete') setPhase(prev => prev === 'gathering' ? 'routing' : prev);
-          };
-          pc.onconnectionstatechange = () => {
-            if (generation.current !== gen) return;
-            if (pc.connectionState === 'failed') end(routeFailure);
-            if (pc.connectionState === 'connecting') setPhase(prev => prev === 'gathering' ? 'routing' : prev);
-            if (pc.connectionState === 'disconnected') {
-              setStatus('recovering'); setPhase('reconnecting');
-              clearTimeout(timer.current);
-              timer.current = setTimeout(() => { if (generation.current === gen) end('The connection was lost. Keep both pages open and create a fresh room to reconnect.'); }, 20_000);
-            }
-            if (pc.connectionState === 'connected') {
-              setError('');
-              clearTimeout(timer.current);
-              if (verified.current) { setStatus('connected'); setPhase('ready'); }
-              else if (gate.current) { setStatus('verifying'); setPhase('confirm'); }
-              else {
-                setStatus('connecting'); setPhase('secure');
-                timer.current = setTimeout(() => { if (generation.current === gen) end('The network route opened, but the encrypted channel did not. Create a fresh room and try again.'); }, 15_000);
-              }
-            }
-          };
-          pc.ondatachannel = e => attach(e.channel, id);
-          timer.current = setTimeout(() => { if (generation.current === gen) end(routeFailure); }, 45_000);
-          if (msg.initiator) { attach(pc.createDataChannel('drop', { ordered: true }), id); await pc.setLocalDescription(await pc.createOffer()); signal({ type: 'signal', signal: { description: pc.localDescription } }); }
-        } else if (msg.type === 'signal' && peer.current) {
-          const pc = peer.current;
-          if (msg.signal.description) {
-            if (pc.remoteDescription) { end('Unexpected connection renegotiation. Room closed.'); return; }
-            await pc.setRemoteDescription(msg.signal.description);
-            for (const candidate of candidates) await pc.addIceCandidate(candidate); candidates = [];
-            if (msg.signal.description.type === 'offer') { await pc.setLocalDescription(await pc.createAnswer()); signal({ type: 'signal', signal: { description: pc.localDescription } }); }
-          } else if (msg.signal.candidate) {
-            if (pc.remoteDescription) await pc.addIceCandidate(msg.signal.candidate); else { if (candidates.length >= 256) throw new Error('Too many candidates'); candidates.push(msg.signal.candidate); }
-          }
-        }
-      }).catch(() => { if (generation.current === gen) end('Pairing failed. Create a new room and try again.'); });
-    };
-    ws.onerror = () => { if (generation.current === gen) setError('Could not reach the pairing server.'); };
-    ws.onclose = () => { if (generation.current === gen) end('Pairing server disconnected. Create a new room to reconnect.'); };
+  function resume(){
+    if(ended.current||!session.current)return;
+    if(Date.now()>=session.current.expires||(background.current&&Date.now()>=background.current)||(disconnectedAt.current&&Date.now()-disconnectedAt.current>=GRACE)){end('Your return window expired. Create a new room.');return;}
+    if(document.visibilityState==='hidden'){retry.current=setTimeout(resume,5000);return;}
+    if(socket.current&&socket.current.readyState<2)return;
+    setStatus('recovering');connect({id:session.current.id,token:session.current.token,memberId:session.current.memberId},gen.current);
   }
-  function supported() {
-    if (!window.isSecureContext || !window.RTCPeerConnection || !crypto.subtle) { setError('Open DROP over HTTPS (or localhost) in a browser with WebRTC support.'); return false; }
-    return true;
-  }
-  async function create() {
-    if (busy.current || !supported()) return;
-    setJoining(false);
-    cleanup(true); setItems([]); setFileCounts({ sent: 0, received: 0 }); setError(''); setRelayAvailable(null); setPhase('service'); setStatus('creating'); busy.current = true;
-    const gen = ++generation.current;
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SIGNAL_ORIGIN || ''}/api/rooms`, { method: 'POST', credentials: 'omit', signal: AbortSignal.timeout(75_000) });
-      let room;
-      try { room = await response.json(); } catch { throw new Error('The pairing service is waking up or temporarily unavailable. Wait a moment, then try again.'); }
-      if (!response.ok) throw new Error(room.error || 'Could not create a room.');
-      if (gen !== generation.current) return;
-      setInvite(`${location.origin}/app#${room.id}.${room.invite}`); connect(room.id, room.owner, gen);
-    } catch (e) { if (gen === generation.current) end(e instanceof Error && e.name !== 'TimeoutError' && e.name !== 'AbortError' ? e.message : 'The pairing service is taking too long to respond. It may be waking up. Wait a moment and try again.'); }
-  }
-  function join(value: string) {
-    if (busy.current || !supported()) return;
-    let url: URL;
-    try { url = new URL(value); } catch { setError('Paste the complete invite link from your other device.'); return; }
-    if (url.origin !== location.origin || !/^#[\w-]{43}\.[\w-]{43}$/.test(url.hash)) { setError('Use a newly created invite link from this DROP website.'); return; }
-    setJoining(true);
-    history.replaceState(null, '', location.pathname);
-    cleanup(true); setItems([]); setFileCounts({ sent: 0, received: 0 }); setError(''); setRelayAvailable(null); setPhase('service'); setStatus('creating'); busy.current = true;
-    const [id, token] = url.hash.slice(1).split('.'); connect(id, token, ++generation.current);
-  }
-  useEffect(() => {
-    const joinFromAddress = () => {
-      if (/^#[\w-]{43}\.[\w-]{43}$/.test(location.hash)) {
-        join(location.href);
-        window.scrollTo({top:0,behavior:'instant'});
-      }
-    };
-    window.addEventListener('hashchange', joinFromAddress);
-    joinFromAddress();
-    // Tell the peer before navigating away instead of relying only on a hosting
-    // proxy noticing the closed WebSocket. This is best-effort, not offline detection.
-    const pageExit = () => { signal({ type: 'leave' }); end('This page left the room. Create a new room to reconnect.'); };
-    window.addEventListener('pagehide', pageExit);
-    document.addEventListener('visibilitychange',visibility);
-    return () => { window.removeEventListener('hashchange', joinFromAddress); window.removeEventListener('pagehide', pageExit); document.removeEventListener('visibilitychange',visibility); ++generation.current; cleanup(true); };
-  }, []);
-  return { status, joining, phase, relayAvailable, invite, request, nickname, error, expires, background, items, fileCounts, offer, create, join, setError, code, confirmed,
-    confirm: () => { if (gate.current) { setConfirmed(true); gate.current.confirm(); } },
-    mismatch: () => { signal({ type: 'leave' }); end('Codes did not match. Nothing was transferred.'); },
-    approve: () => signal({ type: 'approve', requestId: request }), reject: () => { signal({ type: 'reject', requestId: request }); },
-    leave: () => { signal({ type: 'leave' }); end(''); },
-    sendFile: async (file: File) => { try { await transfer.current?.offer(file); } catch (e) { setError(e instanceof Error ? e.message : 'Could not send file.'); } },
-    sendText: (text: string) => { try { if (!transfer.current) return false; transfer.current.text(text); return true; } catch (e) { setError(e instanceof Error ? e.message : 'Could not send note.'); return false; } },
-    accept: () => transfer.current?.accept(), decline: () => transfer.current?.decline(), cancel: (id: string) => transfer.current?.cancel(id) };
+  function reset(){signal({type:'leave'});++gen.current;approved.current=false;cleanup(true);session.current=null;ended.current=false;background.current=0;disconnectedAt.current=0;setAwayUntil(0);setItems([]);setFileCounts({sent:0,received:0});setError('');setRequests([]);setMembers([]);setTarget('');setRole('');setNickname('');setInvite('');setExpires(0);}
+  async function create(){if(busy.current)return;reset();setJoining(false);setStatus('creating');busy.current=true;const generation=gen.current;
+    try{const response=await fetch(`${import.meta.env.VITE_SIGNAL_ORIGIN||''}/api/v2/rooms`,{method:'POST',credentials:'omit',signal:AbortSignal.timeout(75000)});let data;try{data=await response.json();}catch{throw Error('The pairing service is waking up. Try again shortly.');}if(!response.ok)throw Error(data.error||'Could not open a room.');if(gen.current!==generation)return;setInvite(`${location.origin}/app#${data.id}.${data.invite}`);connect({id:data.id,memberId:data.memberId,token:data.owner},generation);}catch(e){if(gen.current===generation)end(e instanceof Error?e.message:'Could not open the room.');}}
+  function join(value:string){let url;try{url=new URL(value);}catch{setError('Paste the complete invitation link.');return;}if(url.origin!==location.origin||!/^#[\w-]{43}\.[\w-]{43}$/.test(url.hash)){setError('Use an invitation from this Drop website.');return;}reset();setJoining(true);setStatus('creating');busy.current=true;const [id,token]=url.hash.slice(1).split('.');history.replaceState(null,'',location.pathname);connect({id,token},gen.current);}
+  useEffect(()=>{const hash=()=>{if(/^#[\w-]{43}\.[\w-]{43}$/.test(location.hash))join(location.href);};hash();window.addEventListener('hashchange',hash);document.addEventListener('visibilitychange',visibility);window.addEventListener('online',resume);
+    // Do not send leave on pagehide: mobile browsers emit it during suspension.
+    return()=>{window.removeEventListener('hashchange',hash);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('online',resume);ended.current=true;++gen.current;cleanup(true);};},[]);
+  const firstOffer=Object.entries(offers)[0];const offer=firstOffer?{...firstOffer[1],peerId:firstOffer[0],label:members.find(m=>m.id===firstOffer[0])?.label||'Other device'}:null;
+  return {status,joining,invite,nickname,expires,error,setError,members,requests,role,selfId,target,setTarget,readyIds,awayUntil,items,fileCounts,offer,create,join,
+    approve:(r:Request)=>signal({type:'approve',memberId:r.id,requestId:r.requestId}),reject:(r:Request)=>signal({type:'reject',memberId:r.id,requestId:r.requestId}),
+    leave:()=>{signal({type:'leave'});end();},reconnect:()=>{if(socket.current?.readyState===WebSocket.OPEN){signal({type:'retry'});setError('');}else resume();},
+    sendFile:async(file:File)=>{try{const t=links.current.get(target)?.transfer;if(!t)throw Error('Choose a connected recipient.');await t.offer(file);}catch(e){setError(e instanceof Error?e.message:'Could not send file.');}},
+    sendText:(text:string)=>{try{const t=links.current.get(target)?.transfer;if(!t)return false;t.text(text);return true;}catch(e){setError(e instanceof Error?e.message:'Could not send message.');return false;}},
+    accept:()=>{if(offer)links.current.get(offer.peerId)?.transfer?.accept();},decline:()=>{if(offer)links.current.get(offer.peerId)?.transfer?.decline();},
+    cancel:(id:string)=>{const item=items.find(i=>i.id===id);if(item?.peerId)links.current.get(item.peerId)?.transfer?.cancel(id.slice(item.peerId.length+1));}
+  };
 }

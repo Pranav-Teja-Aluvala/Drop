@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 184" fill="none">
+  <defs>
+    <pattern id="grid" width="40" height="20" patternUnits="userSpaceOnUse"><path d="m0 0 40 20m0-20L0 20" stroke="#bacac6" stroke-width=".65"/></pattern>
+    <pattern id="keys" width="8" height="7" patternUnits="userSpaceOnUse"><rect width="6" height="5" rx="1" fill="#445f67"/></pattern>
+  </defs>
+  <rect width="520" height="184" fill="#e8eeea"/><rect width="520" height="184" fill="url(#grid)"/>
+  <circle cx="382" cy="47" r="32" fill="#efad62"/>
+  <g stroke="#233f4c" stroke-width="2" stroke-linejoin="round">
+    <path d="m80 116 107 50 82-42-109-49Z" fill="#9cafaa"/>
+    <g transform="matrix(1 .46 0 1 112 15)"><rect x="-4" width="109" height="82" rx="3" fill="#365460"/><rect width="108" height="81" rx="3" fill="#aec7c4"/><rect x="6" y="6" width="96" height="64" fill="#e7f2ed"/><path d="M28 23h19l6 5h25v23H28Z" fill="#eebd78"/><path d="M28 31h50l-4 20H28Z" fill="#f9d49c"/></g>
+    <path d="m69 117 108 50 43-22v-5l-108-49-43 21Z" fill="#63818a"/>
+    <path d="m69 112 108 50 43-22-108-50Z" fill="#ccdad5"/>
+    <path d="m0 0h90v19H0Z" transform="matrix(1 .46 -1 .51 114 96)" fill="url(#keys)" stroke="none"/>
+    <path d="m111 125 25 12 8-4-25-12Z" fill="#a6b8b5" stroke-width=".8"/>
+    <path d="m326 125 44 20 63-33-44-20Z" fill="#9cafaa" stroke="none"/>
+    <g transform="matrix(1 .46 -.75 .65 385 60)"><rect y="4" width="50" height="94" rx="7" fill="#3d5964"/><rect width="50" height="94" rx="7" fill="#d6e4db"/><rect x="4" y="5" width="42" height="81" rx="4" fill="#699389"/><path d="M18 7h14" stroke-linecap="round"/></g>
+  </g>
+</svg>

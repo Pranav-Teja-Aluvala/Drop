@@ -1,41 +1,61 @@
-import {useLayoutEffect,useRef} from 'react';
+import {useEffect,useRef,useState} from 'react';
+import {DispatchArt} from './DispatchArt';
 import gsap from 'gsap';
 import {ScrollTrigger} from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 import {Brand} from './Brand';
-import markup from './landing.html?raw';
-import {deviceArtwork} from './deviceArtwork';
-import {appendCursorAction, appendPhoneTap} from './walkthroughCursor';
-const page=markup.replace(/<canvas id="journey-canvas"[^>]*><\/canvas>/,deviceArtwork('journey')).replace(/<img class="stage__fallback"[^>]*>/g,'');
-export function Story(){const root=useRef<HTMLDivElement>(null);useLayoutEffect(()=>{const el=root.current!;const abort=new AbortController();const ctx=gsap.context(()=>{const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;const travel={p:0};const path=el.querySelector<SVGPathElement>('.motion-curve')!;const length=path.getTotalLength();const steps=[[0,0,'Create a temporary room.'],[1,0,'Open Camera on your phone.'],[1,1,'Scan the QR. Open Drop in your browser.'],[2,2,'Join the room. Check the name: WAVE.'],[2,3,'Compare the full security code on both devices.'],[3,4,'Choose a file on your laptop.'],[4,4,'Pick coastline.jpg in the file chooser.'],[5,5,'Send it. The recipient can accept or decline.'],[5,5,'Accept the file on your phone.'],[6,6,'Received. Save the file to Downloads.']] as const;
-const flight=gsap.timeline({paused:true,repeat:reduced?0:-1,repeatDelay:5.5,repeatRefresh:true}).set('.moving-phone',{x:0,y:0,rotation:0,scale:1}).set('.film-cursor',{x:350,y:560,scale:.85,autoAlpha:reduced?0:1,svgOrigin:'0 0'}).set('.cursor-click,.phone-tap',{autoAlpha:0}).set('.film-stage',{autoAlpha:0}).set('.flying-card',{autoAlpha:0});
-steps.forEach(([laptop,phone,caption],index)=>{
-  flight.set('.film-stage',{autoAlpha:0})
-    .set([`.laptop-${laptop}`,`.phone-${phone}`],{autoAlpha:1})
-    .call(()=>{const label=el.querySelector('.film-caption');if(label)label.textContent=caption;});
-  const actions: Partial<Record<number,string[]>> = {
-    0:['.laptop-0 .film-button'],
-    4:['.laptop-2 .film-button'],
-    5:['.laptop-3 .film-button'],
-    6:['.laptop-4 .film-file.selected','.laptop-4 .film-button'],
-    7:['.laptop-5 .film-button'],
-  };
-  const controls=actions[index];
-  if(controls){
-    controls.forEach(selector=>appendCursorAction(flight,el,selector,reduced));
-  }else{
-    flight.to('.film-cursor',{autoAlpha:0,duration:reduced?0:.25});
-  }
-  const phoneTargets: Partial<Record<number,string>>={1:'.phone-0 .camera-app',3:'.phone-2 .film-button',4:'.phone-3 .film-button',8:'.phone-5 .film-button',9:'.phone-6 .film-button'};
-  if(phoneTargets[index]) appendPhoneTap(flight,el,phoneTargets[index]!,reduced);
-  if(index===1){flight.to('.moving-phone',{x:-310,y:-120,rotation:-12,scale:1.12,svgOrigin:'1312 560',duration:reduced?0:1.1,ease:'power3.inOut'});}
-  if(index===3){flight.to('.moving-phone',{x:0,y:0,rotation:0,scale:1,duration:reduced?0:1.1,ease:'power3.inOut'});}
-  if(index===2){flight.fromTo('.camera-view',{scale:.8},{scale:1,duration:reduced?0:.7,ease:'power2.out'}).fromTo('.scan-line',{y:-40},{y:40,duration:reduced?0:.8});}
-  if(index===8){flight.set(travel,{p:0}).set('.flying-card',{autoAlpha:1}).to(travel,{p:1,duration:reduced?0:2,ease:'power2.inOut',onUpdate:()=>{const point=path.getPointAtLength(travel.p*length);gsap.set(el.querySelector('.flying-card'),{x:point.x-45,y:point.y-56,scale:.65,opacity:travel.p>.95?0:1});}});}
-  flight.to({},{duration:reduced?0:index===4?2.5:1.5});
-});
-if(reduced){flight.progress(1).pause();const caption=el.querySelector('.film-caption');if(caption)caption.textContent='Received. Save the file to Downloads.';}else{
-const trigger=ScrollTrigger.create({trigger:el.querySelector('#watch'),start:'top 65%',onEnter:()=>flight.play(),onLeave:()=>flight.pause(),onEnterBack:()=>flight.play(),onLeaveBack:()=>flight.pause()});abort.signal.addEventListener('abort',()=>trigger.kill());const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){flight.play();observer.disconnect();}},{threshold:.35});observer.observe(el.querySelector('#watch')!);abort.signal.addEventListener('abort',()=>observer.disconnect());}
-const toggle=el.querySelector('.nav__toggle')!,menu=el.querySelector('.nav__menu')!;toggle.addEventListener('click',()=>{const open=toggle.getAttribute('aria-expanded')!=='true';toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'Close menu':'Open menu');menu.classList.toggle('is-open',open);},{signal:abort.signal});menu.addEventListener('click',()=>{menu.classList.remove('is-open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open menu');},{signal:abort.signal});el.addEventListener('keydown',event=>{if(event.key==='Escape'&&toggle.getAttribute('aria-expanded')==='true'){menu.classList.remove('is-open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open menu');(toggle as HTMLButtonElement).focus();}},{signal:abort.signal});if(!reduced)gsap.from('.line__in',{y:40,opacity:0,stagger:.1,duration:.8});},el);return()=>{abort.abort();gsap.killTweensOf(el.querySelector('.device-art'));ctx.revert();};},[]);return <div className="landing" ref={root} dangerouslySetInnerHTML={{__html:page}}/>;}
-export function Closing(){return <div className="landing"><section id="privacy" className="section container privacy-band"><h2>Your space.<br/>Your say.</h2><div><h3>You approve the recipient</h3><p>Pair only the device you intended. You choose whether to accept each incoming file.</p><a href="/privacy.html">Read the privacy policy <span aria-hidden="true">↗</span></a></div><div><h3>Temporary by design</h3><p>Rooms last up to two hours. Keep both screens open; end your room when you’re finished.</p></div></section><section id="devices" className="container compatibility"><h2>Made for your next screen.</h2><p>Open Drop in a browser with WebRTC support. Pair two devices and keep both pages open while you send.</p></section><section className="container closing-cta"><h2>Send it to my other device.</h2><a href="/app" className="btn btn--primary">Start Dropping <span aria-hidden="true">↗</span></a></section><footer className="container closing-footer"><span>© 2026 Drop</span><nav aria-label="Footer"><a href="#how">How it works</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/cookies.html">Cookies</a><a href="/contact.html">Contact</a></nav></footer></div>;}
-export function NotFound(){return <main className="lost-page"><a href="/" aria-label="Drop home"><Brand/></a><div className="lost-file" aria-hidden="true">↗</div><p>404 / DESTINATION NOT FOUND</p><h1>This file took<br/>a wrong turn.</h1><p>Let’s get you back to your other device.</p><a className="button primary" href="/">Return home</a></main>}
+import {ArrowUpRight,ArrowDown,Plus,ShieldCheck,Files} from 'lucide-react';
+
+function RibbonField(){
+  const canvas=useRef<HTMLCanvasElement>(null);
+  useEffect(()=>{
+    const el=canvas.current!,context=el.getContext('2d');if(!context)return;
+    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const coarse=matchMedia('(pointer: coarse)').matches;
+    let width=0,height=0,frame=0,x=.7,y=.5,tx=.7,ty=.5,visible=true;
+    const paint=()=>{context.clearRect(0,0,width,height);for(let i=0;i<8;i++){
+      const offset=i*24;context.beginPath();context.moveTo(width*.43+offset,-40);
+      context.bezierCurveTo(width*(.76+x*.13)+offset,height*.17,width*(.3+x*.12)+offset,height*(.61+y*.15),width*.9+offset,height+40);
+      context.strokeStyle=i===3?'#b5a8cb':i===4?'#c3a16b':'#dce0e3';context.lineWidth=i===3||i===4?1.4:.8;context.stroke();
+    }};
+    const size=()=>{const r=el.getBoundingClientRect();width=r.width;height=r.height;el.width=width*Math.min(devicePixelRatio,2);el.height=height*Math.min(devicePixelRatio,2);context.setTransform(Math.min(devicePixelRatio,2),0,0,Math.min(devicePixelRatio,2),0,0);paint();};
+    const move=(event:PointerEvent)=>{if(reduced||coarse)return;const r=el.getBoundingClientRect();tx=Math.min(1,Math.max(0,(event.clientX-r.left)/r.width));ty=Math.min(1,Math.max(0,(event.clientY-r.top)/r.height));if(!frame&&visible)frame=requestAnimationFrame(tick);};
+    const tick=()=>{x+=(tx-x)*.07;y+=(ty-y)*.07;paint();frame=0;if(visible&&(Math.abs(tx-x)>.001||Math.abs(ty-y)>.001))frame=requestAnimationFrame(tick);};
+    const observer=new ResizeObserver(size);observer.observe(el);const intersection=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;if(!visible){cancelAnimationFrame(frame);frame=0;}});intersection.observe(el);
+    window.addEventListener('pointermove',move,{passive:true});size();return()=>{observer.disconnect();intersection.disconnect();cancelAnimationFrame(frame);window.removeEventListener('pointermove',move);};
+  },[]);
+  return <canvas className="ribbon-field" ref={canvas} aria-hidden="true"/>;
+}
+export function Story(){
+  const [menu,setMenu]=useState(false);
+  const root=useRef<HTMLDivElement>(null);
+  useEffect(()=>{
+    const media=gsap.matchMedia();
+    media.add('(prefers-reduced-motion: no-preference)',()=>{
+      gsap.from('.headline-line > span',{yPercent:106,stagger:.09,duration:.78,ease:'power4.out'});
+      const rows=root.current?.querySelectorAll('.v2-steps article') ?? [];
+      for(const row of rows){
+        gsap.from(row.querySelector('span'),{x:-12,duration:.55,scrollTrigger:{trigger:row,start:'top 92%',once:true}});
+        gsap.from(row,{borderTopColor:'transparent',duration:.8,scrollTrigger:{trigger:row,start:'top 92%',once:true}});
+      }
+    },root);
+    return ()=>media.revert();
+  },[]);
+  useEffect(()=>{if(!menu)return;const close=(event:KeyboardEvent)=>{if(event.key==='Escape')setMenu(false);};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close);},[menu]);
+  return <div ref={root} className="landing v2-landing dispatch"><a className="skip" href="#main">Skip to content</a>
+    <header className="nav"><div className="nav__in"><a href="/" aria-label="Drop home"><Brand/></a><nav id="v2-primary-navigation" className={menu?'v2-nav open':'v2-nav'} aria-label="Primary"><a href="#how" onClick={()=>setMenu(false)}>How it works</a><a href="#field-guide" onClick={()=>setMenu(false)}>Transfer guide</a><a href="/app" className="button primary">Open Drop <ArrowUpRight size={16}/></a></nav><button className="nav__toggle" aria-label={menu?'Close menu':'Open menu'} aria-expanded={menu} aria-controls="v2-primary-navigation" onClick={()=>setMenu(!menu)}>☰</button></div></header>
+    <main id="main"><section className="v2-hero" id="meet"><RibbonField/><div className="container v2-hero-grid"><div className="v2-hero-copy"><h1 id="hero-title"><span className="headline-line"><span>Send it to</span></span> <span className="headline-line"><span>my <em>other</em></span></span> <span className="headline-line"><span>device.</span></span></h1><p className="v2-description">Move a photo to your laptop, a PDF to your phone, or a link to the screen where you need it. No account required.</p><div className="v2-hero-actions"><a className="button primary" href="/app">Start Dropping <ArrowUpRight size={18}/></a><a className="v2-how-link" href="#how">See how it works <ArrowDown size={16}/></a></div></div>
+      <DispatchArt/></div></section>
+    <section id="how" className="container v2-how"><div className="v2-section-heading"><h2>Pair your devices.</h2><p>Start on whichever device is already in your hand.</p></div><div className="v2-steps"><article><span>01 <Plus size={18}/></span><h3>Create a room</h3><p>Create a temporary room. Its private QR connects your next screen.</p></article><article><span>02 <ShieldCheck size={18}/></span><h3>Approve the device</h3><p>Match the six-letter name on both screens. Allow each new device once.</p></article><article><span>03 <Files size={18}/></span><h3>Choose a recipient</h3><p>Choose a connected device. Send any file type, or pick up a link or note.</p></article></div></section>
+    <section id="field-guide" className="transfer-guide"><div className="container guide-layout">
+      <div><h2>What are you sending?</h2><p>Pick an item for instructions.</p></div>
+      <div className="guide-entries">
+        <details open><summary>A file <span>Photos, PDFs, archives</span></summary><p>To take a boarding pass with you, select your phone in the room and browse for the PDF on your laptop. On your phone, accept the file and tap Save file. Drop takes any extension, one file at a time, up to 50 MB.</p></details>
+        <details><summary>A link <span>Articles, maps, playlists</span></summary><p>Found a place on your laptop? Choose your phone as the recipient, paste the map link into Chat and send it. Copy the address on your phone and open it in your maps app.</p></details>
+        <details><summary>A note <span>Addresses, lists, snippets</span></summary><p>Send a shopping list from your keyboard to your phone in Chat. Copy it into your notes before leaving the room. Each message can hold up to 50,000 characters.</p></details>
+      </div></div></section>
+    <section className="container v2-trust" id="privacy"><h2>Before you send</h2><div><h3>Keep both screens awake</h3><p>If you switch apps, return within ten minutes to reconnect while the page is still open. Send any interrupted file again. If your networks block the direct connection, try the same Wi-Fi.</p><a href="/connection-help.html">Connection help <ArrowUpRight size={16}/></a></div><div><h3>Save what you need</h3><p>Files travel over an encrypted connection between the devices. Rooms last up to two hours. Save downloads and copy important messages before you close the page.</p><a href="/privacy.html">How Drop handles your data <ArrowUpRight size={16}/></a></div></section>
+    </main></div>;
+}
+export function Closing(){return <div className="landing v2-landing dispatch"><section className="container closing-cta"><h2>Have both devices handy?</h2><a href="/app" className="button primary">Start Dropping <ArrowUpRight size={18}/></a></section><footer className="container closing-footer"><span>© 2026 Drop</span><nav aria-label="Footer"><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/cookies.html">Cookies & data</a><a href="/contact.html">Contact us</a></nav></footer></div>;}
+export function NotFound(){return <main className="lost-page"><a href="/"><Brand/></a><h1>That page has moved away.</h1><a className="button primary" href="/">Return home</a></main>;}
