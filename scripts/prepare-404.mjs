@@ -1,5 +1,5 @@
 import {readFileSync,writeFileSync} from 'node:fs';
-const reference=readFileSync(new URL('../design/user-404.html',import.meta.url),'utf8');
+const reference=readFileSync(new URL('./templates/error-page.html',import.meta.url),'utf8');
 const logo=readFileSync(new URL('../public/drop-mark.svg',import.meta.url),'utf8').replace('<svg ','<svg aria-hidden="true" ');
 let html=reference.replace(/(<a class="logo"[\s\S]*?)<svg[\s\S]*?<\/svg>/,(_,prefix)=>prefix+logo);
 const script=html.match(/<script>([\s\S]*?)<\/script>/);

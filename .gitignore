@@ -10,3 +10,14 @@ playwright-report/
 # Hosting CLI metadata stays local.
 .vercel/
 .render/
+
+# Local art studies, internal reviews and superseded prototypes
+/design/
+/*-HANDOFF.md
+/*-REVIEW*.md
+/LAUNCH-CHECKLIST-*.md
+/DESIGN-REFRESH.md
+/DEPLOYMENT.md
+/RELEASE.md
+/src/PaperGlider.tsx
+/src/RoomBackdrop.tsx

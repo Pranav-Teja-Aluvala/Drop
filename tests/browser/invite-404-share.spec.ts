@@ -27,7 +27,7 @@ test('invite focus uses one rounded boundary; room timing is grouped and native 
 });
 
 test('production 404 preserves artwork without preview controls and responds to connectivity',async({page,browser})=>{
-  const reference=readFileSync('design/user-404.html','utf8');
+  const reference=readFileSync('scripts/templates/error-page.html','utf8');
   const built=readFileSync('public/404.html','utf8');
   const logo=readFileSync('public/drop-mark.svg','utf8').replace('<svg ','<svg aria-hidden="true" ');
   const expected=reference.replace(/(<a class="logo"[\s\S]*?)<svg[\s\S]*?<\/svg>/,(_,prefix)=>prefix+logo).replace(/<script>[\s\S]*?<\/script>/,'<script src="/assets/not-found.js"></script>').replace(/  <!-- Preview switch:[\s\S]*?<\/div>/,'').replace(/  \/\* ---------- preview switch ---------- \*\/[\s\S]*?(?=  \/\* ---------- keyframes)/,'');
