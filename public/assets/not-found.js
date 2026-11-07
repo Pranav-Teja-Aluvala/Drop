@@ -16,12 +16,12 @@
     btn: 'Return home',
     hint: 'psst… poke the card',
     subs: [
-      'We couldn’t find a page at this address.',
-      'Check the spelling of the link and try again.',
-      "If you followed a bookmark, update it after you find the page.",
-      'The homepage has a link to the transfer room.',
-      "If you meant to join a room, open its invitation link.",
-      "You can also start a new room from the homepage."
+      'Sorry, the AI that built this site really sucks.',
+      'Our AI said this page existed. Our AI also said "trust me bro."',
+      "This page wasn't in the roadmap. Honestly, neither was this apology.",
+      'We asked the AI to find it. It confidently made something up.',
+      "The page left the chat. The AI is still pretending it's fine.",
+      "Somewhere, a model hallucinated this URL. We're so sorry."
     ]
   };
 
