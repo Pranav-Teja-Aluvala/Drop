@@ -1,9 +1,45 @@
-import { useEffect, useRef, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Files, MessageSquare, Send } from "lucide-react";
 import { CopyButton, TransferList, type Room } from "./components";
 import { MAX_TEXT } from "./transfer";
 
 export type ActivityView = "files" | "chat";
+
+function MessageBody({ text }: { text: string }) {
+  const content = useRef<HTMLPreElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+  useEffect(() => {
+    const element = content.current;
+    if (!element || expanded) return;
+    const measure = () =>
+      setOverflows(element.scrollHeight > element.clientHeight + 1);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [text, expanded]);
+  return (
+    <>
+      <pre
+        ref={content}
+        className={"message-text" + (expanded ? " expanded" : "")}
+      >
+        {text}
+      </pre>
+      {overflows && (
+        <button
+          className="message-expand"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((value) => !value)}
+        >
+          {expanded ? "Show less" : "Show full message"}
+        </button>
+      )}
+    </>
+  );
+}
+
 export function RoomActivity({
   room,
   view,
@@ -189,7 +225,7 @@ export function RoomActivity({
                     }
                   >
                     <div className="chat-bubble">
-                      <pre className="message-text">{item.text}</pre>
+                      <MessageBody text={item.text!} />
                     </div>
                     <div className="chat-meta">
                       <span>

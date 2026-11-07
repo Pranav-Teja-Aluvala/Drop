@@ -140,3 +140,38 @@ test('code joining retains approval and automatic acceptance is opt-in and rever
    await expect(guest.getByRole('checkbox',{name:/Accept all incoming files/})).not.toBeChecked({timeout:20000});
  }finally{await owner.close();await other.close();}
 });
+
+test('invitation fields and long mobile messages keep bounded dimensions',async({browser})=>{
+ const a=await browser.newContext({viewport:{width:1440,height:900}});
+ const b=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+ const host=await a.newPage(),phone=await b.newPage();
+ try{
+   await admit(host,phone,await create(host));
+   await host.getByRole('button',{name:'Connect more',exact:true}).click();
+   const input=host.getByLabel('Room invite',{exact:true});
+   await expect.poll(()=>host.locator('#room-invitation').evaluate(el=>el.clientHeight)).toBeGreaterThan(150);
+   for(const width of [1440,844,390,320]){
+     await host.setViewportSize({width,height:844});
+     expect(await input.evaluate(el=>el.getBoundingClientRect().width<=420)).toBe(true);
+     expect(await host.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+     await input.focus();
+     expect(await input.evaluate(el=>el.selectionEnd-el.selectionStart)).toBe((await input.inputValue()).length);
+   }
+   const text='https://example.com/'+ 'a'.repeat(2000)+'\n'+'Long note. '.repeat(900);
+   await note(host,text);
+   await phone.getByRole('tab',{name:/Chat/}).click();
+   const message=phone.locator('.message-text').last();
+   await expect(message).toHaveText(text);
+   await expect(phone.getByRole('button',{name:'Show full message',exact:true})).toBeVisible();
+   expect(await message.evaluate(el=>el.clientHeight<220)).toBe(true);
+   expect(await phone.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+   const composer=phone.getByRole('textbox',{name:'Text & links',exact:true});
+   expect(await composer.evaluate(el=>el.clientHeight<=112)).toBe(true);
+   await phone.screenshot({path:join(tmpdir(),'drop-compact-chat.png'),fullPage:true});
+   await phone.getByRole('button',{name:'Show full message',exact:true}).click();
+   await expect(phone.getByRole('button',{name:'Show less',exact:true})).toBeVisible();
+   expect(await message.evaluate(el=>el.scrollHeight<=el.clientHeight+1)).toBe(true);
+   await phone.getByRole('button',{name:'Show less',exact:true}).click();
+   expect(await message.evaluate(el=>el.clientHeight<220)).toBe(true);
+ }finally{await a.close();await b.close();}
+});

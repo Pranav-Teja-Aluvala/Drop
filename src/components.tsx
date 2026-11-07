@@ -277,6 +277,7 @@ export function Connection({
                     aria-label="Room invite"
                     value={room.invite}
                     readOnly
+                    onFocus={(event) => event.currentTarget.select()}
                   />
                 </label>
                 <small>
