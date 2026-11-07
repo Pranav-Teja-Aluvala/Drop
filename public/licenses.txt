@@ -1,6 +1,6 @@
-shareEm — Third-party notices
+sharEEm — Third-party notices
 
-Copyright and license notices for software used by shareEm.
+Copyright and license notices for software used by sharEEm.
 
 @types/react 19.3.0
 License: MIT

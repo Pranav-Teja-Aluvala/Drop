@@ -14,4 +14,4 @@ try {
 const header=Buffer.alloc(6+16*pngs.length);header.writeUInt16LE(1,2);header.writeUInt16LE(pngs.length,4);let offset=header.length;
 pngs.forEach(({size,bytes},i)=>{const p=6+i*16;header[p]=size;header[p+1]=size;header.writeUInt16LE(1,p+4);header.writeUInt16LE(32,p+6);header.writeUInt32LE(bytes.length,p+8);header.writeUInt32LE(offset,p+12);offset+=bytes.length;});
 writeFileSync(new URL('../public/favicon.ico',import.meta.url),Buffer.concat([header,...pngs.map(p=>p.bytes)]));
-console.log('Generated PNG, Apple touch and ICO icons from the existing shareEm vector mark.');
+console.log('Generated PNG, Apple touch and ICO icons from the existing sharEEm vector mark.');

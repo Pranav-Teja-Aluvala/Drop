@@ -1,12 +1,12 @@
-<img src="public/assets/logo-full.svg" width="155" alt="shareEm">
+<img src="public/assets/logo-full.svg" width="155" alt="sharEEm">
 
 # Send it to my other device
 
 Send a file, link or note from one browser to another. Create a temporary room on your laptop, scan its QR with your phone, and choose which device should receive the next item. A room supports up to three devices without an account or an installed app.
 
-[Open shareEm](https://shareem.vercel.app/app) · [Privacy](https://shareem.vercel.app/privacy.html) · [Build checks](https://github.com/Pranav-Teja-Aluvala/shareEm/actions/workflows/checks.yml)
+[Open sharEEm](https://shareem.vercel.app/app) · [Privacy](https://shareem.vercel.app/privacy.html) · [Build checks](https://github.com/Pranav-Teja-Aluvala/sharEEm/actions/workflows/checks.yml)
 
-![shareEm’s landing page with its interactive postcard](docs/drop-home.png)
+![sharEEm’s landing page with its interactive postcard](docs/drop-home.png)
 
 ## Try a transfer
 
@@ -53,8 +53,8 @@ flowchart TB
 Use **Node.js 24** and npm. Local development needs no provider account or database.
 
 ```sh
-git clone https://github.com/Pranav-Teja-Aluvala/shareEm.git
-cd shareEm
+git clone https://github.com/Pranav-Teja-Aluvala/sharEEm.git
+cd sharEEm
 npm ci
 npm run dev
 ```
@@ -90,7 +90,7 @@ Use one long-running Node service for the pairing server. Multiple independent r
 
 1. Build the pairing service with `npm ci && npm run build`, start it with `npm start`, and check `/api/health`.
 2. Build the frontend with `npm run build` and publish `dist/`. The host must serve the app entry at `/app`.
-3. For your own deployment, set `TEST_BASE_URL` and `TEST_SIGNAL_ORIGIN` to those HTTPS origins before running `npm run check:live`. The defaults target the public shareEm deployment.
+3. For your own deployment, set `TEST_BASE_URL` and `TEST_SIGNAL_ORIGIN` to those HTTPS origins before running `npm run check:live`. The defaults target the public sharEEm deployment.
 
 See [.env.example](.env.example) for optional relay and trusted-proxy settings. Keep relay credentials on the server. Vite variables are compiled into the public frontend.
 
@@ -100,4 +100,4 @@ For a bug report, include the browser, device, network type and steps to reprodu
 
 ## License
 
-Original project code and documentation are [MIT licensed](LICENSE). shareEm branding and artwork are reserved. Dependencies retain their own licenses. See [licensing scope](LICENSING.md) and [third-party notices](public/licenses.txt).
+Original project code and documentation are [MIT licensed](LICENSE). sharEEm branding and artwork are reserved. Dependencies retain their own licenses. See [licensing scope](LICENSING.md) and [third-party notices](public/licenses.txt).

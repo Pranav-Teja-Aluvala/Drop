@@ -28,7 +28,7 @@ function Stamp({ index }: { index: number }) {
     </mask><clipPath id="plate"><rect width="210" height="156"/></clipPath></defs>
     <rect width="250" height="243" fill={paper} mask="url(#perforations)"/>
     <rect x="13" y="13" width="224" height="217" stroke="currentColor" fill="none"/>
-    <text x="21" y="36" fontFamily="Georgia,serif" fontSize="19" fontStyle="italic">shareEm Post</text>
+    <text x="21" y="36" fontFamily="Georgia,serif" fontSize="19" fontStyle="italic">sharEEm Post</text>
     <text x="229" y="34" textAnchor="end" fontFamily="monospace" fontSize="11">P2P</text>
     <g transform="translate(20 44)" clipPath="url(#plate)">
       <rect x=".5" y=".5" width="209" height="155" fill="none" stroke="currentColor" opacity=".6"/>
@@ -60,7 +60,7 @@ export function DispatchArt() {
     <div className="paper-stack"><div className="dispatch-sheet" ref={sheet}>
       <div className="postal-address"><span>FROM</span>This device<span>TO</span>My other device</div>
       <Stamp index={index}/>
-      <svg className="postmark" viewBox="0 0 140 75" aria-hidden="true"><g fill="none" stroke="currentColor" strokeWidth="1.4"><circle cx="37" cy="37" r="32"/><circle cx="37" cy="37" r="26"/>{[20,30,40,50].map(y=><path key={y} d={`M62 ${y}c18-13 36 13 69 0`}/>)}</g><text x="37" y="42" textAnchor="middle" fill="currentColor" fontFamily="monospace" fontSize="14">shareEm</text></svg>
+      <svg className="postmark" viewBox="0 0 140 75" aria-hidden="true"><g fill="none" stroke="currentColor" strokeWidth="1.4"><circle cx="37" cy="37" r="32"/><circle cx="37" cy="37" r="26"/>{[20,30,40,50].map(y=><path key={y} d={`M62 ${y}c18-13 36 13 69 0`}/>)}</g><text x="37" y="42" textAnchor="middle" fill="currentColor" fontFamily="monospace" fontSize="14">sharEEm</text></svg>
     </div></div>
     <figcaption><div role="group" aria-label="Choose an illustration">{editions.map((edition,i)=><button key={edition.label} type="button" aria-pressed={index===i} onClick={()=>setIndex(i)}>{edition.label}</button>)}</div><span aria-live="polite">{editions[index].caption}</span></figcaption>
   </figure>;

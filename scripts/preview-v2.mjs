@@ -6,5 +6,5 @@ import {mountProductionFiles} from '../server/static.mjs';
 const drop=createDropServer();
 mountProductionFiles(drop.app);
 const port=Number(process.env.PORT)||5174;
-drop.server.listen(port,'127.0.0.1',()=>console.log(`shareEm v2 review: http://localhost:${port}/`));
+drop.server.listen(port,'127.0.0.1',()=>console.log(`sharEEm v2 review: http://localhost:${port}/`));
 for(const signal of ['SIGINT','SIGTERM'])process.once(signal,async()=>{await drop.close();process.exit(0);});

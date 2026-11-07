@@ -1,16 +1,16 @@
-# shareEm
+# sharEEm
 
-> Send files, links and notes directly between up to three browsers. shareEm uses temporary rooms and requires no account.
+> Send files, links and notes directly between up to three browsers. sharEEm uses temporary rooms and requires no account.
 
-## Using shareEm
+## Using sharEEm
 
-- [Open shareEm](https://shareem.vercel.app/): Overview and pairing instructions.
+- [Open sharEEm](https://shareem.vercel.app/): Overview and pairing instructions.
 - [Create or join a room](https://shareem.vercel.app/app): Scan the private QR and approve the joining device.
 - [Connection help](https://shareem.vercel.app/connection-help.html): Troubleshoot direct connections and expired sessions.
 
 ## Documentation
 
-- [Architecture and limits](https://github.com/Pranav-Teja-Aluvala/shareEm#system-architecture): WebRTC delivery, room lifetime and local setup.
+- [Architecture and limits](https://github.com/Pranav-Teja-Aluvala/sharEEm#system-architecture): WebRTC delivery, room lifetime and local setup.
 - [Privacy](https://shareem.vercel.app/privacy.html): Data handling and retention.
 - [Cookies and local data](https://shareem.vercel.app/cookies.html): Browser storage and offline assets.
 - [Contact](https://shareem.vercel.app/contact.html): Support and privacy questions.

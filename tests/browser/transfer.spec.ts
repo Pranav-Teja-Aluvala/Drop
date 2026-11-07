@@ -8,7 +8,7 @@ test('two isolated browsers pair, transfer verified bytes both ways, share text,
   const host = await a.newPage(); const guest = await b.newPage();
   const errors: string[] = [];
   for (const page of [host, guest]) page.on('pageerror', error => errors.push(error.message));
-  await host.goto('/app'); await expect(host).toHaveTitle('Your transfer room — shareEm');
+  await host.goto('/app'); await expect(host).toHaveTitle('Your transfer room — sharEEm');
   await expect(host.locator('.send-panel .document-picker')).toBeDisabled();
   const roomResponse = host.waitForResponse(response => response.url().endsWith('/api/rooms') && response.request().method() === 'POST');
   await host.getByRole('button', { name: 'Create a room' }).click();
@@ -139,7 +139,7 @@ test('mobile layout, invite validation, help/privacy and reduced motion', async 
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.getByRole('textbox', { name: 'Invite link', exact: true }).fill('https://evil.example/#abc');
   await page.getByRole('button', { name: 'Join', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText('Use a newly created invite link from this shareEm website.');
+  await expect(page.getByRole('alert')).toContainText('Use a newly created invite link from this sharEEm website.');
   await page.getByRole('button', { name: 'Privacy', exact: true }).click();
   await expect(page.getByRole('dialog')).toContainText('No clipboard content is read automatically');
 });

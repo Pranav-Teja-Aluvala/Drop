@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 test('email appears only on Contact; legal pages point there and copy feedback handles denial',async({page})=>{
   await page.setViewportSize({width:390,height:844});
-  await page.goto('/contact.html');await expect(page.getByRole('heading',{level:1})).toHaveText('Contact shareEm');
+  await page.goto('/contact.html');await expect(page.getByRole('heading',{level:1})).toHaveText('Contact sharEEm');
   const address=await page.locator('#support-address').innerText();
   expect(address).toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
   await expect(page.locator('#support-address')).toHaveAttribute('href','mailto:'+address);

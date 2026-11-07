@@ -9,7 +9,7 @@ export async function connectionCode(local: string, remote: string, roomId: stri
   };
   const pair = [fingerprint(local), fingerprint(remote)].sort();
   if (pair[0] === pair[1]) throw new Error('Reflected certificate');
-  const bytes = new TextEncoder().encode(`shareEm-VERIFY-v2\n${roomId}\n${pair.join('\n')}`);
+  const bytes = new TextEncoder().encode(`sharEEm-VERIFY-v2\n${roomId}\n${pair.join('\n')}`);
   const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
   return Array.from(hash.slice(0, 16)).map(n => n.toString(16).padStart(2, '0')).join('').toUpperCase().match(/.{4}/g)!.join(' ');
 }

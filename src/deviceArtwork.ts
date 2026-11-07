@@ -14,7 +14,7 @@ const laptop=stages('laptop',[
 ]);
 const phone=stages('phone',[
 '<div class="film-clock">09:41</div><p>Your other device.</p><div class="camera-app">◉</div><b>Camera</b>',
-'<div class="camera-view"><img src="/assets/walkthrough-qr.svg" alt=""/><div class="scan-line"></div></div><h3>QR detected</h3><p>Open shareEm ↗</p><span class="camera-shutter"></span>',
+'<div class="camera-view"><img src="/assets/walkthrough-qr.svg" alt=""/><div class="scan-line"></div></div><h3>QR detected</h3><p>Open sharEEm ↗</p><span class="camera-shutter"></span>',
 '<h3>Join this room?</h3>'+room+button('Join'),
 '<h3>Same room.<br/>Right device.</h3>'+room+code+button('Codes match'),
 '<h3>Connected.</h3><p>Ready when you are.</p><small>● Device connected</small>',
