@@ -57,5 +57,18 @@
       "source": "/app",
       "destination": "/app/index.html"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "drop-devs-52b0.vercel.app"
+        }
+      ],
+      "destination": "https://roptransfer.vercel.app/:path*",
+      "permanent": true
+    }
   ]
 }

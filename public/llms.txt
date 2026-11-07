@@ -4,13 +4,13 @@
 
 ## Using Drop
 
-- [Open Drop](https://drop-devs-52b0.vercel.app/): Overview and pairing instructions.
-- [Create or join a room](https://drop-devs-52b0.vercel.app/app): Scan the private QR and approve the joining device.
-- [Connection help](https://drop-devs-52b0.vercel.app/connection-help.html): Troubleshoot direct connections and expired sessions.
+- [Open Drop](https://roptransfer.vercel.app/): Overview and pairing instructions.
+- [Create or join a room](https://roptransfer.vercel.app/app): Scan the private QR and approve the joining device.
+- [Connection help](https://roptransfer.vercel.app/connection-help.html): Troubleshoot direct connections and expired sessions.
 
 ## Documentation
 
 - [Architecture and limits](https://github.com/Pranav-Teja-Aluvala/Drop#system-architecture): WebRTC delivery, room lifetime and local setup.
-- [Privacy](https://drop-devs-52b0.vercel.app/privacy.html): Data handling and retention.
-- [Cookies and local data](https://drop-devs-52b0.vercel.app/cookies.html): Browser storage and offline assets.
-- [Contact](https://drop-devs-52b0.vercel.app/contact.html): Support and privacy questions.
+- [Privacy](https://roptransfer.vercel.app/privacy.html): Data handling and retention.
+- [Cookies and local data](https://roptransfer.vercel.app/cookies.html): Browser storage and offline assets.
+- [Contact](https://roptransfer.vercel.app/contact.html): Support and privacy questions.
