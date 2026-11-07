@@ -21,7 +21,10 @@ test('v2: disconnect retains approved credential; resume does not request anothe
 });
 
 test('v2: guest cannot approve, fake/stale target signaling is rejected and rooms remain isolated',async t=>{
- const {create,connect,v2}=await fixture(t);const r=await create(),other=await create();const host=await connect(r,r.owner,r.memberId);await host.next('joined');const a=await connect(r,r.invite);await a.next('joined');a.send({type:'approve',memberId:r.memberId,requestId:'fake'});await new Promise(resolve=>a.ws.once('close',resolve));assert.equal(v2.rooms.get(r.id).members.size,1);assert.equal(v2.rooms.has(other.id),true);
+ const {create,connect,v2}=await fixture(t);const r=await create(),other=await create();const host=await connect(r,r.owner,r.memberId);await host.next('joined');const a=await connect(r,r.invite);await a.next('joined');a.send({type:'approve',memberId:r.memberId,requestId:'fake'});await new Promise(resolve=>a.ws.once('close',resolve));
+ // The client close can arrive before the server processes its own close event.
+ await host.next('peer-left');
+ assert.equal(v2.rooms.get(r.id).members.size,1);assert.equal(v2.rooms.has(other.id),true);
  const b=await connect(r,r.invite);const j=await b.next('joined');let req;do{req=(await host.next('requests')).requests;}while(!req.some(q=>q.id===j.memberId));host.send({type:'approve',memberId:j.memberId,requestId:req.find(q=>q.id===j.memberId).requestId});await b.next('approved');await b.next('link');
  b.send({type:'signal',to:other.memberId,linkId:'fake',signal:{candidate:{candidate:'x'}}});await new Promise(resolve=>b.ws.once('close',resolve));assert.equal(v2.rooms.has(other.id),true);
 });
