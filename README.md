@@ -4,7 +4,7 @@
 
 Send a file, link or note from one browser to another. Create a temporary room on your laptop, scan its QR with your phone, and choose which device should receive the next item. A room supports up to three devices without an account or an installed app.
 
-[Open Drop](https://shareem.vercel.app/app) · [Privacy](https://shareem.vercel.app/privacy.html) · [Build checks](https://github.com/Pranav-Teja-Aluvala/Drop/actions/workflows/checks.yml)
+[Open Drop](https://dropem.vercel.app/app) · [Privacy](https://dropem.vercel.app/privacy.html) · [Build checks](https://github.com/Pranav-Teja-Aluvala/Drop/actions/workflows/checks.yml)
 
 ![Drop’s landing page with its interactive postcard](docs/drop-home.png)
 

@@ -2,7 +2,7 @@
 
 ## Report a vulnerability
 
-Contact the maintainer privately through [Drop support](https://shareem.vercel.app/contact.html). Include the affected version, browser, reproduction steps using synthetic files, and the impact. Keep live invite URLs, room credentials, personal files and tokens out of public issues.
+Contact the maintainer privately through [Drop support](https://dropem.vercel.app/contact.html). Include the affected version, browser, reproduction steps using synthetic files, and the impact. Keep live invite URLs, room credentials, personal files and tokens out of public issues.
 
 ## Trust boundaries
 

@@ -18,4 +18,4 @@ for(const file of ['index.html','app/index.html','404.html','privacy.html','term
 writeFileSync(new URL('robots.txt',dist),`User-agent: *\nAllow: /\nDisallow: /api/\n${origin?`Sitemap: ${origin}/sitemap.xml\n`:''}`);
 if(origin)writeFileSync(new URL('sitemap.xml',dist),`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${info.map(([, , ,path])=>`<url><loc>${origin+path}</loc></url>`).join('')}</urlset>`);
 else {if(existsSync(new URL('sitemap.xml',dist)))unlinkSync(new URL('sitemap.xml',dist));console.log('SEO: SITE_ORIGIN unset; canonical URLs, absolute social images and sitemap await production domain.');}
-writeFileSync(new URL('llms.txt',dist),readFileSync(new URL('../public/llms.txt',import.meta.url),'utf8').replaceAll('https://shareem.vercel.app',origin||'https://shareem.vercel.app'));
+writeFileSync(new URL('llms.txt',dist),readFileSync(new URL('../public/llms.txt',import.meta.url),'utf8').replaceAll('https://dropem.vercel.app',origin||'https://dropem.vercel.app'));

@@ -4,13 +4,13 @@
 
 ## Using Drop
 
-- [Open Drop](https://shareem.vercel.app/): Overview and pairing instructions.
-- [Create or join a room](https://shareem.vercel.app/app): Scan the private QR and approve the joining device.
-- [Connection help](https://shareem.vercel.app/connection-help.html): Troubleshoot direct connections and expired sessions.
+- [Open Drop](https://dropem.vercel.app/): Overview and pairing instructions.
+- [Create or join a room](https://dropem.vercel.app/app): Scan the private QR and approve the joining device.
+- [Connection help](https://dropem.vercel.app/connection-help.html): Troubleshoot direct connections and expired sessions.
 
 ## Documentation
 
 - [Architecture and limits](https://github.com/Pranav-Teja-Aluvala/Drop#system-architecture): WebRTC delivery, room lifetime and local setup.
-- [Privacy](https://shareem.vercel.app/privacy.html): Data handling and retention.
-- [Cookies and local data](https://shareem.vercel.app/cookies.html): Browser storage and offline assets.
-- [Contact](https://shareem.vercel.app/contact.html): Support and privacy questions.
+- [Privacy](https://dropem.vercel.app/privacy.html): Data handling and retention.
+- [Cookies and local data](https://dropem.vercel.app/cookies.html): Browser storage and offline assets.
+- [Contact](https://dropem.vercel.app/contact.html): Support and privacy questions.

@@ -67,7 +67,7 @@
           "value": "drop-devs-52b0.vercel.app"
         }
       ],
-      "destination": "https://shareem.vercel.app/:path*",
+      "destination": "https://dropem.vercel.app/:path*",
       "permanent": true
     },
     {
@@ -78,7 +78,18 @@
           "value": "roptransfer.vercel.app"
         }
       ],
-      "destination": "https://shareem.vercel.app/:path*",
+      "destination": "https://dropem.vercel.app/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "shareem.vercel.app"
+        }
+      ],
+      "destination": "https://dropem.vercel.app/:path*",
       "permanent": true
     }
   ]
