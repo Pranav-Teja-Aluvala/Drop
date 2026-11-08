@@ -1,107 +1,179 @@
 <div align="center">
 
-<img src="public/assets/logo-full.svg" alt="Drop" width="165">
+<img src="docs/readme/cover.svg" width="100%" alt="Drop — Send it to my other device. Files, links and notes across your screens.">
 
-# Send it to my other device.
+<br>
 
-Files, links and notes. A temporary room for the screens you use.
+<a href="https://dropem.vercel.app/app"><img src="docs/readme/open.svg" width="164" height="46" alt="Open Drop"></a>
+<a href="https://dropem.vercel.app/"><img src="docs/readme/website.svg" width="164" height="46" alt="Website"></a>
+<a href="#run-locally"><img src="docs/readme/setup.svg" width="164" height="46" alt="Local setup"></a>
 
-[![Open Drop](https://img.shields.io/badge/Open_Drop-182E43?style=for-the-badge)](https://dropem.vercel.app/app)
-[![Website](https://img.shields.io/badge/Website-5E6B65?style=for-the-badge)](https://dropem.vercel.app/)
+<br><br>
+
 [![Build checks](https://github.com/Pranav-Teja-Aluvala/Drop/actions/workflows/checks.yml/badge.svg)](https://github.com/Pranav-Teja-Aluvala/Drop/actions/workflows/checks.yml)
-
-**No signup · Up to 3 devices · Direct browser transfers**
-
-<img src="docs/drop-home.png" alt="Drop homepage with an interactive postcard illustration and Start sharing action" width="940">
-
-[How it works](#how-it-works) · [Inside the app](#inside-the-app) · [Run locally](#run-locally) · [Architecture](#system-architecture) · [Contribute](#contributing)
+[![Code license: MIT](https://img.shields.io/badge/code-MIT-5E6B65?style=flat-square)](LICENSE)
 
 </div>
 
-## A place between your devices
+## From one screen to the next
+
+Create a room, connect your devices, and send the thing you need on your other screen. Drop runs in your browser and supports up to three devices.
 
 <table>
 <tr>
-<td width="50%" valign="top">
-
-**Scan. Pair. Send.**
-
-Open the private QR, enter a five-digit code, or use an invitation link. The room owner approves each new device once.
-
-</td>
-<td width="50%" valign="top">
-
-**Your original file**
-
-Send any extension up to 50 MiB. The receiver verifies the bytes with SHA-256 before offering the download.
-
-</td>
+<td width="50%" valign="top"><strong>Pair your way</strong><br><br>Scan a QR, enter a five-digit code, or open an invitation link. The owner approves each new device once.</td>
+<td width="50%" valign="top"><strong>Keep the original</strong><br><br>Send any file extension up to 50 MiB. SHA-256 verifies the received bytes before the download becomes available.</td>
 </tr>
 <tr>
-<td valign="top">
-
-**A conversation across screens**
-
-Share a link, an address or a note in room chat. Sent and received messages stay together, with copy controls and expandable long messages.
-
-</td>
-<td valign="top">
-
-**Your choice to accept**
-
-Accept each file individually, or enable automatic acceptance from approved devices for this room. Save received files when you want them.
-
-</td>
+<td valign="top"><strong>Pick up the conversation</strong><br><br>Send links and notes through room chat. Copy a message, expand a long one, or continue on your other device.</td>
+<td valign="top"><strong>Choose what arrives</strong><br><br>Accept files individually or enable automatic acceptance for this room. Received files stay available in the Files tab until the page is cleared.</td>
 </tr>
 </table>
 
-## How it works
+## Take a look
 
-| Open | Connect | Share |
+<img src="docs/drop-home.png" width="940" alt="Drop homepage with its illustrated postcard and Start sharing action">
+
+<details>
+<summary><strong>Open the product gallery</strong> — Transfer room and mobile chat</summary>
+
+### Transfer room
+<img src="docs/transfer-room.png" width="940" alt="A connected Drop room with device controls, invitation drawer, automatic acceptance and file actions">
+
+### Mobile chat
+<img src="docs/mobile-chat.png" width="350" alt="Two illustrative messages in Drop mobile chat, with compact copy buttons and composer">
+
+These screenshots use temporary local rooms and synthetic messages. Those rooms have ended.
+
+</details>
+
+## One room. Three steps.
+
+| Create | Connect | Send |
 | :--- | :--- | :--- |
-| [Create a room](https://dropem.vercel.app/app) on your first device. | Scan the QR or enter the five-digit code on the other device. Compare the room name and approve once. | Choose the recipient when three devices are connected. Send a file, or switch to **Chat** for text and links. |
+| Open Drop on your first device and create a room. | Scan the QR or enter the code. Compare the room name and approve the new device. | Browse for a file or open Chat. Accept the incoming file and choose Save. |
 
-Keep both pages open during a transfer. Received files appear in **Files** with a **Save file** button. Automatic acceptance skips the offer prompt and resets when you leave or reload.
+With three devices, choose a recipient from the device list. Automatic acceptance skips individual prompts for approved devices and resets when leaving or reloading. Saving a download still requires your action.
 
-## Inside the app
+## System architecture
 
-<details open>
-<summary><strong>The transfer room</strong> · Devices, invitations and sharing in one workspace</summary>
+The frontend serves the interface. The pairing service coordinates admission and connections. Files and messages travel over WebRTC between the selected devices.
 
-<br>
-<img src="docs/transfer-room.png" alt="Connected Drop room showing the room name, Connect more invitation control, automatic acceptance option, file actions and Files and Chat tabs" width="940">
+```mermaid
+flowchart TB
+    subgraph Hosting["APPLICATION HOSTING"]
+        Web["Vercel<br/>React · TypeScript · Vite"]
+        Signal["Render<br/>Express · WebSocket<br/>In-memory room registry"]
+    end
+
+    subgraph Devices["APPROVED BROWSERS"]
+        A["Owner"]
+        B["Second device"]
+        C["Third device"]
+    end
+
+    Web -->|"HTTPS · static app"| A & B & C
+    Signal <-->|"WSS · admission + signaling"| A & B & C
+    A <-->|"WebRTC · files + messages"| B
+    A <-->|"WebRTC"| C
+    B <-->|"WebRTC"| C
+
+    classDef host fill:#F3F1EC,stroke:#B7C1BB,color:#182E43
+    classDef device fill:#E7EDF3,stroke:#8DA3B4,color:#182E43
+    class Web,Signal host
+    class A,B,C device
+```
+
+<details>
+<summary><strong>Connection architecture</strong> — From invitation to encrypted channel</summary>
+
+```mermaid
+sequenceDiagram
+    participant O as Owner browser
+    participant S as Pairing service
+    participant G as Joining browser
+    O->>S: POST /api/v2/rooms
+    S-->>O: Room ID, invitation, code, owner credential
+    G->>S: Join with code or private invitation
+    S-->>O: Pending device request
+    O->>S: Approve this device
+    S-->>O: Approved peer and ICE configuration
+    S-->>G: Approval and ICE configuration
+    O->>S: SDP offer and ICE candidates
+    S->>G: Forward connection details
+    G->>S: SDP answer and ICE candidates
+    S->>O: Forward connection details
+    O<<->>G: Establish WebRTC data channel
+```
+
+**Admission.** The five-digit code finds a room. The six-letter name is a screen comparison aid. Owner approval grants admission, and each device receives a separate return credential.
+
+**Network discovery.** ICE selects a route, using STUN to discover network addresses. The public deployment has no TURN relay, so some mobile networks, VPNs and firewalls cannot connect.
+
+**Recovery.** A tab session credential can restore an approved connection within the ten-minute return window. Room membership lives in one server process. Server restarts clear active rooms; independent replicas cannot share this registry.
+
+Implementation entry points are the [room lifecycle](src/useRoom.ts), [pairing service](server/v2.mjs) and [ICE configuration](server/ice.mjs).
 
 </details>
 
 <details>
-<summary><strong>Mobile chat</strong> · A conversation that fits your screen</summary>
+<summary><strong>Transfer protocol</strong> — Offer, accept, stream, verify</summary>
 
-<br>
-<img src="docs/mobile-chat.png" alt="Drop mobile chat with two synthetic messages, compact status labels, copy controls and a message composer" width="350">
+```mermaid
+sequenceDiagram
+    participant S as Sender
+    participant R as Receiver
+    S->>S: SHA-256 of original file
+    S->>R: JSON offer — name, size, ID, hash
+    alt Manual acceptance
+        R->>R: User accepts the file
+    else Automatic acceptance enabled
+        R->>R: Accept from this approved peer
+    end
+    R->>S: Accept
+    loop File content
+        S->>R: Binary chunks up to 16 KiB
+    end
+    S->>R: End-of-file control message
+    R->>R: Reassemble and verify SHA-256
+    alt Hash matches
+        R->>S: Verified receipt
+        R->>R: Offer Save file
+    else Hash differs
+        R->>R: Fail transfer and withhold download
+    end
+```
 
-Screenshots use temporary local rooms and illustrative messages. Those rooms have ended.
+| Layer | What Drop uses it for |
+| :--- | :--- |
+| **HTTPS / WSS** | Serve the application and coordinate room admission and WebRTC signaling. |
+| **SDP / ICE / STUN** | Exchange connection descriptions and candidates, then find a network route. |
+| **RTCDataChannel** | Carry file metadata, binary chunks and messages over an ordered, reliable channel. |
+| **SCTP / DTLS** | Browser-managed data-channel transport and encryption in transit. |
+| **Web Crypto / SHA-256** | Hash file contents and verify received bytes before exposing a download. |
+| **JSON control messages** | Offers, acceptance, cancellation, receipts and message acknowledgements. |
+
+The [transfer implementation](src/transfer.ts) applies file-size limits, buffered-data backpressure, timeouts and integrity checks. Interrupted files must be sent again.
 
 </details>
 
-## Before you share
+<details>
+<summary><strong>Data lifecycle and trust boundaries</strong> — Where things live</summary>
 
-| What to know | Current behavior |
-| :--- | :--- |
-| Room size | Up to **3 devices**, including the owner. Delivery goes to the selected recipient. |
-| Room lifetime | Up to **2 hours**. Invitations and five-digit codes expire after **10 minutes**. |
-| Returning to a room | Approved devices have a **10-minute return window**. The same tab can recover its connection using a temporary return credential. |
-| Files | **50 MiB per file**, any extension. Interrupted transfers must be sent again. |
-| Messages | Up to **50,000 characters** each. The page retains the latest 200 messages. |
-| Browser storage | File contents and messages stay in page memory. Reloading clears unsaved content. Return credentials use tab session storage. |
-| Networks | The public deployment has **no TURN relay**. Some mobile networks, VPNs and firewalls cannot establish a direct connection. |
+| Location | What lives there | Lifetime |
+| :--- | :--- | :--- |
+| Browser memory | Files, unsaved downloads and chat | Until reload, page termination or room cleanup |
+| Tab session storage | Room return credential and owner invitation | Cleared when ending the room; server expiry remains authoritative |
+| Pairing service memory | Membership, invitation codes, credentials and signaling state | Room expiry or server restart |
+| Device storage | Files explicitly saved by the recipient | Until the user removes them |
 
-Files travel over encrypted WebRTC data channels. The website and pairing service remain trusted parts of the connection. A short code requests access; owner approval grants it. Files and archives are **not scanned for malware**.
+The pairing service has no file store. The site and pairing service are trusted to introduce peers. Files and archives are not scanned for malware, and local browser storage is not a separately encrypted vault.
 
-[Privacy policy](https://dropem.vercel.app/privacy.html) · [Cookies & local data](https://dropem.vercel.app/cookies.html) · [Terms](https://dropem.vercel.app/terms.html) · [Connection help](https://dropem.vercel.app/connection-help.html) · [Contact](https://dropem.vercel.app/contact.html)
+</details>
 
 ## Run locally
 
-Use **Node.js 24** and npm. Local development needs no provider account or database.
+**Node.js 24 · npm · No database required**
 
 ```sh
 git clone https://github.com/Pranav-Teja-Aluvala/Drop.git
@@ -110,77 +182,33 @@ npm ci
 npm run dev
 ```
 
-Open [localhost:5173/app](http://localhost:5173/app). Pair with a second browser profile to test on one computer. A physical phone needs a reachable HTTPS deployment; its localhost points to the phone itself.
+Open [localhost:5173/app](http://localhost:5173/app). Use a second browser profile to test pairing on one computer. A physical phone needs a reachable HTTPS deployment.
 
 <details>
-<summary><strong>Production preview</strong></summary>
+<summary><strong>Production preview and deployment</strong></summary>
 
 ```sh
 npm run build
 npm run preview:v2
 ```
 
-Open [localhost:5174](http://localhost:5174/). The preview serves the built frontend with a local pairing service.
+The preview runs at [localhost:5174](http://localhost:5174/).
 
-</details>
-
-## System architecture
-
-```mermaid
-flowchart TB
-    Web["Vercel · React + Vite frontend"]
-    Signal["Render · Express + WebSocket pairing"]
-    A["Owner browser"]
-    B["Second browser"]
-    C["Optional third browser"]
-
-    Web -->|Static app| A & B & C
-    A <-->|Room coordination| Signal
-    B <-->|Room coordination| Signal
-    C <-->|Room coordination| Signal
-    A <-->|WebRTC files + messages| B
-    A <-->|WebRTC files + messages| C
-    B <-->|WebRTC files + messages| C
-```
-
-<details>
-<summary><strong>Pairing, delivery and recovery</strong></summary>
-
-- **Pairing** starts at `POST /api/v2/rooms`. Browsers use `/signal-v2` for admission, owner approval, membership and WebRTC signaling. Five-digit codes discover rooms; six-letter room names let users compare screens. Neither replaces owner approval.
-- **Delivery** uses a separate WebRTC data channel for each approved pair. The sender offers metadata, the recipient accepts manually or through the room preference, and SHA-256 verifies the received bytes. The pairing server has no file store.
-- **Recovery** uses a per-device return credential in tab session storage. File buffers and chat remain in page memory. The pairing service keeps rooms in one process, so server restarts clear active rooms.
-
-| Code | Responsibility |
-| :--- | :--- |
-| [App](src/App.tsx), [components](src/components.tsx), [room activity](src/RoomActivity.tsx) | Room controls, invitations, file offers, downloads and chat |
-| [Room hook](src/useRoom.ts), [transfer protocol](src/transfer.ts) | Connection lifecycle, peer selection, transfers and recovery |
-| [Pairing server](server/v2.mjs), [ICE configuration](server/ice.mjs) | Admission, room limits, signaling and optional relay configuration |
-| [Browser tests](tests/browser/v2.spec.ts), [server tests](tests/v2-server.test.mjs) | Product flows, isolation, expiry and regressions |
-
-</details>
-
-<details>
-<summary><strong>Self-hosting and environment variables</strong></summary>
-
-Deploy the frontend as static files on Vercel and run the pairing service as one long-running Node process. Independent server replicas do not share the current in-memory room registry.
-
-| Variable | Where | Purpose |
+| Environment variable | Host | Value |
 | :--- | :--- | :--- |
-| `PUBLIC_ORIGIN` | Pairing service | Exact HTTPS frontend origin without a trailing slash |
+| `PUBLIC_ORIGIN` | Pairing server | Exact public HTTPS frontend origin, without a trailing slash |
 | `VITE_SIGNAL_ORIGIN` | Frontend build | Public HTTPS pairing-service origin |
-| `SITE_ORIGIN` | Frontend build | Canonical URLs, sitemap and social metadata |
-| `PORT` | Pairing service | Listening port supplied by the host |
+| `SITE_ORIGIN` | Frontend build | Canonical frontend origin for sitemap and metadata |
+| `PORT` | Pairing server | Port supplied by your host |
 
-1. Run `npm ci && npm run build` on the pairing host and start it with `npm start`. Check `/api/health`.
-2. Build the frontend with its environment variables and publish `dist/`. Serve the app entry at `/app`.
-3. Set `TEST_BASE_URL` and `TEST_SIGNAL_ORIGIN` to your deployed origins, then run `npm run check:live`.
+Build the pairing service with `npm ci && npm run build`, start it with `npm start`, and check `/api/health`. Publish the frontend's `dist/` and serve the app entry at `/app`.
 
-See the [environment example](.env.example), [Vercel configuration](vercel.json), [Render blueprint](render.yaml) and [Dockerfile](Dockerfile). Optional TURN settings live on the server. Variables prefixed with `VITE_` become public frontend code.
+See [.env.example](.env.example), [vercel.json](vercel.json), [render.yaml](render.yaml) and the [Dockerfile](Dockerfile). Keep optional TURN credentials on the server. Variables prefixed with `VITE_` become public frontend code.
 
 </details>
 
 <details>
-<summary><strong>Checks and test commands</strong></summary>
+<summary><strong>Tests and release checks</strong></summary>
 
 ```sh
 npm run build
@@ -192,30 +220,43 @@ npm audit --omit=dev
 npm run check:secrets -- --history
 ```
 
-The browser suite uses the production bundle and synthetic files. It exercises three-device recipient isolation, unchanged downloads, code joining, approval, automatic acceptance, tab recovery, chat scrolling, expandable messages and responsive layouts.
+Tests exercise recipient isolation, unchanged downloads, code expiry, approval, automatic acceptance, recovery, long messages, rotation and responsive sizing. Use `PLAYWRIGHT_CHANNEL=chrome` for an installed Chrome.
 
-The release check covers page status codes, headings, image descriptions, internal anchors, metadata and exposed-file probes. `npm run check:live` checks the deployed app; its default targets the public Drop service. Use `PLAYWRIGHT_CHANNEL=chrome` to test with an installed Chrome.
-
-[View CI runs](https://github.com/Pranav-Teja-Aluvala/Drop/actions/workflows/checks.yml)
+For your own hosted instance, set `TEST_BASE_URL` and `TEST_SIGNAL_ORIGIN` before running `npm run check:live`. The default targets the public Drop service.
 
 </details>
 
-## Contributing
+## Current limits
 
-[Report a bug](https://github.com/Pranav-Teja-Aluvala/Drop/issues/new) with your browser, device, network type and reproduction steps using a synthetic file. Pull requests should explain the affected flow and the checks run. Share sensitive findings through the [security reporting instructions](SECURITY.md).
+| Devices | Files | Messages | Sessions |
+| :--- | :--- | :--- | :--- |
+| 3 per room | 50 MiB per file | 50,000 characters; latest 200 retained | 2-hour rooms; 10-minute invitation and return windows |
 
-## License
+Keep both pages open while transferring. Reloading clears unsaved files and chat. The current public service uses direct connections and has no relay fallback.
 
-Original code and documentation are [MIT licensed](LICENSE). Drop branding and artwork are reserved. Dependencies keep their own licenses.
+## Help and project resources
 
-[Licensing scope](LICENSING.md) · [Third-party notices](https://dropem.vercel.app/third-party-notices.html) · [Source notices](public/licenses.txt)
+<table>
+<tr>
+<td width="33%" valign="top"><a href="https://dropem.vercel.app/connection-help.html"><strong>Connection help ↗</strong></a><br><sub>Pairing, recovery and network limitations</sub></td>
+<td width="33%" valign="top"><a href="https://dropem.vercel.app/contact.html"><strong>Contact ↗</strong></a><br><sub>Support and privacy questions</sub></td>
+<td width="33%" valign="top"><a href="https://github.com/Pranav-Teja-Aluvala/Drop/issues/new"><strong>Report an issue ↗</strong></a><br><sub>Reproduction steps and device details</sub></td>
+</tr>
+<tr>
+<td valign="top"><a href="https://dropem.vercel.app/privacy.html"><strong>Privacy ↗</strong></a><br><sub>Data handling and retention</sub></td>
+<td valign="top"><a href="https://dropem.vercel.app/cookies.html"><strong>Cookies &amp; local data ↗</strong></a><br><sub>Browser storage and offline assets</sub></td>
+<td valign="top"><a href="https://dropem.vercel.app/terms.html"><strong>Terms ↗</strong></a><br><sub>Service conditions and safe sharing</sub></td>
+</tr>
+</table>
 
----
+Contributions are welcome. Include the affected flow and checks run in a pull request. Report sensitive findings through [SECURITY.md](SECURITY.md).
+
+Original code and documentation are [MIT licensed](LICENSE). Branding and artwork are reserved under the [licensing scope](LICENSING.md). Dependencies retain their own licenses; see [third-party notices](https://dropem.vercel.app/third-party-notices.html).
 
 <div align="center">
 
-**Have something on the wrong screen?**
-
-[Open Drop](https://dropem.vercel.app/app) · [View the source](https://github.com/Pranav-Teja-Aluvala/Drop) · [Get help](https://dropem.vercel.app/contact.html)
+<a href="https://github.com/Pranav-Teja-Aluvala/Drop"><img src="docs/readme/source.svg" width="164" height="46" alt="Source code"></a>
+<a href="https://dropem.vercel.app/contact.html"><img src="docs/readme/help.svg" width="164" height="46" alt="Get help"></a>
+<a href="https://dropem.vercel.app/privacy.html"><img src="docs/readme/privacy.svg" width="164" height="46" alt="Privacy"></a>
 
 </div>
