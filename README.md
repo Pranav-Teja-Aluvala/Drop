@@ -4,85 +4,60 @@
 
 <br>
 
-<a href="https://dropem.vercel.app/app"><img src="docs/readme/open.svg" width="164" height="46" alt="Open Drop"></a>
-<a href="https://dropem.vercel.app/"><img src="docs/readme/website.svg" width="164" height="46" alt="Website"></a>
-<a href="#run-locally"><img src="docs/readme/setup.svg" width="164" height="46" alt="Local setup"></a>
+<a href="https://dropem.vercel.app/app"><img src="docs/readme/open.svg" width="164" height="46" alt="Open Drop — create a room"></a>
 
-<br><br>
-
-[![Build checks](https://github.com/Pranav-Teja-Aluvala/Drop/actions/workflows/checks.yml/badge.svg)](https://github.com/Pranav-Teja-Aluvala/Drop/actions/workflows/checks.yml)
-[![Code license: MIT](https://img.shields.io/badge/code-MIT-5E6B65?style=flat-square)](LICENSE)
+**A photo on your phone. The original on your laptop.**<br>
+Files, links and notes between up to three devices. No signup.
 
 </div>
 
-## From one screen to the next
+<p align="center">
+<a href="#features">Features</a> ·
+<a href="#getting-started">Getting started</a> ·
+<a href="#how-it-works">How it works</a> ·
+<a href="#development">Development</a> ·
+<a href="#contributing">Contributing</a>
+</p>
 
-Create a room, connect your devices, and send the thing you need on your other screen. Drop runs in your browser and supports up to three devices.
+<a href="https://dropem.vercel.app/app"><img src="docs/transfer-room.png" width="940" alt="Drop in use: a connected room with device controls, file sharing and chat"></a>
 
-<table>
-<tr>
-<td width="50%" valign="top"><strong>Pair your way</strong><br><br>Scan a QR, enter a five-digit code, or open an invitation link. The owner approves each new device once.</td>
-<td width="50%" valign="top"><strong>Keep the original</strong><br><br>Send any file extension up to 50 MiB. SHA-256 verifies the received bytes before the download becomes available.</td>
-</tr>
-<tr>
-<td valign="top"><strong>Pick up the conversation</strong><br><br>Send links and notes through room chat. Copy a message, expand a long one, or continue on your other device.</td>
-<td valign="top"><strong>Choose what arrives</strong><br><br>Accept files individually or enable automatic acceptance for this room. Received files stay available in the Files tab until the page is cleared.</td>
-</tr>
-</table>
+## Features
 
-## Take a look
-
-<img src="docs/drop-home.png" width="940" alt="Drop homepage with its illustrated postcard and Start sharing action">
+- **Files, links and notes.** Send any file extension or use room chat to move text between screens.
+- **No signup.** Pair up to three browsers with a QR, a five-digit code or a private invitation.
+- **An original, checked on arrival.** Files travel over encrypted WebRTC; SHA-256 verifies the received bytes.
+- **Your choice to accept.** Approve each incoming file or enable automatic acceptance for this room.
+- **A temporary workspace.** Downloads and messages stay in page memory. Save what you need before leaving.
 
 <details>
-<summary><strong>Open the product gallery</strong> — Transfer room and mobile chat</summary>
+<summary><strong>Look inside the product</strong> — Homepage and mobile chat</summary>
 
-### Transfer room
-<img src="docs/transfer-room.png" width="940" alt="A connected Drop room with device controls, invitation drawer, automatic acceptance and file actions">
+<img src="docs/drop-home.png" width="940" alt="Drop homepage with a postcard addressed to your other device">
 
-### Mobile chat
-<img src="docs/mobile-chat.png" width="350" alt="Two illustrative messages in Drop mobile chat, with compact copy buttons and composer">
+<img src="docs/mobile-chat.png" width="350" alt="Mobile chat with sent and received messages and a message composer">
 
-These screenshots use temporary local rooms and synthetic messages. Those rooms have ended.
+Screenshots show temporary local rooms and illustrative messages. Those rooms have ended.
 
 </details>
 
-## One room. Three steps.
+## Getting started
 
-| Create | Connect | Send |
-| :--- | :--- | :--- |
-| Open Drop on your first device and create a room. | Scan the QR or enter the code. Compare the room name and approve the new device. | Browse for a file or open Chat. Accept the incoming file and choose Save. |
+1. **Create a room** on your laptop.
+2. **Join from your phone** by scanning the QR or entering the five-digit code. Compare the room name, then approve the phone on your laptop once.
+3. **Choose a photo** on your phone. Accept it on your laptop and select **Save file**.
 
-With three devices, choose a recipient from the device list. Automatic acceptance skips individual prompts for approved devices and resets when leaving or reloading. Saving a download still requires your action.
+With three devices, choose the recipient in the device list. Automatic acceptance resets on leaving or reloading; saving remains your choice.
 
-## System architecture
+> [!NOTE]
+> Keep both pages open during a transfer. The public service has no TURN relay, so some mobile networks, VPNs and firewalls cannot connect. See [connection help](https://dropem.vercel.app/connection-help.html).
 
-The frontend serves the interface. The pairing service coordinates admission and connections. Files and messages travel over WebRTC between the selected devices.
+## How it works
 
-```mermaid
-flowchart TB
-    subgraph Hosting["APPLICATION HOSTING"]
-        Web["Vercel<br/>React · TypeScript · Vite"]
-        Signal["Render<br/>Express · WebSocket<br/>In-memory room registry"]
-    end
+**The pairing server exchanges connection details; files and chat travel between the approved browsers.** The website serves the app over HTTPS, and the pairing service handles admission and WebRTC signaling over HTTPS/WebSocket.
 
-    subgraph Devices["APPROVED BROWSERS"]
-        A["Owner"]
-        B["Second device"]
-        C["Third device"]
-    end
+[![Drop architecture: load the website, approve a device, transfer directly over WebRTC, then verify and save](docs/readme/architecture.svg)](docs/readme/architecture.svg)
 
-    Web -->|"HTTPS · static app"| A & B & C
-    Signal <-->|"WSS · admission + signaling"| A & B & C
-    A <-->|"WebRTC · files + messages"| B
-    A <-->|"WebRTC"| C
-    B <-->|"WebRTC"| C
-
-    classDef host fill:#F3F1EC,stroke:#B7C1BB,color:#182E43
-    classDef device fill:#E7EDF3,stroke:#8DA3B4,color:#182E43
-    class Web,Signal host
-    class A,B,C device
-```
+Owner approval precedes transfer. SHA-256 verifies file integrity after receipt. It does not scan for malware, and the website and pairing service remain trusted components.
 
 <details>
 <summary><strong>Connection architecture</strong> — From invitation to encrypted channel</summary>
@@ -118,6 +93,8 @@ Implementation entry points are the [room lifecycle](src/useRoom.ts), [pairing s
 
 <details>
 <summary><strong>Transfer protocol</strong> — Offer, accept, stream, verify</summary>
+
+[![Illustrated file journey: choose, accept, stream, verify and save](docs/readme/transfer-path.svg)](docs/readme/transfer-path.svg)
 
 ```mermaid
 sequenceDiagram
@@ -171,7 +148,9 @@ The pairing service has no file store. The site and pairing service are trusted 
 
 </details>
 
-## Run locally
+## Development
+
+### Run locally
 
 **Node.js 24 · npm · No database required**
 
@@ -226,37 +205,27 @@ For your own hosted instance, set `TEST_BASE_URL` and `TEST_SIGNAL_ORIGIN` befor
 
 </details>
 
-## Current limits
+## Limits and privacy
 
 | Devices | Files | Messages | Sessions |
 | :--- | :--- | :--- | :--- |
 | 3 per room | 50 MiB per file | 50,000 characters; latest 200 retained | 2-hour rooms; 10-minute invitation and return windows |
 
+The receiver caps retained files at 20 files / 150 MiB per peer connection to bound memory use.
+
 Keep both pages open while transferring. Reloading clears unsaved files and chat. The current public service uses direct connections and has no relay fallback.
 
-## Help and project resources
+## Contributing
 
-<table>
-<tr>
-<td width="33%" valign="top"><a href="https://dropem.vercel.app/connection-help.html"><strong>Connection help ↗</strong></a><br><sub>Pairing, recovery and network limitations</sub></td>
-<td width="33%" valign="top"><a href="https://dropem.vercel.app/contact.html"><strong>Contact ↗</strong></a><br><sub>Support and privacy questions</sub></td>
-<td width="33%" valign="top"><a href="https://github.com/Pranav-Teja-Aluvala/Drop/issues/new"><strong>Report an issue ↗</strong></a><br><sub>Reproduction steps and device details</sub></td>
-</tr>
-<tr>
-<td valign="top"><a href="https://dropem.vercel.app/privacy.html"><strong>Privacy ↗</strong></a><br><sub>Data handling and retention</sub></td>
-<td valign="top"><a href="https://dropem.vercel.app/cookies.html"><strong>Cookies &amp; local data ↗</strong></a><br><sub>Browser storage and offline assets</sub></td>
-<td valign="top"><a href="https://dropem.vercel.app/terms.html"><strong>Terms ↗</strong></a><br><sub>Service conditions and safe sharing</sub></td>
-</tr>
-</table>
+Bug reports and pull requests are welcome. Include your browser, device, network type, reproduction steps and the checks you ran. Use a synthetic file when reporting a transfer issue.
 
-Contributions are welcome. Include the affected flow and checks run in a pull request. Report sensitive findings through [SECURITY.md](SECURITY.md).
+| Get involved | Help and privacy |
+| :--- | :--- |
+| [Report a bug](https://github.com/Pranav-Teja-Aluvala/Drop/issues/new) | [Contact](https://dropem.vercel.app/contact.html) |
+| [Build checks](https://github.com/Pranav-Teja-Aluvala/Drop/actions/workflows/checks.yml) | [Privacy policy](https://dropem.vercel.app/privacy.html) |
+| [Report a vulnerability](SECURITY.md) | [Cookies and local data](https://dropem.vercel.app/cookies.html) |
+| [Project website](https://dropem.vercel.app/) | [Terms](https://dropem.vercel.app/terms.html) |
 
-Original code and documentation are [MIT licensed](LICENSE). Branding and artwork are reserved under the [licensing scope](LICENSING.md). Dependencies retain their own licenses; see [third-party notices](https://dropem.vercel.app/third-party-notices.html).
+## License
 
-<div align="center">
-
-<a href="https://github.com/Pranav-Teja-Aluvala/Drop"><img src="docs/readme/source.svg" width="164" height="46" alt="Source code"></a>
-<a href="https://dropem.vercel.app/contact.html"><img src="docs/readme/help.svg" width="164" height="46" alt="Get help"></a>
-<a href="https://dropem.vercel.app/privacy.html"><img src="docs/readme/privacy.svg" width="164" height="46" alt="Privacy"></a>
-
-</div>
+Original code and documentation are [MIT licensed](LICENSE). Drop branding and artwork are reserved; see [licensing scope](LICENSING.md). Dependencies retain their own licenses in the [third-party notices](https://dropem.vercel.app/third-party-notices.html).
