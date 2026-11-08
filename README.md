@@ -219,4 +219,3 @@ Original code and documentation are [MIT licensed](LICENSE). Drop branding and a
 [Open Drop](https://dropem.vercel.app/app) · [View the source](https://github.com/Pranav-Teja-Aluvala/Drop) · [Get help](https://dropem.vercel.app/contact.html)
 
 </div>
-
