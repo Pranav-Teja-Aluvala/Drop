@@ -76,6 +76,28 @@ export function Connection({
   const drawer = useRef<HTMLDivElement>(null);
   const toggle = useRef<HTMLButtonElement>(null);
   const open = !compact || expanded;
+  const [expiredDeadline, setExpiredDeadline] = useState<number | null>(null);
+  const inviteExpired = room.inviteExpires !== null &&
+    (expiredDeadline === room.inviteExpires || room.inviteExpires <= Date.now());
+  const canInvite = room.role === "host" && Boolean(room.invite) &&
+    room.members.length < 3 && !inviteExpired;
+
+  useEffect(() => {
+    const deadline = room.inviteExpires;
+    if (deadline === null) return;
+    const expireIfDue = () => {
+      if (Date.now() >= deadline) setExpiredDeadline(deadline);
+    };
+    expireIfDue();
+    const timer = setTimeout(expireIfDue, Math.max(0, deadline - Date.now()));
+    document.addEventListener("visibilitychange", expireIfDue);
+    window.addEventListener("focus", expireIfDue);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", expireIfDue);
+      window.removeEventListener("focus", expireIfDue);
+    };
+  }, [room.inviteExpires]);
   useEffect(() => {
     if (!compact) setExpanded(false);
   }, [compact]);
@@ -92,13 +114,14 @@ export function Connection({
     return () => {
       tween.kill();
     };
-  }, [open, room.invite]);
+  }, [open, room.invite, canInvite]);
   function closeInvite() {
     setExpanded(false);
     toggle.current?.focus();
   }
   const [link, setLink] = useState("");
   const [qr, setQR] = useState("");
+  const [qrUnavailable, setQRUnavailable] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [now, setNow] = useState(Date.now);
   const away = room.members.filter((m) => m.awayUntil > 0);
@@ -114,18 +137,21 @@ export function Connection({
   useEffect(() => {
     let active = true;
     setQR("");
-    if (room.invite)
+    setQRUnavailable(false);
+    if (canInvite && open)
       void QRCode.toDataURL(room.invite, {
         width: 240,
         margin: 2,
         color: { dark: "#232723", light: "#ffffff" },
       }).then((value) => {
         if (active) setQR(value);
+      }).catch(() => {
+        if (active) setQRUnavailable(true);
       });
     return () => {
       active = false;
     };
-  }, [room.invite]);
+  }, [room.invite, canInvite, open]);
   const initial = ["idle", "closed"].includes(room.status);
   const seconds = Math.max(0, Math.ceil((until - now) / 1000));
   return (
@@ -146,10 +172,7 @@ export function Connection({
           <p>Up to 3 devices</p>
         )}
       </div>
-      {compact &&
-        room.role === "host" &&
-        room.invite &&
-        room.members.length < 3 && (
+      {compact && canInvite && (
           <button
             ref={toggle}
             className="button secondary connect-more"
@@ -224,7 +247,7 @@ export function Connection({
               </div>
             </div>
           ))}
-          {room.role === "host" && room.invite && room.members.length < 3 && (
+          {canInvite && (
             <div
               ref={drawer}
               id="room-invitation"
@@ -253,11 +276,13 @@ export function Connection({
                       height="220"
                       alt="Scan to request access to this Drop room"
                     />
+                  ) : qrUnavailable ? (
+                    <span className="qr-fallback" role="status">Use the room code instead.</span>
                   ) : (
-                    <LoaderCircle className="spin" />
+                    <LoaderCircle aria-label="Preparing QR code" className="spin" />
                   )}
                 </div>
-                <p>Scan on your next device</p>
+                <p>{qrUnavailable ? "Open Drop on your next device" : "Scan on your next device"}</p>
                 <div className="invite-actions">
                   <CopyButton
                     ariaLabel="Private invitation"
@@ -307,6 +332,12 @@ export function Connection({
               </div>
             </div>
           )}
+          {room.role === "host" && inviteExpired && room.members.length < 3 && (
+            <p className="invite-expired-note" role="status">
+              <strong>Invitation expired</strong>
+              <span>Devices already here can keep sharing. Start a new room to invite another device.</span>
+            </p>
+          )}
           {room.status === "approval" && (
             <div className="pending-state" role="status">
               <LoaderCircle className="spin" />
@@ -329,7 +360,10 @@ export function Connection({
           {room.members.length > 0 && (
             <ul className="device-roster" aria-label="Room devices">
               {room.members.map((member) => (
-                <li key={member.id}>
+                <li key={member.id} data-presence={
+                  member.id === room.selfId || room.readyIds.includes(member.id)
+                    ? "ready" : member.awayUntil ? "away" : "connecting"
+                }>
                   <Smartphone size={18} />
                   {member.id !== room.selfId &&
                   room.readyIds.length > 1 &&

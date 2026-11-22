@@ -64,3 +64,10 @@ header, footer, section, .notices-page details { border-color: #dad6cc; }
 .contact-actions .contact-email { background: #214fd1; color: #fff; }
 .contact-actions .contact-email:hover { background: #183fae; }
 .contact-actions .contact-copy { background: #fff7ed; border-color: #dac2b3; color: #703a2b; }
+
+body.notices-page { background: radial-gradient(ellipse at 88% 0%, #e3eafe, transparent 46rem), #fbf8f0; }
+.legal-v2 .breadcrumbs a, .breadcrumbs a { color: #214ab7; }
+.contact-actions .contact-email:focus-visible, .contact-actions .contact-copy:focus-visible {
+  outline: 3px solid #214fd1;
+  outline-offset: 3px;
+}

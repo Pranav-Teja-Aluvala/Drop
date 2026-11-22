@@ -196,3 +196,24 @@ test('private invitation and long mobile messages keep bounded dimensions',async
    expect(await message.evaluate(el=>el.clientHeight<220)).toBe(true);
  }finally{await a.close();await b.close();}
 });
+
+test('an expired invitation closes the drawer while approved devices keep sharing', async ({browser}) => {
+  const owner = await browser.newContext();
+  const other = await browser.newContext();
+  const host = await owner.newPage();
+  const guest = await other.newPage();
+  try {
+    await host.clock.install();
+    await admit(host, guest, await create(host));
+    await host.getByRole('button', {name:'Connect more', exact:true}).click();
+    await expect(privateInvite(host)).toBeVisible();
+    await host.clock.fastForward(10 * 60_000 + 1_000);
+    await expect(host.getByText('Invitation expired', {exact:true})).toBeVisible();
+    await expect(privateInvite(host)).toHaveCount(0);
+    await expect(host.getByRole('button', {name:'Connect more', exact:true})).toHaveCount(0);
+    await expect(host.getByRole('button', {name:'Browse files', exact:true})).toBeEnabled();
+    await expect(guest.getByRole('button', {name:'Browse files', exact:true})).toBeEnabled();
+  } finally {
+    await Promise.all([owner.close(), other.close()]);
+  }
+});

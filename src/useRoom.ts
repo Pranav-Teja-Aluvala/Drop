@@ -90,6 +90,7 @@ export function useRoom() {
       Record<string, { name: string; size: number }>
     >({});
   const [joinCode, setJoinCode] = useState("");
+  const [inviteExpires, setInviteExpires] = useState<number | null>(null);
   const [autoAccept, setAutoAccept] = useState(false);
   const inviteRef = useRef("");
   const retryAttempt = useRef(0);
@@ -167,6 +168,7 @@ export function useRoom() {
   function end(message = "") {
     setAutoAccept(false);
     setJoinCode("");
+    setInviteExpires(null);
     clearReturn();
     ended.current = true;
     ++gen.current;
@@ -381,6 +383,7 @@ export function useRoom() {
                 background.current,
               );
             setJoinCode(msg.joinCode || "");
+            setInviteExpires(Number.isFinite(msg.inviteExpires) ? msg.inviteExpires : null);
             setRole(msg.role);
             setSelfId(msg.memberId);
             setNickname(msg.nickname);
@@ -496,6 +499,7 @@ export function useRoom() {
   function reset() {
     setAutoAccept(false);
     setJoinCode("");
+    setInviteExpires(null);
     clearReturn();
     inviteRef.current = "";
     signal({ type: "leave" });
@@ -656,6 +660,7 @@ export function useRoom() {
     invite,
     nickname,
     joinCode,
+    inviteExpires,
     autoAccept,
     setAutoAccept,
     expires,

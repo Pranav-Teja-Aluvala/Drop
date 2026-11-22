@@ -111,3 +111,19 @@ body .room-paper { display: none; }
   .app-page .v2-connection, .app-page .connection:not(.room-toolbar),
   .app-page .send-panel, .app-page .room-activity { border-radius: 17px; }
 }
+
+/* Bring the three postcard editions together on small screens. */
+.dispatch-art .preview-options { flex: 0 0 auto; }
+.dispatch-art .preview-options button { transition: background-color .2s ease, color .2s ease; }
+.dispatch-art .preview-options button:hover:not([aria-pressed="true"]) { background: #f1f4fa; }
+.dispatch-art figcaption > span { color: var(--drop-muted); }
+@media (max-width: 520px) {
+  .dispatch .v2-hero { padding-top: 28px; }
+  .dispatch .v2-hero-grid { gap: 24px; }
+  .dispatch .v2-hero-actions { gap: 6px; }
+  .paper-stack { padding-block: 11%; }
+  .dispatch-art figcaption { padding-top: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dispatch-art .preview-options button { transition: none; }
+}

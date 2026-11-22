@@ -962,3 +962,90 @@ body:has(.app-page) {
 .app-page .connection .invite-actions .button[aria-label="Private invitation"]:hover {
   background: #eaf0fe;
 }
+
+/* Give the invitation and device state distinct places in the room card. */
+.app-page .connection .room-heading h2 { font-variant-numeric: tabular-nums; }
+.app-page .connection .device-roster li[data-presence="away"] small {
+  background: #fff0d8;
+  color: #754711;
+}
+.app-page .connection .device-roster li[data-presence="connecting"] small {
+  background: #e9effc;
+  color: #344c80;
+}
+.app-page .connection .invite-expired-note {
+  grid-column: 1 / -1;
+  margin: 10px 0;
+  padding: 14px 16px;
+  border: 1px solid #e7d5ae;
+  border-radius: 14px;
+  background: #fffaef;
+  color: #61451a;
+  line-height: 1.5;
+}
+.invite-expired-note strong, .invite-expired-note span { display: block; }
+.invite-expired-note span { margin-top: 3px; font-size: 14px; }
+.qr-fallback { padding: 8px; color: #36559c; font-size: 13px; }
+@media (min-width: 901px) {
+  .app-page main.connected-layout:has(.connection:not(.room-toolbar)) {
+    width: min(100%, 880px);
+    margin-inline: auto;
+  }
+  .app-page main.connected-layout .connection:not(.room-toolbar) .v2-invite {
+    display: grid;
+    grid-template-columns: minmax(0, 196px) minmax(0, 1fr);
+    gap: 7px 25px;
+    padding: 18px 0;
+    text-align: left;
+  }
+  .app-page main.connected-layout .connection:not(.room-toolbar) .v2-invite .qr-frame {
+    grid-column: 1;
+    grid-row: 1 / 5;
+    margin: 0 auto;
+  }
+  .app-page main.connected-layout .connection:not(.room-toolbar) .v2-invite > :not(.qr-frame) {
+    grid-column: 2;
+    justify-content: flex-start;
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+@media (max-width: 600px) {
+  .app-page .connection:not(.room-toolbar) .v2-invite {
+    gap: 10px;
+    padding-block: 16px;
+  }
+  .app-page .connection .device-roster { margin-block: 12px; }
+  .app-page .connection .room-session { margin-top: 12px; }
+}
+
+.app-page .connection:not(.room-toolbar) .invite-actions {
+  display: flex;
+  gap: 4px 8px;
+}
+.app-page .connection:not(.room-toolbar) .invite-actions .button { width: auto; flex: 0 1 auto; }
+@media (min-width: 901px) {
+  .app-page main.connected-layout:has(.connection:not(.room-toolbar)) > .intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 22px;
+    align-items: center;
+    padding-block: 18px 24px;
+  }
+  .app-page main.connected-layout > .intro:has(.pairing-visual) h1 {
+    font-size: clamp(40px, 4.1vw, 62px);
+  }
+  .app-page main.connected-layout > .intro .pairing-visual {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    width: 220px;
+    margin: 0;
+  }
+  .app-page .connection:not(.room-toolbar) .room-session {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .app-page .connection:not(.room-toolbar) .session-actions { margin: 0; flex: none; }
+}
