@@ -23,7 +23,7 @@ A photo on your phone. A PDF on your laptop. A link you want to open somewhere e
 **Phone → laptop. A photo, in three steps.**
 
 1. Open Drop on your laptop and **create a room**.
-2. Scan its QR with your phone, enter the five-digit code, or open the private invite. Compare the room name and **approve the phone** on your laptop.
+2. Scan its QR with your phone, enter the five-digit code, or open the private invite. Tap **Allow device** on your laptop once. The phone connects automatically.
 3. Choose a file on your phone. Accept it on your laptop, then **Save file**.
 
 Keep both pages open during transfer. With three devices connected, choose the recipient from the device list.

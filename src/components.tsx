@@ -132,14 +132,14 @@ export function Connection({
       aria-labelledby="connection-title"
     >
       <div className="room-heading">
-        <span>{initial ? "A temporary space" : "YOUR ROOM"}</span>
+        <span>{initial ? "Drop rooms" : "Room"}</span>
         <h2 id="connection-title">
           {initial
-            ? "Bring your devices together."
+            ? "Start sharing"
             : room.nickname || "Opening Drop…"}
         </h2>
         {!initial && !compact && (
-          <p>Up to 3 devices · One approval per new device</p>
+          <p>Up to 3 devices</p>
         )}
       </div>
       {compact &&
@@ -167,7 +167,7 @@ export function Connection({
             Create a room
           </button>
           <div className="divider">
-            <span>or join another room</span>
+            <span>or join with an invite</span>
           </div>
           <form
             className="join-form"
@@ -197,6 +197,29 @@ export function Connection({
         </>
       ) : (
         <>
+          {room.requests.map((request) => (
+            <div className="v2-approval" key={request.id}>
+              <Smartphone size={25} />
+              <h3>{request.label} wants to join</h3>
+              <p>
+                Allow it if you just opened this room on your other device.
+              </p>
+              <div>
+                <button
+                  className="button secondary"
+                  onClick={() => room.reject(request)}
+                >
+                  Decline
+                </button>
+                <button
+                  className="button primary"
+                  onClick={() => room.approve(request)}
+                >
+                  Allow device
+                </button>
+              </div>
+            </div>
+          ))}
           {room.role === "host" && room.invite && room.members.length < 3 && (
             <div
               ref={drawer}
@@ -251,7 +274,7 @@ export function Connection({
                             e instanceof DOMException && e.name === "AbortError"
                           ))
                             room.setError(
-                              "Use Copy invite link to share this invitation.",
+                              "Use Copy link to share this invitation.",
                             );
                         } finally {
                           setSharing(false);
@@ -285,37 +308,12 @@ export function Connection({
               </div>
             </div>
           )}
-          {room.requests.map((request) => (
-            <div className="v2-approval" key={request.id}>
-              <Smartphone size={25} />
-              <h3>{request.label} wants to join</h3>
-              <p>
-                Does its screen show <strong>{room.nickname}</strong>? Approve
-                only the device you just scanned.
-              </p>
-              <div>
-                <button
-                  className="button secondary"
-                  onClick={() => room.reject(request)}
-                >
-                  Decline
-                </button>
-                <button
-                  className="button primary"
-                  onClick={() => room.approve(request)}
-                >
-                  Allow device
-                </button>
-              </div>
-            </div>
-          ))}
           {room.status === "approval" && (
-            <div className="pending-state">
+            <div className="pending-state" role="status">
               <LoaderCircle className="spin" />
-              <h3>One check, then you’re in.</h3>
+              <h3>Waiting for the room owner</h3>
               <p>
-                Check <strong aria-label="Room name">{room.nickname}</strong> on
-                the owner’s screen. Ask them to allow this device.
+                Room <strong aria-label="Room name">{room.nickname}</strong>. This screen connects automatically after approval.
               </p>
             </div>
           )}
@@ -517,8 +515,7 @@ export function InfoDialog({
             <li>
               <strong>One check.</strong>
               <p>
-                Check the six-letter room name and allow each device on the
-                owner’s screen. The private QR link is the invitation; the name
+                Tap Allow device on the room owner’s screen. The joining device connects automatically. The private QR link is the invitation; the name
                 alone cannot join a room.
               </p>
             </li>

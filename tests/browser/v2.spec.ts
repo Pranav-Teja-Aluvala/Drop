@@ -1,7 +1,7 @@
 import {readFile} from 'node:fs/promises';
 import {test,expect,type Page} from '@playwright/test';import {tmpdir} from 'node:os';import {join} from 'node:path';
 async function create(host:Page){await host.goto('/app');await host.getByRole('button',{name:'Create a room',exact:true}).click();const link=host.getByLabel('Room invite',{exact:true});await expect(link).toBeVisible({timeout:80000});return link.inputValue();}
-async function admit(host:Page,guest:Page,invite:string){await guest.goto(invite);await expect(guest.getByRole('heading',{name:'One check, then you’re in.'})).toBeVisible();await expect(guest.getByLabel('Room name')).toHaveText(await host.locator('#connection-title').innerText());await host.getByRole('button',{name:'Allow device',exact:true}).click();await expect(guest.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled();await expect(host.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled();}
+async function admit(host:Page,guest:Page,invite:string){await guest.goto(invite);await expect(guest.getByRole('heading',{name:'Waiting for the room owner'})).toBeVisible();await expect(guest.getByLabel('Room name')).toHaveText(await host.locator('#connection-title').innerText());await expect(guest.getByRole('button',{name:'Allow device',exact:true})).toHaveCount(0);const allow=host.getByRole('button',{name:'Allow device',exact:true});await expect(allow).toBeInViewport();await allow.click();await expect(guest.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled({timeout:20000});await expect(host.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled({timeout:20000});}
 async function note(page:Page,text:string){await page.getByRole('tab',{name:/Chat/}).click();await page.getByRole('textbox',{name:'Text & links',exact:true}).fill(text);await page.getByRole('button',{name:'Send message',exact:true}).click();}
 
 test('three devices share with one admission per device, private recipient selection and unchanged HTML bytes',async({browser})=>{
@@ -112,7 +112,7 @@ test('code joining retains approval and automatic acceptance is opt-in and rever
    await guest.goto('/app');
    await guest.getByRole('textbox',{name:'Room code or invite link',exact:true}).fill(code);
    await guest.getByRole('button',{name:'Join',exact:true}).click();
-   await expect(guest.getByRole('heading',{name:'One check, then you’re in.'})).toBeVisible();
+   await expect(guest.getByRole('heading',{name:'Waiting for the room owner'})).toBeVisible();
    await expect(guest.getByRole('button',{name:'Browse files',exact:true})).toBeHidden();
    await host.getByRole('button',{name:'Allow device',exact:true}).click();
    await expect(guest.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled();

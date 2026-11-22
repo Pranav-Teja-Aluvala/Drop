@@ -827,3 +827,106 @@ body:has(.app-page) {
 }
 
 .app-page .connected-layout>.intro.sr-only {width:1px;height:1px;padding:0;margin:0;clip-path:inset(50%);overflow:hidden}
+
+/* Pairing controls stay visible while the decorative device link animates. */
+.app-page .intro:has(.pairing-visual) h1 {
+  font-family: system-ui, sans-serif;
+  font-size: clamp(2.6rem, 5.5vw, 5.4rem);
+  font-weight: 650;
+  line-height: .99;
+  letter-spacing: -.065em;
+  text-wrap: balance;
+}
+.app-page .intro:has(.pairing-visual) > p {
+  max-width: 34ch;
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  line-height: 1.55;
+}
+.pairing-visual {
+  display: grid;
+  grid-template-columns: auto minmax(32px, 1fr) auto;
+  align-items: center;
+  width: min(100%, 294px);
+  margin-block: clamp(22px, 4vw, 44px) 4px;
+  color: #213e5a;
+}
+.pairing-device {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  border: 1px solid #d9dedc;
+  border-radius: 22px;
+  background: #fafaf7;
+  box-shadow: 0 8px 18px #182e430c;
+}
+.pairing-path {
+  position: relative;
+  height: 2px;
+  background: #a9bdc9;
+  overflow: hidden;
+}
+.pairing-path i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 30%;
+  background: #325ec2;
+  opacity: 0;
+}
+.pairing-visual:is([data-phase="approval"], [data-phase="connecting"], [data-phase="recovering"]) .pairing-path i {
+  opacity: 1;
+  transform: translateX(115%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pairing-visual:is([data-phase="approval"], [data-phase="connecting"], [data-phase="recovering"]) .pairing-path i {
+    animation: pairing-progress 1.6s ease-in-out infinite;
+  }
+  @keyframes pairing-progress {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(334%); }
+  }
+}
+.app-page .connection:not(.room-toolbar) {
+  padding: clamp(20px, 3vw, 36px);
+  background: #fffefa;
+  border: 1px solid #dfe2dc;
+  border-radius: 24px;
+  box-shadow: 0 18px 50px #182e430d, 0 2px 5px #182e4307;
+}
+.app-page .connection .room-heading h2 {
+  font-family: system-ui, sans-serif;
+  font-weight: 650;
+  letter-spacing: -.035em;
+}
+.app-page .connection .v2-approval {
+  padding: clamp(16px, 3vw, 24px);
+  margin-block: 12px 18px;
+  background: #edf3fe;
+  color: #182e43;
+  border: 1px solid #c9d7ee;
+  border-radius: 16px;
+}
+.app-page .connection .v2-approval h3 {
+  margin-block: 8px 4px;
+}
+.app-page .connection .v2-approval p {
+  margin-block: 0 14px;
+}
+.app-page .connection .v2-approval .button {
+  min-height: 44px;
+}
+.app-page .connection .pending-state {
+  text-align: center;
+  padding-block: 20px;
+}
+@media (max-width: 600px) {
+  .app-page .intro:has(.pairing-visual) h1 {
+    font-size: clamp(2.1rem, 9vw, 3.2rem);
+  }
+  .pairing-visual {
+    display: none;
+  }
+  .app-page .connection:not(.room-toolbar) {
+    border-radius: 18px;
+  }
+}

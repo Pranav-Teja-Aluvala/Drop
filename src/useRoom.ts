@@ -123,7 +123,8 @@ export function useRoom() {
       .map((l) => l.peerId);
     setReadyIds(ids);
     setTarget((prev) => (ids.includes(prev) ? prev : ids[0] || ""));
-    if (approved.current) setStatus(ids.length ? "connected" : "waiting");
+    if (approved.current)
+      setStatus(ids.length ? "connected" : links.current.size ? "connecting" : "waiting");
   }
   function dropLink(id: string) {
     const l = links.current.get(id);
@@ -246,6 +247,7 @@ export function useRoom() {
       chain: Promise.resolve(),
     };
     links.current.set(l.peerId, l);
+    refresh();
     const current = () => links.current.get(l.peerId) === l;
     pc.onicecandidate = (e) => {
       if (current() && e.candidate)

@@ -2,7 +2,7 @@ import { RoomAtmosphere } from "./RoomAtmosphere";
 import { Brand } from "./Brand";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, FileUp, MessageSquare, X } from "lucide-react";
+import { ArrowUpRight, FileUp, Laptop, MessageSquare, Smartphone, X } from "lucide-react";
 import { useRoom } from "./useRoom";
 import { Connection, InfoDialog, bytes } from "./components";
 import { RoomActivity, type ActivityView } from "./RoomActivity";
@@ -32,10 +32,6 @@ export function App() {
   }, [room.status]);
   const fileInput = useRef<HTMLInputElement>(null);
   const mediaInput = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (/^#[\w-]{43}\.[\w-]{43}$/.test(location.hash))
-      document.getElementById("transfer")?.scrollIntoView();
-  }, []);
   const connected = room.status === "connected";
   const [enteredRoom, setEnteredRoom] = useState(false);
   useEffect(() => {
@@ -53,7 +49,7 @@ export function App() {
       ? ["Joining your room.", "Your scanned invitation is ready."]
       : [
           "Your transfer room.",
-          "Connect up to three devices to share files and messages.",
+          "Move files, links and notes between up to three devices.",
         ],
     creating: room.joining
       ? [
@@ -63,20 +59,20 @@ export function App() {
       : ["Opening your room.", "Stay here while the pairing service responds."],
     waiting: room.requests.length
       ? [
-          "Your device has arrived.",
-          "Check the request on this screen before allowing it.",
+          "A device is ready to join.",
+          "Allow it here and both screens will connect automatically.",
         ]
       : [
-          "Your room is ready.",
-          "Scan its QR from your other device to continue.",
+          room.role === "host" ? "Connect another screen." : "Waiting for your other device.",
+          room.role === "host" ? "Scan the QR or enter the room code on your other device." : "Keep Drop open on both devices.",
         ],
     approval: [
-      "Waiting for approval.",
-      "Check the room name on both screens, then allow this device on your other screen.",
+      "Request sent.",
+      "Tap Allow device on the screen that created the room.",
     ],
     connecting: [
-      "Finding your connection.",
-      "Preparing encrypted connections for your devices.",
+      "Connecting your devices.",
+      "The transfer tools will open as soon as the connection is ready.",
     ],
     connected: [
       "A little closer.",
@@ -174,37 +170,12 @@ export function App() {
           >
             <h1>{enteredRoom ? room.nickname : intro[0]}</h1>
             <p>{intro[1]}</p>
-            {["idle", "closed"].includes(room.status) && (
-              <>
-                <ol className="connection-steps">
-                  <li>
-                    <span>01</span>
-                    <div>
-                      <strong>Create a room</strong>
-                      <p>A temporary space for up to three devices.</p>
-                    </div>
-                  </li>
-                  <li>
-                    <span>02</span>
-                    <div>
-                      <strong>Scan on your other device</strong>
-                      <p>
-                        Open the invite with your phone’s camera, or paste the
-                        link.
-                      </p>
-                    </div>
-                  </li>
-                  <li>
-                    <span>03</span>
-                    <div>
-                      <strong>Check the name. Start sharing.</strong>
-                      <p>
-                        Allow each joining device once on the owner’s screen.
-                      </p>
-                    </div>
-                  </li>
-                </ol>
-              </>
+            {!enteredRoom && (
+              <div className="pairing-visual" data-phase={room.status} aria-hidden="true">
+                <span className="pairing-device"><Laptop size={44} strokeWidth={1.35} /></span>
+                <span className="pairing-path"><i /></span>
+                <span className="pairing-device"><Smartphone size={39} strokeWidth={1.35} /></span>
+              </div>
             )}
           </div>
           {room.error ? (
