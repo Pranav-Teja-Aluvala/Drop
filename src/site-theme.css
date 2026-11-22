@@ -101,7 +101,6 @@ html { scroll-padding-top: 76px; }
 .app-page .message-launcher { background: var(--drop-blue); }
 body .room-orbit, body .room-orbit i { border-color: #718bce36; }
 body .room-orbit i:nth-child(3) { background: #c2d2f94d; }
-body .room-paper { display: none; }
 @media (max-width: 760px) {
   .dispatch .v2-hero-grid { grid-template-columns: minmax(0, 1fr); }
   .dispatch .v2-hero h1 { font-size: clamp(48px, 11vw, 76px); }

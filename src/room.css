@@ -34,15 +34,6 @@ body:has(.app-page) {
   background: #deded138;
   border: 0;
 }
-.room-paper {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 30vw;
-  height: 45vh;
-  background: url("/assets/postal-watermark.svg") center/contain no-repeat;
-  opacity: 0.06;
-}
 .app-page {
   max-width: 1320px;
   padding: 0 40px;

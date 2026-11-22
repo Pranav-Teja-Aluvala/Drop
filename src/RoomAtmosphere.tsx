@@ -17,13 +17,6 @@ export function RoomAtmosphere({ phase }: { phase: string }) {
           repeat: -1,
           ease: "none",
         });
-        gsap.to(".room-paper", {
-          y: -18,
-          duration: 6,
-          yoyo: true,
-          repeat: -1,
-          ease: "sine.inOut",
-        });
       });
       return () => context.revert();
     });
@@ -49,7 +42,6 @@ export function RoomAtmosphere({ phase }: { phase: string }) {
         <i />
         <i />
       </div>
-      <div className="room-paper" />
     </div>
   );
 }

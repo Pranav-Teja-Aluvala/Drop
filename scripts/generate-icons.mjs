@@ -4,7 +4,7 @@ const mark=readFileSync(new URL('../public/drop-mark.svg',import.meta.url),'utf8
 const browser=await chromium.launch();
 const pngs=[];
 try {
-  for(const [size,name] of [[16,'favicon-16.png'],[32,'favicon-32.png'],[180,'apple-touch-icon.png'],[192,'icon-192.png'],[512,'icon-512.png']]){
+  for(const [size,name] of [[16,'favicon-16.png'],[32,'favicon-32.png'],[180,'apple-touch-icon.png']]){
     const page=await browser.newPage({viewport:{width:size,height:size},deviceScaleFactor:1});
     await page.setContent(`<style>html,body{margin:0;width:100%;height:100%;overflow:hidden}body{display:grid;place-items:center;${size>=180?'background:#fafaf8':''}}svg{width:76%;height:90%}</style>${mark}`);
     const bytes=await page.screenshot({omitBackground:size<180});writeFileSync(new URL('../public/'+name,import.meta.url),bytes);
