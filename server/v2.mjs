@@ -23,8 +23,8 @@ const send = (ws, data) => {
 // V2 is versioned so already-open V1 rooms can finish without a protocol mismatch.
 export function mountV2(
   app,
-  server,
   {
+    registerUpgrade,
     allowed,
     quota,
     clientIP,
@@ -45,6 +45,7 @@ export function mountV2(
     process.env.CF_TURN_KEY_ID,
     process.env.CF_TURN_API_TOKEN,
   );
+  if (relay && cf) throw new Error("Choose one TURN provider.");
   const ice = (end) =>
     cf
       ? createCloudflareIceServers(cf, end)
@@ -158,6 +159,10 @@ export function mountV2(
       }
     }
   }
+  app.all("/api/v2/rooms", (_req, res, next) => {
+    res.vary("Origin");
+    next();
+  });
   app.post("/api/v2/rooms", (req, res) => {
     if (!allowed(req))
       return res.status(403).json({ error: "This origin is not allowed." });
@@ -165,6 +170,7 @@ export function mountV2(
     res.vary("Origin");
     if (!quota(clientIP(req)) || rooms.size >= maxRooms)
       return res
+        .set("Retry-After", "60")
         .status(429)
         .json({ error: "Too many rooms. Try again in a minute." });
     let nickname;
@@ -245,9 +251,12 @@ export function mountV2(
     res.vary("Origin");
     res.sendStatus(204);
   });
+  app.all("/api/v2/rooms", (_req, res) => {
+    res.set("Allow", "POST, OPTIONS");
+    res.status(405).json({ error: "Use POST to create a room." });
+  });
   const wss = new WebSocketServer({ noServer: true, maxPayload: 24576 });
-  server.on("upgrade", (req, socket, head) => {
-    if (req.url !== "/signal-v2") return;
+  registerUpgrade("/signal-v2", (req, socket, head) => {
     if (
       !allowed(req) ||
       wss.clients.size >= maxRooms * 3 ||
@@ -449,6 +458,8 @@ export function mountV2(
             n > 256 ||
             typeof c.candidate !== "string" ||
             c.candidate.length > 2048 ||
+            (c.usernameFragment != null &&
+              (typeof c.usernameFragment !== "string" || c.usernameFragment.length > 256)) ||
             (c.sdpMid != null &&
               (typeof c.sdpMid !== "string" || c.sdpMid.length > 64)) ||
             (c.sdpMLineIndex != null &&
@@ -462,7 +473,14 @@ export function mountV2(
           type: "signal",
           from: m.id,
           linkId: link.id,
-          signal: s,
+          signal: s.description
+            ? { description: { type: s.description.type, sdp: s.description.sdp } }
+            : { candidate: {
+                candidate: s.candidate.candidate,
+                sdpMid: s.candidate.sdpMid,
+                sdpMLineIndex: s.candidate.sdpMLineIndex,
+                usernameFragment: s.candidate.usernameFragment,
+              } },
         });
       } else if (d.type === "retry" && m.approved) {
         if (!m.lastRetry || Date.now() - m.lastRetry > 5000) {

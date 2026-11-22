@@ -51,6 +51,17 @@ The pairing server has no file store. The website and pairing service are truste
 
 [Read the architecture, protocol and data lifecycle →](docs/architecture.md)
 
+### Pairing endpoints
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /api/health` | Service availability |
+| `POST /api/v2/rooms` | Create a temporary room from the configured frontend origin |
+| `OPTIONS /api/v2/rooms` | Preflight for the configured frontend origin |
+| `/signal-v2` (WebSocket) | Admission, approvals, presence and WebRTC signaling |
+
+V2 is the default. Set `ENABLE_LEGACY_V1=true` on the backend only if you still serve a V1 client. The old HTTP and WebSocket routes are otherwise disabled.
+
 ## Run locally
 
 Requires **Node.js 24** and **npm**. No database or provider account is needed for local development.

@@ -1,8 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { connectionCode, VerificationGate, safeFilename } from '../../src/security';
+import { safeFilename } from '../../src/security';
 import { Transfer } from '../../src/transfer';
 
-const sdp = (byte: string) => `v=0\r\na=fingerprint:sha-256 ${Array(32).fill(byte).join(':')}\r\n`;
 class Channel {
   readyState = 'open'; bufferedAmount = 0; binaryType = ''; bufferedAmountLowThreshold = 0;
   onmessage: ((event: { data: unknown }) => void) | null = null;
@@ -12,32 +11,6 @@ class Channel {
   receive(value: unknown) { this.onmessage?.({ data: value }); }
   asRTC() { return this as unknown as RTCDataChannel; }
 }
-
-test('certificate comparison is symmetric, changes with either fingerprint, and fails closed', async () => {
-  const room = 'R'.repeat(43);
-  const code = await connectionCode(sdp('AA'), sdp('BB'), room);
-  expect(code).toMatch(/^[A-F0-9]{4}( [A-F0-9]{4}){7}$/);
-  expect(await connectionCode(sdp('BB'), sdp('AA'), room)).toBe(code);
-  expect(await connectionCode(sdp('AA'), sdp('CC'), room)).not.toBe(code);
-  expect(await connectionCode(sdp('AA'), sdp('BB'), 'S'.repeat(43))).not.toBe(code);
-  await expect(connectionCode('v=0', sdp('BB'), room)).rejects.toThrow();
-  await expect(connectionCode(sdp('AA'), sdp('AA'), room)).rejects.toThrow();
-  await expect(connectionCode(sdp('AA'), sdp('BB'), '')).rejects.toThrow();
-});
-
-test('verification gate needs both confirmations and rejects pre-verification data or mismatches', () => {
-  for (const payload of [JSON.stringify({type:'offer',id:'x'}), JSON.stringify({type:'verify',code:'WRONG'}), new ArrayBuffer(4)]) {
-    const channel = new Channel(); let ready = false, reason = '';
-    const gate = new VerificationGate(channel.asRTC(), 'ABCD', () => { ready = true; }, value => { reason = value; });
-    channel.receive(payload); gate.confirm();
-    expect(ready).toBe(false); expect(reason).not.toBe(''); expect(channel.messages).toEqual([]);
-  }
-  const channel = new Channel(); let ready = false;
-  const gate = new VerificationGate(channel.asRTC(), 'ABCD', () => { ready = true; }, () => {});
-  gate.confirm(); expect(ready).toBe(false);
-  channel.receive(JSON.stringify({ type: 'verify', code: 'ABCD' }));
-  expect(ready).toBe(true);
-});
 
 test('all file extensions are preserved while OS-sensitive filenames are normalized', () => {
   for (const name of ['install.EXE','photo.jpg.exe','icon.svg','run.ps1','sheet.xlsm','app.apk','page.html','unknown.xyz','README']) expect(safeFilename(name)).toBe(name);

@@ -89,3 +89,7 @@ The pairing service has no file store. The site and pairing service are trusted 
 
 </details>
 
+
+## Server routing
+
+`server/app.mjs` owns shared origin checks, IP quotas, security headers and WebSocket upgrade dispatch. `server/v2.mjs` owns the active room protocol. It forwards only recognized SDP and ICE fields between approved link members. `server/legacy.mjs` contains the older protocol and is mounted only when compatibility is explicitly enabled.

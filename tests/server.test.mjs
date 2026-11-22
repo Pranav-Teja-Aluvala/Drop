@@ -79,7 +79,7 @@ test('10,000 generated room identities have distinct IDs and credentials', () =>
 });
 
 async function fixture(t, options = {}) {
-  const drop = createDropServer(options);
+  const drop = createDropServer({ legacyV1: true, ...options });
   await new Promise(resolve => drop.server.listen(0, '127.0.0.1', resolve));
   const base = `http://127.0.0.1:${drop.server.address().port}`;
   t.after(() => drop.close());
@@ -358,4 +358,20 @@ test('duplicate connection descriptions cannot renegotiate a paired room', {time
   const message = {type:'signal',signal:{description:{type:'offer',sdp:'v=0'}}};
   host.send(message); assert.equal((await guest.next()).type,'signal');
   host.send(message); assert.equal((await guest.next()).type,'closed');
+});
+
+test('default HTTP routing exposes V2 and returns explicit method and origin responses', async t => {
+  const { base } = await fixture(t, { legacyV1: false });
+  const route = base + '/api/v2/rooms';
+  const wrongMethod = await fetch(route);
+  assert.equal(wrongMethod.status, 405);
+  assert.equal(wrongMethod.headers.get('allow'), 'POST, OPTIONS');
+  const denied = await fetch(route, { method: 'POST' });
+  assert.equal(denied.status, 403);
+  assert.match(denied.headers.get('vary'), /Origin/i);
+  const created = await fetch(route, { method: 'POST', headers: { Origin: base } });
+  assert.equal(created.status, 201);
+  assert.equal(created.headers.get('cache-control'), 'no-store');
+  const legacy = await fetch(base + '/api/rooms', { method: 'POST', headers: { Origin: base } });
+  assert.equal(legacy.status, 404);
 });

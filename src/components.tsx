@@ -3,7 +3,6 @@ import QRCode from "qrcode";
 import gsap from "gsap";
 import {
   ArrowDownToLine,
-  ArrowUpRight,
   Check,
   Copy,
   File,

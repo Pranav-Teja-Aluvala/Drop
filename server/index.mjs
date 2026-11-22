@@ -3,7 +3,7 @@ import { createDropServer } from './app.mjs';
 import { validateProductionOrigin } from './config.mjs';
 const production = process.argv.includes('--production');
 if (production) validateProductionOrigin(process.env.PUBLIC_ORIGIN);
-const { app, server } = createDropServer({ origin: process.env.PUBLIC_ORIGIN, trustedProxyCIDRs: (process.env.TRUSTED_PROXY_CIDRS || '').split(',').map(value => value.trim()).filter(Boolean) });
+const { app, server } = createDropServer({ origin: process.env.PUBLIC_ORIGIN, legacyV1: process.env.ENABLE_LEGACY_V1 === "true", trustedProxyCIDRs: (process.env.TRUSTED_PROXY_CIDRS || '').split(',').map(value => value.trim()).filter(Boolean) });
 if (production) {
   mountProductionFiles(app);
 } else {

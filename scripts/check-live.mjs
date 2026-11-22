@@ -49,11 +49,11 @@ try {
   }
   for (const path of ['/.env','/.git/config','/src/App.tsx','/server/app.mjs']) assert.equal((await fetch(origin+path)).status,404);
   for (const path of ['/robots.txt','/sitemap.xml','/llms.txt','/favicon.svg','/favicon.ico','/favicon-32.png','/apple-touch-icon.png','/third-party-notices.txt','/assets/social-share.jpg']) assert.equal((await fetch(origin+path)).status,200);
-  const denied = await fetch(backend+'/api/rooms',{method:'OPTIONS',headers:{Origin:'https://untrusted.example','Access-Control-Request-Method':'POST'}});
+  const denied = await fetch(backend+'/api/v2/rooms',{method:'OPTIONS',headers:{Origin:'https://untrusted.example','Access-Control-Request-Method':'POST'}});
   assert.equal(denied.status,403); assert.notEqual(denied.headers.get('access-control-allow-origin'), '*');
-  const allowed = await fetch(backend+'/api/rooms',{method:'OPTIONS',headers:{Origin:origin,'Access-Control-Request-Method':'POST'}});
+  const allowed = await fetch(backend+'/api/v2/rooms',{method:'OPTIONS',headers:{Origin:origin,'Access-Control-Request-Method':'POST'}});
   assert.equal(allowed.status,204); assert.equal(allowed.headers.get('access-control-allow-origin'),origin);
-  assert.equal((await fetch(backend+'/api/rooms',{method:'POST'})).status,403);
+  assert.equal((await fetch(backend+'/api/v2/rooms',{method:'POST'})).status,403);
   assert.equal((await fetch(backend+'/api/health')).status,200);
   console.log(JSON.stringify({passed:true,pageChecks:results.length,checks:['public routes and 404','mobile/tablet/desktop overflow','headings/alt text','canonical metadata','runtime errors and error overlay','HTTPS security headers and CSP','public contact','exposed-file probes','robots/sitemap/favicon/social image','live exact-origin CORS'],screenshot:join(tmpdir(),'drop-release-live-mobile.png')},null,2));
 } finally { await browser.close(); }
