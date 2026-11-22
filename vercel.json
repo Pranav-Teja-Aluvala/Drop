@@ -60,6 +60,39 @@
   ],
   "redirects": [
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "drop-devs-52b0.vercel.app"
+        }
+      ],
+      "destination": "https://dropem.vercel.app/",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "roptransfer.vercel.app"
+        }
+      ],
+      "destination": "https://dropem.vercel.app/",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "shareem.vercel.app"
+        }
+      ],
+      "destination": "https://dropem.vercel.app/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {

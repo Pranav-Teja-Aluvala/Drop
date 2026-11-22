@@ -10,6 +10,14 @@ assert.equal(new URL(backend).protocol, 'https:');
 const browser = await chromium.launch(process.env.PLAYWRIGHT_CHANNEL?{channel:process.env.PLAYWRIGHT_CHANNEL}:{});
 const results = [];
 try {
+  if (origin === 'https://dropem.vercel.app') {
+    const legacy = 'https://drop-devs-52b0.vercel.app';
+    for (const path of ['/', '/app?source=legacy']) {
+      const response = await fetch(legacy + path, { redirect: 'manual' });
+      assert.equal(response.status, 308, 'Legacy hostname must redirect before loading the page');
+      assert.equal(response.headers.get('location'), origin + path);
+    }
+  }
   for (const width of [320, 390, 768, 1440]) {
     const page = await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'});
     const errors = [];
@@ -55,5 +63,5 @@ try {
   assert.equal(allowed.status,204); assert.equal(allowed.headers.get('access-control-allow-origin'),origin);
   assert.equal((await fetch(backend+'/api/v2/rooms',{method:'POST'})).status,403);
   assert.equal((await fetch(backend+'/api/health')).status,200);
-  console.log(JSON.stringify({passed:true,pageChecks:results.length,checks:['public routes and 404','mobile/tablet/desktop overflow','headings/alt text','canonical metadata','runtime errors and error overlay','HTTPS security headers and CSP','public contact','exposed-file probes','robots/sitemap/favicon/social image','live exact-origin CORS'],screenshot:join(tmpdir(),'drop-release-live-mobile.png')},null,2));
+  console.log(JSON.stringify({passed:true,pageChecks:results.length,checks:['public routes and 404','mobile/tablet/desktop overflow','headings/alt text','canonical metadata','runtime errors and error overlay','HTTPS security headers and CSP','public contact','exposed-file probes','robots/sitemap/favicon/social image','live exact-origin CORS and legacy hostname redirects'],screenshot:join(tmpdir(),'drop-release-live-mobile.png')},null,2));
 } finally { await browser.close(); }
