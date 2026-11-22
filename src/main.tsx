@@ -12,3 +12,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(inApp?<Suspense fal
 
 import './v2.css';
 import './dispatch.css';
+import './site-theme.css';

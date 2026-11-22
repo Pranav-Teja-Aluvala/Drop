@@ -11,3 +11,4 @@ import './v2.css';
 import './dispatch.css';
 
 import './room.css';
+import './site-theme.css';

@@ -1,0 +1,147 @@
+:root {
+  --drop-surface: #f5f6f8;
+  --drop-card: #fff;
+  --drop-ink: #171b24;
+  --drop-muted: #525b6b;
+  --drop-line: #dce1e8;
+  --drop-blue: #214fd1;
+  --drop-blue-hover: #183fae;
+  --drop-font: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --drop-radius: 24px;
+}
+html { scroll-padding-top: 76px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+.dispatch.landing, .app-page { color: var(--drop-ink); font-family: var(--drop-font); }
+.dispatch.landing, html body:has(.app-page) { background: var(--drop-surface); }
+.dispatch .nav { background: #f5f6f8ee; border-color: var(--drop-line); }
+.dispatch .v2-hero { padding-block: clamp(38px, 7vw, 104px); }
+.dispatch .v2-hero-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr);
+  gap: clamp(30px, 5vw, 78px);
+}
+.dispatch .v2-hero h1 {
+  font: 660 clamp(55px, 7vw, 106px)/.99 var(--drop-font);
+  letter-spacing: -.075em;
+}
+.dispatch .v2-hero h1 em { font: inherit; color: var(--drop-blue); }
+.dispatch .v2-description { color: var(--drop-muted); font-size: clamp(17px, 1.6vw, 21px); }
+.dispatch .v2-how-link { text-decoration: none; color: var(--drop-blue); }
+.dispatch .primary, .app-page .button.primary, .app-page .button.accent {
+  background: var(--drop-blue);
+  border-color: var(--drop-blue);
+  color: white;
+  border-radius: 999px;
+}
+.dispatch .primary:hover, .app-page .button.primary:not(:disabled):hover,
+.app-page .button.accent:not(:disabled):hover { background: var(--drop-blue-hover); }
+.dispatch :focus-visible, .app-page :focus-visible { outline-color: var(--drop-blue); }
+.transfer-preview { margin: 0; min-width: 0; }
+.preview-stage {
+  min-height: clamp(280px, 37vw, 470px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(23px, 4vw, 55px);
+  padding: clamp(16px, 3.2vw, 48px);
+  border: 1px solid #364667;
+  border-radius: clamp(22px, 3vw, 36px);
+  color: #fff;
+  background: radial-gradient(ellipse at 62% 64%, #314e98, transparent 70%), #101a31;
+  box-shadow: 0 24px 65px #17264c28;
+}
+.preview-route {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: clamp(8px, 1.4vw, 20px);
+  color: #e5ecff;
+  font-size: 13px;
+}
+.preview-route span { display: inline-flex; align-items: center; gap: 8px; }
+.preview-item {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 2.6vw, 24px);
+  width: min(100%, 330px);
+  min-height: 110px;
+  padding: clamp(12px, 2vw, 22px);
+  background: #fff;
+  color: #151c2d;
+  border-radius: 19px;
+  box-shadow: 0 18px 42px #040a1a5e;
+}
+.preview-icon {
+  flex: 0 0 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  color: #254ab6;
+  background: #edf2ff;
+  border-radius: 15px;
+}
+.preview-item strong, .preview-item small { display: block; }
+.preview-item strong { font-size: clamp(17px, 2vw, 24px); letter-spacing: -.035em; }
+.preview-item small { color: #525b6b; margin-top: 4px; }
+.transfer-preview figcaption {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+  gap: 10px 18px; margin-top: 16px;
+}
+.preview-options {
+  display: inline-flex; padding: 3px; gap: 3px; border-radius: 999px; background: #e6eaf1;
+}
+.preview-options button {
+  min-width: 54px; min-height: 44px; padding: 0 12px; border: none;
+  border-radius: 999px; color: var(--drop-muted); font: inherit; cursor: pointer; background: transparent;
+}
+.preview-options button[aria-pressed="true"] {
+  background: #fff; color: var(--drop-ink); box-shadow: 0 1px 4px #17264c28;
+}
+.preview-caption { color: var(--drop-muted); font-size: 14px; }
+@media (prefers-reduced-motion: no-preference) {
+  .preview-item { animation: preview-in .35s cubic-bezier(.22,.7,.25,1) both; }
+  @keyframes preview-in { from { transform: translateY(9px); opacity: .55; } to { transform: none; opacity: 1; } }
+}
+.dispatch .v2-how, .dispatch .closing-cta, .dispatch .v2-steps article { border-color: var(--drop-line); }
+.dispatch .v2-section-heading h2, .dispatch .guide-layout h2,
+.dispatch .v2-trust h2, .dispatch .closing-cta h2 {
+  font: 640 clamp(35px, 5vw, 66px)/1.05 var(--drop-font);
+  letter-spacing: -.065em;
+}
+.dispatch .v2-steps article > span { color: var(--drop-blue); }
+.dispatch .transfer-guide { background: #111b31; color: #fff; }
+.dispatch .guide-layout p, .dispatch .guide-entries summary span { color: #d4ddec; }
+.dispatch .guide-entries summary::after { color: #a4bfff; }
+.dispatch .closing-footer { border-color: var(--drop-line); }
+.app-page .workspace-bar, .app-page .room-session { border-color: var(--drop-line); }
+.app-page .intro h1, .app-page .onboarding-layout .intro h1 {
+  font-family: var(--drop-font); color: var(--drop-ink);
+}
+.app-page .intro > p, .app-page .onboarding-layout .intro > p { color: var(--drop-muted); }
+.app-page .v2-connection, .app-page .connection:not(.room-toolbar),
+.app-page .send-panel, .app-page .room-activity {
+  background: var(--drop-card); border-color: var(--drop-line);
+  border-radius: var(--drop-radius); box-shadow: 0 12px 34px #17264c09;
+}
+.app-page .room-heading > span { color: var(--drop-muted); }
+.app-page .room-heading h2 { color: var(--drop-ink); }
+.app-page .button.secondary { border-radius: 14px; }
+.app-page .v2-invite { border-color: var(--drop-line); border-style: solid; border-inline: 0; }
+.app-page .qr-frame { border-color: var(--drop-line); border-radius: 14px; }
+.app-page .room-session { background: #f6f8fc; }
+.app-page .message-launcher { background: var(--drop-blue); }
+body .room-orbit, body .room-orbit i { border-color: #718bce36; }
+body .room-orbit i:nth-child(3) { background: #c2d2f94d; }
+body .room-paper { display: none; }
+@media (max-width: 760px) {
+  .dispatch .v2-hero-grid { grid-template-columns: minmax(0, 1fr); }
+  .dispatch .v2-hero h1 { font-size: clamp(48px, 11vw, 76px); }
+  .dispatch .v2-hero-actions { gap: 12px 20px; }
+}
+@media (max-width: 420px) {
+  .preview-item { min-height: 94px; }
+  .preview-stage { min-height: 250px; }
+  .app-page .v2-connection, .app-page .connection:not(.room-toolbar),
+  .app-page .send-panel, .app-page .room-activity { border-radius: 17px; }
+}
