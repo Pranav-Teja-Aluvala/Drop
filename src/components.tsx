@@ -4,12 +4,14 @@ import gsap from "gsap";
 import {
   ArrowDownToLine,
   Check,
+  Clock3,
   Copy,
   File,
   Link,
   LoaderCircle,
   Plus,
   Share2,
+  RotateCcw,
   Smartphone,
   X,
 } from "lucide-react";
@@ -27,11 +29,15 @@ export function CopyButton({
   value,
   children = "Copy",
   compact = false,
+  ariaLabel,
+  errorMessage = "Clipboard access was denied. Select and copy the text manually.",
   onError,
 }: {
   value: string;
   children?: ReactNode;
   compact?: boolean;
+  ariaLabel?: string;
+  errorMessage?: string;
   onError: (message: string) => void;
 }) {
   const [copied, setCopied] = useState(false);
@@ -40,7 +46,7 @@ export function CopyButton({
   return (
     <button
       className={compact ? "icon-button copy-message" : "button secondary"}
-      aria-label={compact ? (copied ? "Copied" : "Copy message") : undefined}
+      aria-label={ariaLabel ?? (compact ? (copied ? "Copied" : "Copy message") : undefined)}
       title={compact ? (copied ? "Copied" : "Copy message") : undefined}
       onClick={async () => {
         try {
@@ -49,9 +55,7 @@ export function CopyButton({
           clearTimeout(timer.current);
           timer.current = setTimeout(() => setCopied(false), 1800);
         } catch {
-          onError(
-            "Clipboard access was denied. Select and copy the text manually.",
-          );
+          onError(errorMessage);
         }
       }}
     >
@@ -255,8 +259,13 @@ export function Connection({
                 </div>
                 <p>Scan on your next device</p>
                 <div className="invite-actions">
-                  <CopyButton value={room.invite} onError={room.setError}>
-                    Copy link
+                  <CopyButton
+                    ariaLabel="Private invitation"
+                    value={room.invite}
+                    onError={room.setError}
+                    errorMessage="Clipboard access was denied. Use the QR or room code to invite your device."
+                  >
+                    Private invitation
                   </CopyButton>
                   {typeof navigator.share === "function" && (
                     <button
@@ -274,7 +283,7 @@ export function Connection({
                             e instanceof DOMException && e.name === "AbortError"
                           ))
                             room.setError(
-                              "Use Copy link to share this invitation.",
+                              "Use Private invitation to copy the link.",
                             );
                         } finally {
                           setSharing(false);
@@ -292,18 +301,8 @@ export function Connection({
                     {room.joinCode || "…"}
                   </output>
                 </label>
-                <label className="invite-url-label">
-                  Private invitation
-                  <input
-                    className="invite-visible"
-                    aria-label="Room invite"
-                    value={room.invite}
-                    readOnly
-                    onFocus={(event) => event.currentTarget.select()}
-                  />
-                </label>
                 <small>
-                  Invitation valid for 10 minutes. Share only with your devices.
+                  Invite expires after 10 minutes.
                 </small>
               </div>
             </div>
@@ -344,9 +343,9 @@ export function Connection({
                       {member.label}
                     </button>
                   ) : (
-                    <span>
+                    <span className="device-label">
                       {member.label}
-                      {member.id === room.selfId ? " · You" : ""}
+                      {member.id === room.selfId && <span className="device-you">You</span>}
                     </span>
                   )}
                   <small>
@@ -373,14 +372,19 @@ export function Connection({
           )}
           {room.expires > 0 && (
             <div className="room-session">
-              <p>
-                Room ends at{" "}
-                {new Date(room.expires).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-                . Return within 10 minutes after switching apps.
-              </p>
+              <dl className="session-details">
+                <div>
+                  <dt><Clock3 size={16} aria-hidden="true" /> Ends at</dt>
+                  <dd>{new Date(room.expires).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}</dd>
+                </div>
+                <div>
+                  <dt><RotateCcw size={16} aria-hidden="true" /> Rejoin window</dt>
+                  <dd>10 minutes</dd>
+                </div>
+              </dl>
               <div className="session-actions">
                 <button
                   className="session-action session-exit"

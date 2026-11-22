@@ -1,6 +1,23 @@
 import {readFile} from 'node:fs/promises';
 import {test,expect,type Page} from '@playwright/test';import {tmpdir} from 'node:os';import {join} from 'node:path';
-async function create(host:Page){await host.goto('/app');await host.getByRole('button',{name:'Create a room',exact:true}).click();const link=host.getByLabel('Room invite',{exact:true});await expect(link).toBeVisible({timeout:80000});return link.inputValue();}
+function privateInvite(page: Page) {
+  return page.getByRole('button', { name: 'Private invitation', exact: true });
+}
+async function create(host: Page) {
+  await host.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async (value: string) => { (window as Window & { copiedInvite?: string }).copiedInvite = value; } },
+    });
+  });
+  await host.goto('/app');
+  await host.getByRole('button', { name: 'Create a room', exact: true }).click();
+  const copy = privateInvite(host);
+  await expect(copy).toBeVisible({ timeout: 80000 });
+  await copy.click();
+  await expect(copy).toHaveText('Copied');
+  return host.evaluate(() => (window as Window & { copiedInvite: string }).copiedInvite);
+}
 async function admit(host:Page,guest:Page,invite:string){await guest.goto(invite);await expect(guest.getByRole('heading',{name:'Waiting for the room owner'})).toBeVisible();await expect(guest.getByLabel('Room name')).toHaveText(await host.locator('#connection-title').innerText());await expect(guest.getByRole('button',{name:'Allow device',exact:true})).toHaveCount(0);const allow=host.getByRole('button',{name:'Allow device',exact:true});await expect(allow).toBeInViewport();await allow.click();await expect(guest.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled({timeout:20000});await expect(host.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled({timeout:20000});}
 async function note(page:Page,text:string){await page.getByRole('tab',{name:/Chat/}).click();await page.getByRole('textbox',{name:'Text & links',exact:true}).fill(text);await page.getByRole('button',{name:'Send message',exact:true}).click();}
 
@@ -17,14 +34,17 @@ test('three devices share with one admission per device, private recipient selec
 
 test('approved mobile returns from a dropped socket without scanning or another approval',async({browser})=>{
  const a=await browser.newContext(),b=await browser.newContext();const host=await a.newPage(),guest=await b.newPage();await guest.addInitScript(()=>{const Native=WebSocket;window.WebSocket=class extends Native{constructor(url:string|URL,protocols?:string|string[]){super(url,protocols);(window as Window&{testSocket?:WebSocket}).testSocket=this;}};});
- try{await admit(host,guest,await create(host));await guest.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,value:'hidden'});document.dispatchEvent(new Event('visibilitychange'));});await expect(host.getByLabel('Background time remaining')).toBeVisible();await guest.evaluate(()=>(window as Window&{testSocket?:WebSocket}).testSocket?.close());await guest.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,value:'visible'});document.dispatchEvent(new Event('visibilitychange'));});await expect(guest.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled({timeout:20000});await expect(host.getByRole('button',{name:'Allow device',exact:true})).toHaveCount(0);await guest.setViewportSize({width:844,height:390});
+ try{const invite=await create(host);await admit(host,guest,invite);await guest.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,value:'hidden'});document.dispatchEvent(new Event('visibilitychange'));});await expect(host.getByLabel('Background time remaining')).toBeVisible();await guest.evaluate(()=>(window as Window&{testSocket?:WebSocket}).testSocket?.close());await guest.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,value:'visible'});document.dispatchEvent(new Event('visibilitychange'));});await expect(guest.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled({timeout:20000});await expect(host.getByRole('button',{name:'Allow device',exact:true})).toHaveCount(0);await guest.setViewportSize({width:844,height:390});
  await guest.getByRole('link',{name:'Chat',exact:true}).click();
  await guest.reload();
  await expect(guest.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled({timeout:20000});
  expect(await guest.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await host.reload();
  await expect(host.getByRole('button',{name:'Browse files',exact:true})).toBeEnabled({timeout:20000});
- await expect(host.getByLabel('Room invite',{exact:true})).toHaveValue(/#.+/);
+ await host.getByRole('button',{name:'Connect more',exact:true}).click();
+ await privateInvite(host).click();
+ await expect(privateInvite(host)).toHaveText('Copied');
+ expect(await host.evaluate(() => (window as Window & {copiedInvite: string}).copiedInvite)).toBe(invite);
  await note(guest,'I came back without scanning');await host.getByRole('tab',{name:/Chat/}).click();await expect(host.locator('.message-text')).toContainText('came back');await host.getByRole('button',{name:'End room',exact:true}).click();}finally{await a.close();await b.close();}
 });
 
@@ -78,7 +98,7 @@ test('mobile creation shows invitation first; connected invite drawer opens and 
   const host=await owner.newPage(), guest=await other.newPage();
   try {
     const invite=await create(host);
-    await expect(host.getByLabel('Room invite',{exact:true})).toBeVisible();
+    await expect(privateInvite(host)).toBeVisible();
     await expect(host.getByRole('button',{name:'Browse files',exact:true})).toBeHidden();
     await host.screenshot({path:join(tmpdir(),'drop-qr-first-mobile.png'),fullPage:true});
     await admit(host,guest,invite);
@@ -89,7 +109,7 @@ test('mobile creation shows invitation first; connected invite drawer opens and 
     await more.click();
     await expect(host.locator('#room-invitation')).toHaveAttribute('aria-hidden','false');
     await expect.poll(()=>host.locator('#room-invitation').evaluate(el=>el.getBoundingClientRect().height)).toBeGreaterThan(150);
-    await expect(host.getByLabel('Room invite',{exact:true})).toBeVisible();
+    await expect(privateInvite(host)).toBeVisible();
     expect(await host.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     await host.screenshot({path:join(tmpdir(),'drop-invite-drawer-mobile.png'),fullPage:true});
     await host.getByRole('button',{name:'Close invitation',exact:true}).click();
@@ -141,21 +161,22 @@ test('code joining retains approval and automatic acceptance is opt-in and rever
  }finally{await owner.close();await other.close();}
 });
 
-test('invitation fields and long mobile messages keep bounded dimensions',async({browser})=>{
+test('private invitation and long mobile messages keep bounded dimensions',async({browser})=>{
  const a=await browser.newContext({viewport:{width:1440,height:900}});
  const b=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
  const host=await a.newPage(),phone=await b.newPage();
  try{
    await admit(host,phone,await create(host));
    await host.getByRole('button',{name:'Connect more',exact:true}).click();
-   const input=host.getByLabel('Room invite',{exact:true});
+   const copy=privateInvite(host);
+   await expect(host.locator('#room-invitation input')).toHaveCount(0);
    await expect.poll(()=>host.locator('#room-invitation').evaluate(el=>el.clientHeight)).toBeGreaterThan(150);
    for(const width of [1440,844,390,320]){
      await host.setViewportSize({width,height:844});
-     expect(await input.evaluate(el=>el.getBoundingClientRect().width<=420)).toBe(true);
+     expect(await copy.evaluate(el=>el.getBoundingClientRect().width<=420)).toBe(true);
      expect(await host.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-     await input.focus();
-     expect(await input.evaluate(el=>el.selectionEnd-el.selectionStart)).toBe((await input.inputValue()).length);
+     await copy.focus();
+     await expect(copy).toBeFocused();
    }
    const text='https://example.com/'+ 'a'.repeat(2000)+'\n'+'Long note. '.repeat(900);
    await note(host,text);

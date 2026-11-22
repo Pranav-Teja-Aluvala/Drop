@@ -5,6 +5,7 @@ test('email appears only on Contact; legal pages point there and copy feedback h
   const address=await page.locator('#support-address').innerText();
   expect(address).toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
   await expect(page.locator('#support-address')).toHaveAttribute('href','mailto:'+address);
+  await expect(page.getByRole('link',{name:'Email me'})).toHaveAttribute('href','mailto:'+address);
   await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async(value:string)=>{(window as Window&{contactCopied?:string}).contactCopied=value;}}}));
   await page.getByRole('button',{name:'Copy email address',exact:true}).click();await expect(page.getByRole('status')).toHaveText('Email address copied.');
   expect(await page.evaluate(()=>(window as Window&{contactCopied?:string}).contactCopied)).toBe(address);

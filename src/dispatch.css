@@ -89,7 +89,6 @@ body:has(.app-page) {background:#f5f4ef}
 /* The illustration covers the viewport; only the working area has a measure. */
 body:has(.app-page) {background:#f3f4ee;isolation:isolate}
 .app-page,.app-page:has(.onboarding-layout) {background:transparent}
-.app-page .v2-invite .invite-visible {text-overflow:ellipsis;padding:8px;border:1px solid #d1d8cf;background:#fff;border-radius:4px}
 @media(min-width:900px){
   .app-page:has(.onboarding-layout) .workspace-bar {height:74px;padding-block:12px}
   .app-page main.onboarding-layout {grid-template-columns:minmax(0,.8fr) minmax(0,1.24fr);align-content:start;gap:clamp(24px,4vw,60px);padding-block:24px}
