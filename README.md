@@ -84,6 +84,6 @@ The current client uses `POST /api/v2/rooms` and `/signal-v2`. Keep optional TUR
 
 ## Project links
 
-[Report an issue](https://github.com/Pranav-Teja-Aluvala/Drop/issues/new) · [Contact](https://dropem.vercel.app/contact.html) · [Security reporting](SECURITY.md) · [Terms](https://dropem.vercel.app/terms.html) · [Cookies & local data](https://dropem.vercel.app/cookies.html)
+[Open the production app](https://dropem.vercel.app/app) · [Report an issue](https://github.com/Pranav-Teja-Aluvala/Drop/issues/new) · [Contact](https://dropem.vercel.app/contact.html) · [Security reporting](SECURITY.md) · [Terms](https://dropem.vercel.app/terms.html) · [Cookies & local data](https://dropem.vercel.app/cookies.html)
 
 Code and documentation are [MIT licensed](LICENSE). [Branding and artwork](LICENSING.md) are reserved. Dependencies keep their [third-party licenses](https://dropem.vercel.app/third-party-notices.html).

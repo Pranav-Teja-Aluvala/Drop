@@ -14,4 +14,4 @@ Contact the maintainer privately through [Drop support](https://dropem.vercel.ap
 
 ## Verification
 
-Run the server suite, production-build browser tests, dependency audit and secret scan described in [the README](README.md#verification). The tests use synthetic files. Security-sensitive changes should cover both successful use and an unauthorized or malformed request.
+Run the server suite, production-build browser tests, dependency audit and secret scan listed under [Run locally](README.md#run-locally) in the README. The tests use synthetic files. Security-sensitive changes should cover both successful use and an unauthorized or malformed request.
